@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Predictions · Orb Analytics</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .predictions-header {
+      padding: 2rem 0 1.5rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .model-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── Pick Cards ──────────────────────────────────────────── */
+    .picks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+      padding-bottom: 3rem;
+    }
+
+    .pick-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pick-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--purple-600), var(--purple-400));
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .pick-card:hover {
+      border-color: rgba(147,51,234,0.45);
+      box-shadow: var(--glow);
+    }
+
+    .pick-card:hover::after { opacity: 1; }
+
+    .pick-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pick-model-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--purple-300);
+      letter-spacing: 0.06em;
+    }
+
+    .pick-matchup {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .pick-main {
+      background: rgba(147,51,234,0.1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+    }
+
+    .pick-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--purple-400);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .pick-value {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Confidence bar */
+    .confidence-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .confidence-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .confidence-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .confidence-pct {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--purple-300);
+    }
+
+    .confidence-bar-bg {
+      height: 5px;
+      background: rgba(147,51,234,0.12);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .confidence-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--purple-600), var(--purple-400));
+      transition: width 0.6s ease;
+    }
+
+    .pick-meta {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pick-notes {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      line-height: 1.4;
+      font-style: italic;
+    }
+
+    /* ── Model info bar ──────────────────────────────────────── */
+    .model-info-bar {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .model-info-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.3rem 0.8rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .model-info-chip span { color: var(--purple-300); font-weight: 600; }
+
+    /* ── No picks ─────────────────────────────────────────────── */
+    .no-picks-state {
+      grid-column: 1/-1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 4rem 1.5rem;
+      color: var(--gray-500);
+      text-align: center;
+    }
+
+    .model-source-note {
+      background: rgba(147,51,234,0.08);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <main class="page">
+    <div class="container">
+      <div class="predictions-header">
+        <div>
+          <div class="section-label">ML-Powered Picks</div>
+          <div class="section-title">Today's Predictions</div>
+          <p style="color:var(--muted);font-size:0.85rem;margin-top:0.35rem" id="last-updated"></p>
+        </div>
+      </div>
+
+      <!-- Model Tabs -->
+      <div class="model-tabs">
+        <button class="tab-btn active" onclick="switchModel('mlb')" id="tab-mlb">⚾ MLB Model</button>
+        <button class="tab-btn" onclick="switchModel('nfl')" id="tab-nfl">🏈 NFL Model</button>
+        <button class="tab-btn" onclick="switchModel('nba')" id="tab-nba">🏀 NBA Model</button>
+      </div>
+
+      <!-- Model Info -->
+      <div class="model-source-note" id="model-source-note">
+        🔗 Predictions sourced from the Orb Analytics model repos via GitHub. Updated daily.
+      </div>
+
+      <div class="model-info-bar" id="model-info-bar"></div>
+
+      <!-- Picks Grid -->
+      <div class="picks-grid" id="picks-container">
+        <div class="loading-state" style="grid-column:1/-1">
+          <div class="spinner"></div> Loading predictions...
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Predictions by Orb Analytics ML Models · Not financial advice · © 2026 Orb Analytics</p>
+  </footer>
+
+  <script src="js/nav.js"></script>
+  <script>
+    buildNav('predictions.html');
+
+    // ─── Model Config ─────────────────────────────────────────────
+    // These point to predictions.json in each model repo on GitHub
+    // Once Ethan/you push predictions.json to those repos, these will auto-load
+    const MODEL_SOURCES = {
+      mlb: {
+        label: 'MLB Model',
+        emoji: '⚾',
+        // Reads from the MLB-Model repo
+        url: 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json',
+        info: { features: '274', data: '18 seasons', type: 'XGBoost' },
+        fallback: true,
+      },
+      nfl: {
+        label: 'NFL Model',
+        emoji: '🏈',
+        url: 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Model/main/predictions.json',
+        info: { features: '~150', data: '3 seasons PBP', type: 'XGBoost' },
+        fallback: true,
+      },
+      nba: {
+        label: 'NBA Model',
+        emoji: '🏀',
+        url: 'https://raw.githubusercontent.com/Orb-Analytics/NBA-Model/main/predictions.json',
+        info: { features: '~80', data: '470+ games', type: 'ML Ensemble' },
+        fallback: true,
+      }
+    };
+
+    let activeModel = 'mlb';
+
+    // ─── Sample / fallback data ────────────────────────────────────
+    // This shows while repos don't yet have predictions.json committed
+    const SAMPLE_DATA = {
+      mlb: {
+        model: 'MLB',
+        generated_at: new Date().toISOString(),
+        version: 'v2.1',
+        picks: [
+          {
+            game_id: 'sample-1',
+            home_team: 'Los Angeles Dodgers',
+            away_team: 'San Francisco Giants',
+            pick: 'Dodgers ML',
+            confidence: 0.67,
+            line: -155,
+            notes: 'Strong home record, Giants bullpen ranked 28th last 7 days'
+          },
+          {
+            game_id: 'sample-2',
+            home_team: 'New York Yankees',
+            away_team: 'Boston Red Sox',
+            pick: 'Yankees -1.5',
+            confidence: 0.61,
+            line: +110,
+            notes: 'Yankees 8-2 last 10, model favors run differential edge'
+          },
+          {
+            game_id: 'sample-3',
+            home_team: 'Houston Astros',
+            away_team: 'Texas Rangers',
+            pick: 'Over 8.5',
+            confidence: 0.58,
+            line: -108,
+            notes: 'Both offenses ranked top-8 in wRC+ last 14 days'
+          },
+        ]
+      },
+      nfl: {
+        model: 'NFL',
+        generated_at: new Date().toISOString(),
+        version: 'v1.0',
+        picks: [
+          {
+            game_id: 'nfl-sample-1',
+            home_team: 'Kansas City Chiefs',
+            away_team: 'Las Vegas Raiders',
+            pick: 'Chiefs -7',
+            confidence: 0.72,
+            line: -110,
+            notes: 'Model shows strong edge on Chiefs D vs Raiders rushing attack'
+          },
+          {
+            game_id: 'nfl-sample-2',
+            home_team: 'Philadelphia Eagles',
+            away_team: 'Dallas Cowboys',
+            pick: 'Eagles ML',
+            confidence: 0.64,
+            line: -180,
+            notes: 'Home field + EPA/play advantage in model'
+          },
+        ]
+      },
+      nba: {
+        model: 'NBA',
+        generated_at: new Date().toISOString(),
+        version: 'v1.3',
+        picks: [
+          {
+            game_id: 'nba-sample-1',
+            home_team: 'Boston Celtics',
+            away_team: 'Miami Heat',
+            pick: 'Celtics -5.5',
+            confidence: 0.60,
+            line: -110,
+            notes: '53.5% ATS win rate model — edge on pace differential'
+          },
+          {
+            game_id: 'nba-sample-2',
+            home_team: 'Denver Nuggets',
+            away_team: 'Oklahoma City Thunder',
+            pick: 'Under 225.5',
+            confidence: 0.57,
+            line: -112,
+            notes: 'Both defenses trending upward last 10 games'
+          },
+        ]
+      }
+    };
+
+    // ─── Switch Model ─────────────────────────────────────────────
+    function switchModel(id) {
+      activeModel = id;
+      ['mlb','nfl','nba'].forEach(m => {
+        document.getElementById(`tab-${m}`).classList.toggle('active', m === id);
+      });
+      loadPredictions();
+    }
+
+    // ─── Load Predictions ─────────────────────────────────────────
+    async function loadPredictions() {
+      const source = MODEL_SOURCES[activeModel];
+      const container = document.getElementById('picks-container');
+      const infoBar = document.getElementById('model-info-bar');
+
+      container.innerHTML = `<div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading ${source.label}...</div>`;
+
+      let data = null;
+      let isSample = false;
+
+      try {
+        const res = await fetch(source.url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        data = await res.json();
+      } catch (e) {
+        // Repo doesn't have predictions.json yet — show sample data
+        data = SAMPLE_DATA[activeModel];
+        isSample = true;
+      }
+
+      // Update source note
+      const sourceNote = document.getElementById('model-source-note');
+      if (isSample) {
+        sourceNote.innerHTML = `⚠️ <strong>Sample data</strong> — predictions.json not yet found in the ${source.label} repo. Commit one to activate live predictions.`;
+        sourceNote.style.borderColor = 'rgba(245,200,66,0.3)';
+        sourceNote.style.color = '#FDE68A';
+      } else {
+        sourceNote.innerHTML = `✅ Live predictions loaded from <strong>Orb-Analytics/${activeModel.toUpperCase()}-Model</strong> repo.`;
+        sourceNote.style.borderColor = 'rgba(16,185,129,0.3)';
+        sourceNote.style.color = '#6EE7B7';
+      }
+
+      // Last updated
+      if (data.generated_at) {
+        const d = new Date(data.generated_at);
+        document.getElementById('last-updated').textContent =
+          `Updated ${d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })} at ${d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })}`;
+      }
+
+      // Model info chips
+      const info = source.info;
+      infoBar.innerHTML = `
+        <div class="model-info-chip">Type: <span>${info.type}</span></div>
+        <div class="model-info-chip">Features: <span>${info.features}</span></div>
+        <div class="model-info-chip">Training Data: <span>${info.data}</span></div>
+        ${data.version ? `<div class="model-info-chip">Version: <span>${data.version}</span></div>` : ''}
+      `;
+
+      renderPicks(data.picks || []);
+    }
+
+    // ─── Render Picks ─────────────────────────────────────────────
+    function renderPicks(picks) {
+      const container = document.getElementById('picks-container');
+      const source = MODEL_SOURCES[activeModel];
+
+      if (!picks.length) {
+        container.innerHTML = `
+          <div class="no-picks-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+            </svg>
+            <p>No picks available for today's ${source.label} games.</p>
+            <p style="font-size:0.8rem">Check back after the daily model run.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = picks.map(pick => buildPickCard(pick)).join('');
+    }
+
+    function buildPickCard(pick) {
+      const source = MODEL_SOURCES[activeModel];
+      const conf = Math.round((pick.confidence || 0.5) * 100);
+      const oddsDisplay = pick.line > 0 ? `+${pick.line}` : `${pick.line}`;
+
+      // Confidence color
+      let confColor = 'var(--purple-400)';
+      if (conf >= 70) confColor = 'var(--green)';
+      else if (conf >= 60) confColor = 'var(--purple-300)';
+      else if (conf < 55) confColor = 'var(--gray-400)';
+
+      return `
+        <div class="pick-card">
+          <div class="pick-card-header">
+            <div class="pick-model-badge">
+              ${source.emoji} ${source.label}
+            </div>
+            ${conf >= 65 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
+          </div>
+
+          <div class="pick-matchup">
+            ${pick.away_team} <span style="color:var(--gray-500);font-weight:400">@</span> ${pick.home_team}
+          </div>
+
+          <div class="pick-main">
+            <div class="pick-label">Model Pick</div>
+            <div class="pick-value">${pick.pick}</div>
+            ${pick.line ? `<div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--gray-500);margin-top:0.2rem">Line: ${oddsDisplay}</div>` : ''}
+          </div>
+
+          <div class="confidence-row">
+            <div class="confidence-header">
+              <span class="confidence-label">Model Confidence</span>
+              <span class="confidence-pct" style="color:${confColor}">${conf}%</span>
+            </div>
+            <div class="confidence-bar-bg">
+              <div class="confidence-bar-fill" style="width:${conf}%;background:linear-gradient(90deg,${confColor},${confColor}88)"></div>
+            </div>
+          </div>
+
+          ${pick.notes ? `<div class="pick-notes">${pick.notes}</div>` : ''}
+        </div>`;
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────
+    loadPredictions();
+  </script>
+</body>
+</html>

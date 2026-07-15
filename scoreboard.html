@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scoreboard · Orb Analytics</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .scoreboard-header {
+      padding: 2rem 0 1.5rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .date-display {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      margin-top: 0.3rem;
+    }
+
+    .league-tabs {
+      display: flex;
+      gap: 0.25rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+      scrollbar-width: none;
+    }
+    .league-tabs::-webkit-scrollbar { display: none; }
+
+    .league-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+      font-family: var(--font-body);
+    }
+
+    .league-tab.active {
+      background: var(--purple-600);
+      border-color: var(--purple-600);
+      color: white;
+      box-shadow: var(--glow);
+    }
+
+    .league-tab:hover:not(.active) {
+      border-color: var(--purple-500);
+      color: var(--text);
+      background: rgba(147,51,234,0.1);
+    }
+
+    .league-tab .tab-emoji { font-size: 1rem; }
+
+    /* Game Cards Grid */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+      padding: 1.5rem 0 3rem;
+    }
+
+    .game-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-card:hover {
+      border-color: rgba(147,51,234,0.4);
+      box-shadow: 0 0 20px rgba(147,51,234,0.15);
+    }
+
+    .game-card.live {
+      border-color: rgba(239,68,68,0.3);
+    }
+
+    .game-card.live::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--red), rgba(239,68,68,0.3));
+    }
+
+    .game-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .game-status {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+
+    .game-status.live-text {
+      color: #FCA5A5;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .team-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+    }
+
+    .team-row + .team-row {
+      border-top: 1px solid rgba(147,51,234,0.1);
+    }
+
+    .team-info {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .team-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      object-fit: contain;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .team-logo-fallback {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: rgba(147,51,234,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--purple-300);
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+
+    .team-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .team-record {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      font-family: var(--font-mono);
+    }
+
+    .team-score {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      min-width: 2.5rem;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .team-score.winning { color: var(--text); }
+    .team-score.losing  { color: var(--gray-500); }
+
+    .game-footer {
+      margin-top: 0.85rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .game-venue {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .inning-info {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--purple-300);
+      white-space: nowrap;
+    }
+
+    /* Refresh button */
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-family: var(--font-body);
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .refresh-btn:hover { color: var(--text); border-color: var(--purple-500); }
+    .refresh-btn svg { width: 13px; height: 13px; fill: currentColor; }
+    .refresh-btn.spinning svg { animation: spin 0.75s linear infinite; }
+
+    /* Count indicator for baseball */
+    .bases-indicator {
+      display: grid;
+      grid-template-columns: repeat(3, 10px);
+      grid-template-rows: repeat(2, 10px);
+      gap: 2px;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <main class="page">
+    <div class="container">
+      <div class="scoreboard-header">
+        <div>
+          <div class="section-label">Live Scores</div>
+          <div class="section-title">Scoreboard</div>
+          <div class="date-display" id="date-display"></div>
+        </div>
+        <button class="refresh-btn" id="refresh-btn" onclick="refreshScores()">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+          Refresh
+        </button>
+      </div>
+
+      <!-- League Tabs -->
+      <div class="league-tabs" id="league-tabs"></div>
+
+      <!-- Games Grid -->
+      <div id="games-container">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          Loading games...
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Scores via ESPN API · © 2026 Orb Analytics</p>
+  </footer>
+
+  <script src="js/nav.js"></script>
+  <script>
+    buildNav('scoreboard.html');
+
+    // ─── League Config ────────────────────────────────────────────
+    const LEAGUES = [
+      { id: 'mlb',  label: 'MLB',  emoji: '⚾', sport: 'baseball',    league: 'mlb' },
+      { id: 'nfl',  label: 'NFL',  emoji: '🏈', sport: 'football',    league: 'nfl' },
+      { id: 'nba',  label: 'NBA',  emoji: '🏀', sport: 'basketball',  league: 'nba' },
+      { id: 'nhl',  label: 'NHL',  emoji: '🏒', sport: 'hockey',      league: 'nhl' },
+      { id: 'ncaaf',label: 'NCAAF',emoji: '🏈', sport: 'football',    league: 'college-football' },
+      { id: 'wnba', label: 'WNBA', emoji: '🏀', sport: 'basketball',  league: 'wnba' },
+    ];
+
+    let activeLeague = 'mlb';
+
+    // ─── Date Display ─────────────────────────────────────────────
+    const dateEl = document.getElementById('date-display');
+    dateEl.textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // ─── Build Tabs ───────────────────────────────────────────────
+    function buildTabs() {
+      const container = document.getElementById('league-tabs');
+      container.innerHTML = LEAGUES.map(l => `
+        <button class="league-tab ${l.id === activeLeague ? 'active' : ''}"
+                onclick="switchLeague('${l.id}')">
+          <span class="tab-emoji">${l.emoji}</span> ${l.label}
+        </button>
+      `).join('');
+    }
+
+    function switchLeague(id) {
+      activeLeague = id;
+      buildTabs();
+      loadScores();
+    }
+
+    // ─── Fetch Scores ─────────────────────────────────────────────
+    async function loadScores() {
+      const league = LEAGUES.find(l => l.id === activeLeague);
+      const container = document.getElementById('games-container');
+      container.innerHTML = `<div class="loading-state"><div class="spinner"></div> Loading ${league.label} games...</div>`;
+
+      try {
+        const url = `https://site.api.espn.com/apis/site/v2/sports/${league.sport}/${league.league}/scoreboard`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        renderGames(data.events || [], league);
+      } catch (err) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p>Could not load scores. Check your connection or try again.</p>
+            <button class="btn btn-ghost btn-sm" onclick="loadScores()">Try Again</button>
+          </div>`;
+      }
+    }
+
+    // ─── Render Games ─────────────────────────────────────────────
+    function renderGames(events, league) {
+      const container = document.getElementById('games-container');
+
+      if (!events.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <p>No ${league.label} games scheduled today.</p>
+          </div>`;
+        return;
+      }
+
+      const cards = events.map(event => buildGameCard(event, league)).join('');
+      container.innerHTML = `<div class="games-grid">${cards}</div>`;
+    }
+
+    function buildGameCard(event, league) {
+      const comp = event.competitions?.[0];
+      if (!comp) return '';
+
+      const competitors = comp.competitors || [];
+      const home = competitors.find(c => c.homeAway === 'home') || competitors[0];
+      const away = competitors.find(c => c.homeAway === 'away') || competitors[1];
+      if (!home || !away) return '';
+
+      const status = event.status?.type;
+      const statusName = status?.name || '';
+      const statusDetail = status?.detail || '';
+      const isLive = statusName === 'STATUS_IN_PROGRESS';
+      const isFinal = statusName === 'STATUS_FINAL';
+
+      const homeScore = parseInt(home.score || 0);
+      const awayScore = parseInt(away.score || 0);
+      const homeWinning = homeScore > awayScore;
+      const awayWinning = awayScore > homeScore;
+
+      const venue = comp.venue?.fullName || '';
+
+      function teamHTML(team, isHome) {
+        const name = team.team?.shortDisplayName || team.team?.displayName || 'TBD';
+        const abbr = team.team?.abbreviation || name.slice(0,3).toUpperCase();
+        const logo = team.team?.logo || '';
+        const record = team.records?.[0]?.summary || '';
+        const score = team.score ?? '—';
+        const scoreInt = parseInt(score);
+        const isWinning = isHome ? homeWinning : awayWinning;
+        const scoreClass = isFinal || isLive
+          ? (isWinning ? 'winning' : 'losing')
+          : '';
+
+        const logoEl = logo
+          ? `<img class="team-logo" src="${logo}" alt="${abbr}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+          : '';
+        const fallback = `<div class="team-logo-fallback" ${logo ? 'style="display:none"' : ''}>${abbr}</div>`;
+
+        return `
+          <div class="team-row">
+            <div class="team-info">
+              ${logoEl}${fallback}
+              <div>
+                <div class="team-name">${name}</div>
+                ${record ? `<div class="team-record">${record}</div>` : ''}
+              </div>
+            </div>
+            <div class="team-score ${scoreClass}">${(isFinal || isLive) ? score : ''}</div>
+          </div>`;
+      }
+
+      let statusBadge = '';
+      let statusDisplay = '';
+
+      if (isLive) {
+        statusBadge = `<span class="badge badge-live"><span class="live-dot"></span>LIVE</span>`;
+        statusDisplay = `<span class="game-status live-text"><span class="live-dot"></span>${statusDetail}</span>`;
+      } else if (isFinal) {
+        statusBadge = `<span class="badge badge-final">FINAL</span>`;
+        statusDisplay = `<span class="game-status">Final</span>`;
+      } else {
+        const gameTime = event.date
+          ? new Date(event.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+          : statusDetail;
+        statusBadge = `<span class="badge badge-pre">${gameTime}</span>`;
+        statusDisplay = `<span class="game-status">${gameTime}</span>`;
+      }
+
+      return `
+        <div class="game-card ${isLive ? 'live' : ''}">
+          <div class="game-card-header">
+            <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--gray-500)">
+              ${league.label}
+            </span>
+            ${statusBadge}
+          </div>
+          ${teamHTML(away, false)}
+          ${teamHTML(home, true)}
+          <div class="game-footer">
+            <span class="game-venue">${venue}</span>
+            ${isLive ? `<span class="inning-info">${statusDetail}</span>` : ''}
+          </div>
+        </div>`;
+    }
+
+    // ─── Refresh ──────────────────────────────────────────────────
+    async function refreshScores() {
+      const btn = document.getElementById('refresh-btn');
+      btn.classList.add('spinning');
+      btn.disabled = true;
+      await loadScores();
+      btn.classList.remove('spinning');
+      btn.disabled = false;
+    }
+
+    // ─── Auto-refresh live games every 30s ───────────────────────
+    setInterval(() => {
+      if (activeLeague) loadScores();
+    }, 30000);
+
+    // ─── Init ─────────────────────────────────────────────────────
+    buildTabs();
+    loadScores();
+  </script>
+</body>
+</html>

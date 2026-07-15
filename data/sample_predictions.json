@@ -1,0 +1,25 @@
+{
+  "model": "MLB",
+  "generated_at": "2026-07-15T08:00:00Z",
+  "version": "v2.1",
+  "picks": [
+    {
+      "game_id": "401672345",
+      "home_team": "Los Angeles Dodgers",
+      "away_team": "San Francisco Giants",
+      "pick": "Dodgers ML",
+      "confidence": 0.67,
+      "line": -155,
+      "notes": "Ohtani starting, Giants bullpen ranked 28th last 7 days"
+    },
+    {
+      "game_id": "401672346",
+      "home_team": "New York Yankees",
+      "away_team": "Boston Red Sox",
+      "pick": "Yankees -1.5",
+      "confidence": 0.61,
+      "line": 110,
+      "notes": "Yankees 8-2 last 10, model favors run differential edge"
+    }
+  ]
+}
