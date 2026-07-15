@@ -54,7 +54,7 @@ function buildNav(activePage) {
 
   nav.innerHTML = `
     <a href="index.html" class="nav-logo">
-      <div class="orb-icon"></div>
+      <img src="assets/logo.png" alt="Orb Analytics" style="width:28px;height:28px;object-fit:contain;">
       Orb Analytics
     </a>
     <ul class="nav-links">${linksHTML}</ul>
