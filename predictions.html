@@ -210,6 +210,12 @@
       align-items: center;
       gap: 0.5rem;
     }
+
+    .model-order-toggle {
+      display: inline-flex;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -226,11 +232,7 @@
       </div>
 
       <!-- Model Tabs -->
-      <div class="model-tabs">
-        <button class="tab-btn active" onclick="switchModel('mlb')" id="tab-mlb">⚾ MLB Model</button>
-        <button class="tab-btn" onclick="switchModel('nfl')" id="tab-nfl">🏈 NFL Model</button>
-        <button class="tab-btn" onclick="switchModel('nba')" id="tab-nba">🏀 NBA Model</button>
-      </div>
+      <div class="model-tabs" id="model-tabs"></div>
 
       <!-- Model Info -->
       <div class="model-source-note" id="model-source-note">
@@ -255,6 +257,8 @@
   <script src="js/nav.js"></script>
   <script>
     buildNav('predictions.html');
+
+    const MODEL_ORDER_KEY = 'orb_model_order_mode'; // 'fixed' | 'seasonal'
 
     // ─── Model Config ─────────────────────────────────────────────
     // These point to predictions.json in each model repo on GitHub
@@ -286,101 +290,60 @@
 
     let activeModel = 'mlb';
 
-    // ─── Sample / fallback data ────────────────────────────────────
-    // This shows while repos don't yet have predictions.json committed
-    const SAMPLE_DATA = {
-      mlb: {
-        model: 'MLB',
-        generated_at: new Date().toISOString(),
-        version: 'v2.1',
-        picks: [
-          {
-            game_id: 'sample-1',
-            home_team: 'Los Angeles Dodgers',
-            away_team: 'San Francisco Giants',
-            pick: 'Dodgers ML',
-            confidence: 0.67,
-            line: -155,
-            notes: 'Strong home record, Giants bullpen ranked 28th last 7 days'
-          },
-          {
-            game_id: 'sample-2',
-            home_team: 'New York Yankees',
-            away_team: 'Boston Red Sox',
-            pick: 'Yankees -1.5',
-            confidence: 0.61,
-            line: +110,
-            notes: 'Yankees 8-2 last 10, model favors run differential edge'
-          },
-          {
-            game_id: 'sample-3',
-            home_team: 'Houston Astros',
-            away_team: 'Texas Rangers',
-            pick: 'Over 8.5',
-            confidence: 0.58,
-            line: -108,
-            notes: 'Both offenses ranked top-8 in wRC+ last 14 days'
-          },
-        ]
-      },
-      nfl: {
-        model: 'NFL',
-        generated_at: new Date().toISOString(),
-        version: 'v1.0',
-        picks: [
-          {
-            game_id: 'nfl-sample-1',
-            home_team: 'Kansas City Chiefs',
-            away_team: 'Las Vegas Raiders',
-            pick: 'Chiefs -7',
-            confidence: 0.72,
-            line: -110,
-            notes: 'Model shows strong edge on Chiefs D vs Raiders rushing attack'
-          },
-          {
-            game_id: 'nfl-sample-2',
-            home_team: 'Philadelphia Eagles',
-            away_team: 'Dallas Cowboys',
-            pick: 'Eagles ML',
-            confidence: 0.64,
-            line: -180,
-            notes: 'Home field + EPA/play advantage in model'
-          },
-        ]
-      },
-      nba: {
-        model: 'NBA',
-        generated_at: new Date().toISOString(),
-        version: 'v1.3',
-        picks: [
-          {
-            game_id: 'nba-sample-1',
-            home_team: 'Boston Celtics',
-            away_team: 'Miami Heat',
-            pick: 'Celtics -5.5',
-            confidence: 0.60,
-            line: -110,
-            notes: '53.5% ATS win rate model — edge on pace differential'
-          },
-          {
-            game_id: 'nba-sample-2',
-            home_team: 'Denver Nuggets',
-            away_team: 'Oklahoma City Thunder',
-            pick: 'Under 225.5',
-            confidence: 0.57,
-            line: -112,
-            notes: 'Both defenses trending upward last 10 games'
-          },
-        ]
-      }
-    };
+    function getOrderMode() {
+      return localStorage.getItem(MODEL_ORDER_KEY) || 'fixed';
+    }
 
-    // ─── Switch Model ─────────────────────────────────────────────
+    function setOrderMode(mode) {
+      localStorage.setItem(MODEL_ORDER_KEY, mode);
+      renderModelTabs();
+      loadPredictions();
+    }
+
+    function getSeasonalOrder() {
+      const m = new Date().getMonth() + 1;
+      if (m >= 9 || m <= 2) return ['nfl', 'nba', 'mlb'];
+      if (m >= 3 && m <= 6) return ['nba', 'mlb', 'nfl'];
+      return ['mlb', 'nfl', 'nba'];
+    }
+
+    function getModelOrder() {
+      return getOrderMode() === 'seasonal'
+        ? getSeasonalOrder()
+        : ['nfl', 'nba', 'mlb'];
+    }
+
+    function renderModelTabs() {
+      const container = document.getElementById('model-tabs');
+      if (!container) return;
+
+      const mode = getOrderMode();
+      const order = getModelOrder();
+
+      const toggle = `
+        <div class="model-order-toggle">
+          <button class="tab-btn ${mode === 'fixed' ? 'active' : ''}" type="button" id="order-fixed">Fixed</button>
+          <button class="tab-btn ${mode === 'seasonal' ? 'active' : ''}" type="button" id="order-seasonal">In-Season</button>
+        </div>
+      `;
+
+      const tabs = order.map(id => {
+        const s = MODEL_SOURCES[id];
+        return `<button class="tab-btn ${activeModel === id ? 'active' : ''}" type="button" data-model="${id}">${s.emoji} ${s.label}</button>`;
+      }).join('');
+
+      container.innerHTML = toggle + tabs;
+
+      document.getElementById('order-fixed')?.addEventListener('click', () => setOrderMode('fixed'));
+      document.getElementById('order-seasonal')?.addEventListener('click', () => setOrderMode('seasonal'));
+      container.querySelectorAll('[data-model]').forEach(btn =>
+        btn.addEventListener('click', () => switchModel(btn.dataset.model))
+      );
+    }
+
     function switchModel(id) {
       activeModel = id;
-      ['mlb','nfl','nba'].forEach(m => {
-        document.getElementById(`tab-${m}`).classList.toggle('active', m === id);
-      });
+      renderModelTabs();
       loadPredictions();
     }
 
@@ -501,7 +464,50 @@
     }
 
     // ─── Init ─────────────────────────────────────────────────────
+    renderModelTabs();
     loadPredictions();
+    renderPredictionPerformance();
+  </script>
+
+  <script>
+    function renderPredictionPerformance() {
+      const bets = JSON.parse(localStorage.getItem('orb_bets_v1') || '[]');
+      const settled = bets.filter(b => b.result && b.result !== 'Pending');
+      const wins = settled.filter(b => b.result === 'Win').length;
+      const losses = settled.filter(b => b.result === 'Loss').length;
+      const pushes = settled.filter(b => b.result === 'Push').length;
+      const net = settled.reduce((s, b) => s + (Number(b.pl) || 0), 0);
+      const stake = settled.reduce((s, b) => s + (Number(b.stake) || 0), 0);
+      const winRate = settled.length ? (wins / settled.length) * 100 : 0;
+      const roi = stake ? (net / stake) * 100 : 0;
+
+      const $ = (id) => document.getElementById(id);
+      if (!$('pred-record')) return;
+
+      $('pred-record').textContent = `${wins}-${losses}-${pushes}`;
+      $('pred-winrate').textContent = `${winRate.toFixed(1)}%`;
+      $('pred-net').textContent = `${net >= 0 ? '+' : ''}$${net.toFixed(2)}`;
+      $('pred-roi').textContent = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
+
+      $('pred-net').classList.toggle('stat-positive', net > 0);
+      $('pred-net').classList.toggle('stat-negative', net < 0);
+
+      const body = $('pred-history-body');
+      const recent = [...bets].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
+      body.innerHTML = recent.length ? recent.map(b => `
+        <tr>
+          <td>${b.date || '-'}</td>
+          <td>${b.sport || '-'}</td>
+          <td>${b.pick || '-'}</td>
+          <td>${b.odds ?? '-'}</td>
+          <td>$${Number(b.stake || 0).toFixed(2)}</td>
+          <td>${b.result || 'Pending'}</td>
+          <td>${b.pl == null ? '-' : `${b.pl >= 0 ? '+' : ''}$${Number(b.pl).toFixed(2)}`}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="7" style="text-align:center;color:var(--muted)">No tracked bets yet</td></tr>`;
+    }
+
+    renderPredictionPerformance();
   </script>
 </body>
 </html>
