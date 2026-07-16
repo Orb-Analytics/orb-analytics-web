@@ -20,12 +20,19 @@ const SOCIAL_LINKS = [
   {
     href: 'https://www.instagram.com/orb.analytics/',
     label: 'Instagram',
-    svg: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.75A4 4 0 0 0 3.75 7.75v8.5a4 4 0 0 0 4 4h8.5a4 4 0 0 0 4-4v-8.5a4 4 0 0 0-4-4h-8.5Zm9.62 1.31a1.07 1.07 0 1 1 0 2.14 1.07 1.07 0 0 1 0-2.14ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.75a3.25 3.25 0 1 0 0 6.5 3.25 3.25 0 0 0 0-6.5Z"/></svg>`
+    svg: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+      <circle cx="12" cy="12" r="4"></circle>
+      <circle cx="17.5" cy="6.5" r="1"></circle>
+    </svg>`
   },
   {
     href: 'https://www.youtube.com/@OrbAnalyticsLimited',
     label: 'YouTube',
-    svg: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.5 7.2a3.05 3.05 0 0 0-2.15-2.16C19.46 4.5 12 4.5 12 4.5s-7.46 0-9.35.54A3.05 3.05 0 0 0 .5 7.2C0 9.12 0 12 0 12s0 2.88.5 4.8a3.05 3.05 0 0 0 2.15 2.16C4.54 19.5 12 19.5 12 19.5s7.46 0 9.35-.54a3.05 3.05 0 0 0 2.15-2.16C24 14.88 24 12 24 12s0-2.88-.5-4.8ZM9.75 15.5v-7L16 12l-6.25 3.5Z"/></svg>`
+    svg: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="6" width="19" height="12" rx="3.5"></rect>
+      <path d="M10 9.25L15.5 12L10 14.75Z" fill="currentColor" stroke="none"></path>
+    </svg>`
   },
   {
     href: 'https://x.com/OrbPicks',
@@ -59,3 +66,9 @@ function buildNav(activePage = '') {
 }
 
 window.buildNav = buildNav;
+
+// add this helper if missing
+function link(href, label, activePage) {
+  const active = activePage === href ? 'active' : '';
+  return `<a class="${active}" href="${href}">${label}</a>`;
+}

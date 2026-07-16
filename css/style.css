@@ -150,17 +150,18 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   color: var(--muted);
 }
 
 .nav-social a svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-  display: block;
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  fill: currentColor; /* filled icons (X, TikTok, etc.) still render */
 }
+
 .nav-social a:hover { color: var(--accent); background: rgba(148,163,184,0.10); }
 .nav-social svg { width: 17px; height: 17px; fill: currentColor; }
 
