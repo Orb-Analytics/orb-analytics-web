@@ -260,31 +260,49 @@
 
     const MODEL_ORDER_KEY = 'orb_model_order_mode'; // 'fixed' | 'seasonal'
 
-    // ─── Model Config ─────────────────────────────────────────────
-    // These point to predictions.json in each model repo on GitHub
-    // Once Ethan/you push predictions.json to those repos, these will auto-load
     const MODEL_SOURCES = {
       mlb: {
         label: 'MLB Model',
         emoji: '⚾',
-        // Reads from the MLB-Model repo
         url: 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json',
         info: { features: '274', data: '18 seasons', type: 'XGBoost' },
-        fallback: true,
       },
       nfl: {
         label: 'NFL Model',
         emoji: '🏈',
         url: 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Model/main/predictions.json',
         info: { features: '~150', data: '3 seasons PBP', type: 'XGBoost' },
-        fallback: true,
       },
       nba: {
         label: 'NBA Model',
         emoji: '🏀',
         url: 'https://raw.githubusercontent.com/Orb-Analytics/NBA-Model/main/predictions.json',
         info: { features: '~80', data: '470+ games', type: 'ML Ensemble' },
-        fallback: true,
+      }
+    };
+
+    const SAMPLE_DATA = {
+      mlb: {
+        version: 'sample',
+        generated_at: new Date().toISOString(),
+        picks: [
+          { away_team: 'SFG', home_team: 'LAD', pick: 'LAD ML', line: -162, confidence: 0.66 },
+          { away_team: 'NYY', home_team: 'BOS', pick: 'Over 8.5', line: -110, confidence: 0.61 }
+        ]
+      },
+      nfl: {
+        version: 'sample',
+        generated_at: new Date().toISOString(),
+        picks: [
+          { away_team: 'DAL', home_team: 'PHI', pick: 'PHI -2.5', line: -115, confidence: 0.64 }
+        ]
+      },
+      nba: {
+        version: 'sample',
+        generated_at: new Date().toISOString(),
+        picks: [
+          { away_team: 'BOS', home_team: 'NYK', pick: 'BOS ML', line: -135, confidence: 0.63 }
+        ]
       }
     };
 
@@ -308,9 +326,7 @@
     }
 
     function getModelOrder() {
-      return getOrderMode() === 'seasonal'
-        ? getSeasonalOrder()
-        : ['nfl', 'nba', 'mlb'];
+      return getOrderMode() === 'seasonal' ? getSeasonalOrder() : ['nfl', 'nba', 'mlb'];
     }
 
     function renderModelTabs() {
@@ -320,156 +336,100 @@
       const mode = getOrderMode();
       const order = getModelOrder();
 
-      const toggle = `
+      container.innerHTML = `
         <div class="model-order-toggle">
           <button class="tab-btn ${mode === 'fixed' ? 'active' : ''}" type="button" id="order-fixed">Fixed</button>
           <button class="tab-btn ${mode === 'seasonal' ? 'active' : ''}" type="button" id="order-seasonal">In-Season</button>
         </div>
+        ${order.map(id => {
+          const s = MODEL_SOURCES[id];
+          return `<button class="tab-btn ${activeModel === id ? 'active' : ''}" type="button" data-model="${id}">${s.emoji} ${s.label}</button>`;
+        }).join('')}
       `;
-
-      const tabs = order.map(id => {
-        const s = MODEL_SOURCES[id];
-        return `<button class="tab-btn ${activeModel === id ? 'active' : ''}" type="button" data-model="${id}">${s.emoji} ${s.label}</button>`;
-      }).join('');
-
-      container.innerHTML = toggle + tabs;
 
       document.getElementById('order-fixed')?.addEventListener('click', () => setOrderMode('fixed'));
       document.getElementById('order-seasonal')?.addEventListener('click', () => setOrderMode('seasonal'));
       container.querySelectorAll('[data-model]').forEach(btn =>
-        btn.addEventListener('click', () => switchModel(btn.dataset.model))
+        btn.addEventListener('click', () => {
+          activeModel = btn.dataset.model;
+          renderModelTabs();
+          loadPredictions();
+        })
       );
     }
 
-    function switchModel(id) {
-      activeModel = id;
-      renderModelTabs();
-      loadPredictions();
-    }
-
-    // ─── Load Predictions ─────────────────────────────────────────
     async function loadPredictions() {
       const source = MODEL_SOURCES[activeModel];
       const container = document.getElementById('picks-container');
       const infoBar = document.getElementById('model-info-bar');
+      const sourceNote = document.getElementById('model-source-note');
 
       container.innerHTML = `<div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading ${source.label}...</div>`;
 
-      let data = null;
+      let data;
       let isSample = false;
 
       try {
         const res = await fetch(source.url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         data = await res.json();
-      } catch (e) {
-        // Repo doesn't have predictions.json yet — show sample data
-        data = SAMPLE_DATA[activeModel];
+      } catch {
+        data = SAMPLE_DATA[activeModel] || { picks: [] };
         isSample = true;
       }
 
-      // Update source note
-      const sourceNote = document.getElementById('model-source-note');
       if (isSample) {
-        sourceNote.innerHTML = `⚠️ <strong>Sample data</strong> — predictions.json not yet found in the ${source.label} repo. Commit one to activate live predictions.`;
-        sourceNote.style.borderColor = 'rgba(245,200,66,0.3)';
-        sourceNote.style.color = '#FDE68A';
+        sourceNote.innerHTML = `⚠️ <strong>Sample data</strong> — predictions.json not found for ${source.label}.`;
       } else {
-        sourceNote.innerHTML = `✅ Live predictions loaded from <strong>Orb-Analytics/${activeModel.toUpperCase()}-Model</strong> repo.`;
-        sourceNote.style.borderColor = 'rgba(16,185,129,0.3)';
-        sourceNote.style.color = '#6EE7B7';
+        sourceNote.innerHTML = `✅ Live predictions loaded from <strong>Orb-Analytics/${activeModel.toUpperCase()}-Model</strong>.`;
       }
 
-      // Last updated
       if (data.generated_at) {
         const d = new Date(data.generated_at);
         document.getElementById('last-updated').textContent =
           `Updated ${d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })} at ${d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })}`;
       }
 
-      // Model info chips
-      const info = source.info;
       infoBar.innerHTML = `
-        <div class="model-info-chip">Type: <span>${info.type}</span></div>
-        <div class="model-info-chip">Features: <span>${info.features}</span></div>
-        <div class="model-info-chip">Training Data: <span>${info.data}</span></div>
+        <div class="model-info-chip">Type: <span>${source.info.type}</span></div>
+        <div class="model-info-chip">Features: <span>${source.info.features}</span></div>
+        <div class="model-info-chip">Training Data: <span>${source.info.data}</span></div>
         ${data.version ? `<div class="model-info-chip">Version: <span>${data.version}</span></div>` : ''}
       `;
 
       renderPicks(data.picks || []);
+      renderPredictionPerformance();
     }
 
-    // ─── Render Picks ─────────────────────────────────────────────
     function renderPicks(picks) {
       const container = document.getElementById('picks-container');
       const source = MODEL_SOURCES[activeModel];
 
       if (!picks.length) {
-        container.innerHTML = `
-          <div class="no-picks-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-            </svg>
-            <p>No picks available for today's ${source.label} games.</p>
-            <p style="font-size:0.8rem">Check back after the daily model run.</p>
-          </div>`;
+        container.innerHTML = `<div class="no-picks-state"><p>No picks available for ${source.label}.</p></div>`;
         return;
       }
 
-      container.innerHTML = picks.map(pick => buildPickCard(pick)).join('');
+      container.innerHTML = picks.map(pick => {
+        const conf = Math.round((pick.confidence || 0.5) * 100);
+        const oddsDisplay = pick.line > 0 ? `+${pick.line}` : `${pick.line ?? ''}`;
+        return `
+          <div class="pick-card">
+            <div class="pick-card-header">
+              <div class="pick-model-badge">${source.emoji} ${source.label}</div>
+              ${conf >= 65 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
+            </div>
+            <div class="pick-matchup">${pick.away_team} <span style="color:var(--gray-500);font-weight:400">@</span> ${pick.home_team}</div>
+            <div class="pick-main">
+              <div class="pick-label">Model Pick</div>
+              <div class="pick-value">${pick.pick}</div>
+              ${pick.line != null ? `<div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--gray-500);margin-top:0.2rem">Line: ${oddsDisplay}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    function buildPickCard(pick) {
-      const source = MODEL_SOURCES[activeModel];
-      const conf = Math.round((pick.confidence || 0.5) * 100);
-      const oddsDisplay = pick.line > 0 ? `+${pick.line}` : `${pick.line}`;
-
-      // Confidence color
-      let confColor = 'var(--purple-400)';
-      if (conf >= 70) confColor = 'var(--green)';
-      else if (conf >= 60) confColor = 'var(--purple-300)';
-      else if (conf < 55) confColor = 'var(--gray-400)';
-
-      return `
-        <div class="pick-card">
-          <div class="pick-card-header">
-            <div class="pick-model-badge">
-              ${source.emoji} ${source.label}
-            </div>
-            ${conf >= 65 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
-          </div>
-
-          <div class="pick-matchup">
-            ${pick.away_team} <span style="color:var(--gray-500);font-weight:400">@</span> ${pick.home_team}
-          </div>
-
-          <div class="pick-main">
-            <div class="pick-label">Model Pick</div>
-            <div class="pick-value">${pick.pick}</div>
-            ${pick.line ? `<div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--gray-500);margin-top:0.2rem">Line: ${oddsDisplay}</div>` : ''}
-          </div>
-
-          <div class="confidence-row">
-            <div class="confidence-header">
-              <span class="confidence-label">Model Confidence</span>
-              <span class="confidence-pct" style="color:${confColor}">${conf}%</span>
-            </div>
-            <div class="confidence-bar-bg">
-              <div class="confidence-bar-fill" style="width:${conf}%;background:linear-gradient(90deg,${confColor},${confColor}88)"></div>
-            </div>
-          </div>
-
-          ${pick.notes ? `<div class="pick-notes">${pick.notes}</div>` : ''}
-        </div>`;
-    }
-
-    // ─── Init ─────────────────────────────────────────────────────
-    renderModelTabs();
-    loadPredictions();
-    renderPredictionPerformance();
-  </script>
-
-  <script>
     function renderPredictionPerformance() {
       const bets = JSON.parse(localStorage.getItem('orb_bets_v1') || '[]');
       const settled = bets.filter(b => b.result && b.result !== 'Pending');
@@ -481,33 +441,36 @@
       const winRate = settled.length ? (wins / settled.length) * 100 : 0;
       const roi = stake ? (net / stake) * 100 : 0;
 
-      const $ = (id) => document.getElementById(id);
-      if (!$('pred-record')) return;
+      const record = document.getElementById('pred-record');
+      const wr = document.getElementById('pred-winrate');
+      const netEl = document.getElementById('pred-net');
+      const roiEl = document.getElementById('pred-roi');
+      const body = document.getElementById('pred-history-body');
+      if (!record || !wr || !netEl || !roiEl || !body) return;
 
-      $('pred-record').textContent = `${wins}-${losses}-${pushes}`;
-      $('pred-winrate').textContent = `${winRate.toFixed(1)}%`;
-      $('pred-net').textContent = `${net >= 0 ? '+' : ''}$${net.toFixed(2)}`;
-      $('pred-roi').textContent = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
+      record.textContent = `${wins}-${losses}-${pushes}`;
+      wr.textContent = `${winRate.toFixed(1)}%`;
+      netEl.textContent = `${net >= 0 ? '+' : ''}$${net.toFixed(2)}`;
+      roiEl.textContent = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
 
-      $('pred-net').classList.toggle('stat-positive', net > 0);
-      $('pred-net').classList.toggle('stat-negative', net < 0);
-
-      const body = $('pred-history-body');
       const recent = [...bets].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
-      body.innerHTML = recent.length ? recent.map(b => `
-        <tr>
-          <td>${b.date || '-'}</td>
-          <td>${b.sport || '-'}</td>
-          <td>${b.pick || '-'}</td>
-          <td>${b.odds ?? '-'}</td>
-          <td>$${Number(b.stake || 0).toFixed(2)}</td>
-          <td>${b.result || 'Pending'}</td>
-          <td>${b.pl == null ? '-' : `${b.pl >= 0 ? '+' : ''}$${Number(b.pl).toFixed(2)}`}</td>
-        </tr>
-      `).join('') : `<tr><td colspan="7" style="text-align:center;color:var(--muted)">No tracked bets yet</td></tr>`;
+      body.innerHTML = recent.length
+        ? recent.map(b => `
+          <tr>
+            <td>${b.date || '-'}</td>
+            <td>${b.sport || '-'}</td>
+            <td>${b.pick || '-'}</td>
+            <td>${b.odds ?? '-'}</td>
+            <td>$${Number(b.stake || 0).toFixed(2)}</td>
+            <td>${b.result || 'Pending'}</td>
+            <td>${b.pl == null ? '-' : `${b.pl >= 0 ? '+' : ''}$${Number(b.pl).toFixed(2)}`}</td>
+          </tr>
+        `).join('')
+        : `<tr><td colspan="7" style="text-align:center;color:var(--muted)">No tracked bets yet</td></tr>`;
     }
 
-    renderPredictionPerformance();
+    renderModelTabs();
+    loadPredictions();
   </script>
 </body>
 </html>
