@@ -2,9 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=scoreboard.html" />
-  <title>Orb Analytics</title>
-  <script>window.location.replace('scoreboard.html');</script>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <title>Home · Orb Analytics</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-<body></body>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <main class="page">
+    <div class="container" style="padding:2rem 0 3rem">
+      <div class="section-label">Orb Analytics</div>
+      <div class="section-title">Home</div>
+      <p style="color:var(--muted);margin-top:.5rem">
+        Live scoreboard, model predictions, and bankroll tracking.
+      </p>
+
+      <div class="cards-grid" style="margin-top:1rem">
+        <a class="card" href="scoreboard.html" style="text-decoration:none;color:inherit">
+          <div class="card-title">Scoreboard</div>
+          <p style="color:var(--muted)">Live scores, lines, movement, and game context.</p>
+        </a>
+        <a class="card" href="predictions.html" style="text-decoration:none;color:inherit">
+          <div class="card-title">Predictions</div>
+          <p style="color:var(--muted)">Model picks across MLB, NFL, and NBA.</p>
+        </a>
+        <a class="card" href="tracker.html" style="text-decoration:none;color:inherit">
+          <div class="card-title">Bankroll</div>
+          <p style="color:var(--muted)">Track record, P/L, ROI, and recent tickets.</p>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/nav.js"></script>
+  <script>buildNav('index.html');</script>
+</body>
 </html>

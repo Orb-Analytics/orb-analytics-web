@@ -2,10 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="robots" content="noindex,nofollow" />
-  <meta http-equiv="refresh" content="0; url=predictions.html" />
-  <title>Bet Tracker · Orb Analytics</title>
-  <script>window.location.replace('predictions.html');</script>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <title>Bankroll · Orb Analytics</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-<body></body>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <main class="page">
+    <div class="container" style="padding:2rem 0 3rem">
+      <div class="section-label">Performance</div>
+      <div class="section-title">Bankroll Tracker</div>
+
+      <div class="cards-grid" style="margin-top:1rem">
+        <div class="card"><div class="card-title">Record</div><div id="bk-record">—</div></div>
+        <div class="card"><div class="card-title">Win Rate</div><div id="bk-winrate">—</div></div>
+        <div class="card"><div class="card-title">Net P/L</div><div id="bk-net">—</div></div>
+        <div class="card"><div class="card-title">ROI</div><div id="bk-roi">—</div></div>
+      </div>
+
+      <div class="card" style="margin-top:1rem;overflow:auto">
+        <div class="card-title" style="margin-bottom:.75rem">Recent Bets</div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th><th>Sport</th><th>Pick</th><th>Odds</th><th>Stake</th><th>Result</th><th>P/L</th>
+            </tr>
+          </thead>
+          <tbody id="bk-history"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/nav.js"></script>
+  <script>
+    buildNav('tracker.html');
+
+    const bets = JSON.parse(localStorage.getItem('orb_bets_v1') || '[]');
+    const settled = bets.filter(b => b.result && b.result !== 'Pending');
+
+    const wins = settled.filter(b => b.result === 'Win').length;
+    const losses = settled.filter(b => b.result === 'Loss').length;
+    const pushes = settled.filter(b => b.result === 'Push').length;
+
+    const net = settled.reduce((s, b) => s + (Number(b.pl) || 0), 0);
+    const stake = settled.reduce((s, b) => s + (Number(b.stake) || 0), 0);
+    const winRate = settled.length ? (wins / settled.length) * 100 : 0;
+    const roi = stake ? (net / stake) * 100 : 0;
+
+    document.getElementById('bk-record').textContent = `${wins}-${losses}-${pushes}`;
+    document.getElementById('bk-winrate').textContent = `${winRate.toFixed(1)}%`;
+    document.getElementById('bk-net').textContent = `${net >= 0 ? '+' : ''}$${net.toFixed(2)}`;
+    document.getElementById('bk-roi').textContent = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
+
+    const recent = [...bets].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 15);
+    document.getElementById('bk-history').innerHTML = recent.length
+      ? recent.map(b => `
+          <tr>
+            <td>${b.date || '-'}</td>
+            <td>${b.sport || '-'}</td>
+            <td>${b.pick || '-'}</td>
+            <td>${b.odds ?? '-'}</td>
+            <td>$${Number(b.stake || 0).toFixed(2)}</td>
+            <td>${b.result || 'Pending'}</td>
+            <td>${b.pl == null ? '-' : `${b.pl >= 0 ? '+' : ''}$${Number(b.pl).toFixed(2)}`}</td>
+          </tr>
+        `).join('')
+      : `<tr><td colspan="7" style="text-align:center;color:var(--muted)">No bets tracked yet</td></tr>`;
+  </script>
+</body>
 </html>

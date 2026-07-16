@@ -92,34 +92,26 @@ body {
   letter-spacing: -0.01em;
 }
 
-.nav-logo .orb-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--purple-500);
-  display: flex;
+.nav-logo-link {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: var(--glow);
-  position: relative;
-  flex-shrink: 0;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
 }
 
-.nav-logo .orb-icon::before {
-  content: '';
-  position: absolute;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.5);
+.orb-logo-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
 }
 
-.nav-logo .orb-icon::after {
-  content: '';
-  position: absolute;
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: white;
-  opacity: 0.9;
+.nav-logo-text {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .nav-links {
