@@ -5,32 +5,80 @@
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <title>Home · Orb Analytics</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .hero {
+      padding: 3rem 0 2rem;
+      text-align: center;
+      position: relative;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -30% 20% auto 20%;
+      height: 220px;
+      background: radial-gradient(circle, rgba(168,85,247,.22), transparent 70%);
+      pointer-events: none;
+      filter: blur(8px);
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.1;
+      margin-bottom: .75rem;
+      position: relative;
+    }
+    .hero p {
+      color: var(--muted);
+      max-width: 720px;
+      margin: 0 auto 1.2rem;
+      position: relative;
+    }
+    .hero-cta {
+      display: flex;
+      gap: .65rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+    }
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .home-card-title { font-family: var(--font-display); font-size: 1.05rem; margin-bottom: .4rem; }
+  </style>
 </head>
 <body>
   <nav class="nav" id="main-nav"></nav>
 
   <main class="page">
-    <div class="container" style="padding:2rem 0 3rem">
-      <div class="section-label">Orb Analytics</div>
-      <div class="section-title">Home</div>
-      <p style="color:var(--muted);margin-top:.5rem">
-        Live scoreboard, model predictions, and bankroll tracking.
-      </p>
+    <div class="container">
+      <section class="hero">
+        <div class="section-label">Orb Analytics</div>
+        <h1>Bet Smarter With Real-Time Context + Model Edge</h1>
+        <p>Track line movement, view model predictions, and manage bankroll performance in one focused workflow.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="scoreboard.html">Open Scoreboard</a>
+          <a class="btn btn-ghost" href="predictions.html">View Predictions</a>
+          <a class="btn btn-ghost" href="tracker.html">Track Bankroll</a>
+        </div>
+      </section>
 
-      <div class="cards-grid" style="margin-top:1rem">
+      <section class="home-grid">
         <a class="card" href="scoreboard.html" style="text-decoration:none;color:inherit">
-          <div class="card-title">Scoreboard</div>
-          <p style="color:var(--muted)">Live scores, lines, movement, and game context.</p>
+          <div class="home-card-title">Live Scoreboard</div>
+          <p style="color:var(--muted)">Game status, open/close lines, movement, venue, and watch info.</p>
         </a>
         <a class="card" href="predictions.html" style="text-decoration:none;color:inherit">
-          <div class="card-title">Predictions</div>
-          <p style="color:var(--muted)">Model picks across MLB, NFL, and NBA.</p>
+          <div class="home-card-title">Model Predictions</div>
+          <p style="color:var(--muted)">MLB, NFL, NBA picks with confidence and source details.</p>
         </a>
         <a class="card" href="tracker.html" style="text-decoration:none;color:inherit">
-          <div class="card-title">Bankroll</div>
-          <p style="color:var(--muted)">Track record, P/L, ROI, and recent tickets.</p>
+          <div class="home-card-title">Bankroll Tracker</div>
+          <p style="color:var(--muted)">Log bets quickly and monitor win rate, ROI, and net P/L.</p>
         </a>
-      </div>
+      </section>
     </div>
   </main>
 
