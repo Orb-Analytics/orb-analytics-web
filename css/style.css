@@ -158,8 +158,8 @@ body {
 .nav-social a svg {
   width: 18px;
   height: 18px;
-  color: var(--muted);
-  fill: currentColor; /* filled icons (X, TikTok, etc.) still render */
+  display: block;
+  fill: currentColor;
 }
 
 .nav-social a:hover { color: var(--accent); background: rgba(148,163,184,0.10); }
