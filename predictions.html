@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Predictions · Orb Analytics</title>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
+    /* ── Layout ──────────────────────────────────────────────── */
     .predictions-header {
       padding: 2rem 0 1.5rem;
       display: flex;
@@ -15,26 +18,57 @@
       flex-wrap: wrap;
     }
 
-    .model-tabs {
+    .main-tabs {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.25rem;
       margin-bottom: 1.5rem;
-      flex-wrap: wrap;
+      width: fit-content;
     }
+
+    .main-tab {
+      padding: 0.5rem 1.5rem;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .main-tab.active {
+      background: var(--purple-600);
+      color: white;
+      box-shadow: var(--glow);
+    }
+
+    .main-tab:hover:not(.active) {
+      color: var(--text);
+      background: rgba(147,51,234,0.12);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
     /* ── Pick Cards ──────────────────────────────────────────── */
     .picks-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 1rem;
-      padding-bottom: 3rem;
+      padding-bottom: 2rem;
     }
 
     .pick-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 1.35rem;
+      padding: 1.25rem;
       display: flex;
       flex-direction: column;
       gap: 0.85rem;
@@ -53,11 +87,7 @@
       transition: opacity var(--transition);
     }
 
-    .pick-card:hover {
-      border-color: rgba(147,51,234,0.45);
-      box-shadow: var(--glow);
-    }
-
+    .pick-card:hover { border-color: rgba(147,51,234,0.45); box-shadow: var(--glow); }
     .pick-card:hover::after { opacity: 1; }
 
     .pick-card-header {
@@ -66,23 +96,15 @@
       justify-content: space-between;
     }
 
-    .pick-model-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--purple-300);
-      letter-spacing: 0.06em;
-    }
-
     .pick-matchup {
       font-family: var(--font-display);
       font-size: 1rem;
       font-weight: 700;
       color: var(--text);
-      line-height: 1.25;
+      line-height: 1.3;
     }
+
+    .pick-matchup .vs { color: var(--gray-500); font-weight: 400; font-size: 0.85rem; }
 
     .pick-main {
       background: rgba(147,51,234,0.1);
@@ -97,22 +119,35 @@
       color: var(--purple-400);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
     }
 
     .pick-value {
       font-family: var(--font-display);
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: var(--text);
     }
 
-    /* Confidence bar */
-    .confidence-row {
+    .pick-meta-row {
       display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
+
+    .meta-chip {
+      background: rgba(147,51,234,0.08);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .meta-chip span { color: var(--purple-300); }
+
+    .confidence-row { display: flex; flex-direction: column; gap: 0.3rem; }
 
     .confidence-header {
       display: flex;
@@ -124,97 +159,166 @@
       font-family: var(--font-mono);
       font-size: 0.7rem;
       color: var(--muted);
-      letter-spacing: 0.06em;
     }
 
     .confidence-pct {
       font-family: var(--font-mono);
       font-size: 0.8rem;
       font-weight: 600;
-      color: var(--purple-300);
     }
 
-    .confidence-bar-bg {
+    .bar-bg {
       height: 5px;
       background: rgba(147,51,234,0.12);
       border-radius: 3px;
       overflow: hidden;
     }
 
-    .confidence-bar-fill {
+    .bar-fill {
       height: 100%;
       border-radius: 3px;
-      background: linear-gradient(90deg, var(--purple-600), var(--purple-400));
       transition: width 0.6s ease;
     }
 
-    .pick-meta {
+    /* ── Summary Stats ───────────────────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
+
+    /* ── Performance Splits ──────────────────────────────────── */
+    .splits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .split-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .split-card-title {
+      padding: 0.85rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--purple-400);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .split-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1.1rem;
+      border-bottom: 1px solid rgba(147,51,234,0.06);
+      font-size: 0.85rem;
+    }
+
+    .split-row:last-child { border-bottom: none; }
+    .split-label { color: var(--muted); }
+
+    .split-record {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    .split-winrate {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .split-winrate.good  { background: rgba(16,185,129,0.12); color: #6EE7B7; }
+    .split-winrate.ok    { background: rgba(147,51,234,0.12); color: var(--purple-300); }
+    .split-winrate.bad   { background: rgba(239,68,68,0.12);  color: #FCA5A5; }
+
+    /* ── Equity Curve ────────────────────────────────────────── */
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-card-title {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--purple-400);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .chart-wrap { position: relative; height: 200px; }
+
+    /* ── History Table ───────────────────────────────────────── */
+    .history-controls {
       display: flex;
       gap: 0.5rem;
       align-items: center;
       flex-wrap: wrap;
+      margin-bottom: 1rem;
     }
 
-    .pick-notes {
-      font-size: 0.8rem;
-      color: var(--gray-500);
-      line-height: 1.4;
-      font-style: italic;
-    }
-
-    /* ── Model info bar ──────────────────────────────────────── */
-    .model-info-bar {
-      display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
-      flex-wrap: wrap;
-    }
-
-    .model-info-chip {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
+    .filter-select {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 0.3rem 0.8rem;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
+      border-radius: 7px;
       color: var(--muted);
+      font-size: 0.82rem;
+      padding: 0.4rem 0.75rem;
+      font-family: var(--font-body);
+      outline: none;
+      cursor: pointer;
+      transition: var(--transition);
     }
 
-    .model-info-chip span { color: var(--purple-300); font-weight: 600; }
+    .filter-select:focus { border-color: var(--purple-500); color: var(--text); }
 
-    /* ── No picks ─────────────────────────────────────────────── */
-    .no-picks-state {
-      grid-column: 1/-1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      padding: 4rem 1.5rem;
+    .history-table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 3rem;
+    }
+
+    .score-display {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
       color: var(--gray-500);
-      text-align: center;
     }
 
-    .model-source-note {
+    .score-display .winning-score { color: var(--text); font-weight: 600; }
+
+    .units-positive { color: var(--green); font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600; }
+    .units-negative { color: var(--red);   font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600; }
+
+    /* ── Source note ─────────────────────────────────────────── */
+    .source-note {
       background: rgba(147,51,234,0.08);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 0.75rem 1rem;
+      padding: 0.65rem 1rem;
       font-size: 0.8rem;
       color: var(--muted);
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-    }
-
-    .model-order-toggle {
-      display: inline-flex;
-      gap: 0.25rem;
-      margin-bottom: 1rem;
     }
   </style>
 </head>
@@ -226,251 +330,454 @@
       <div class="predictions-header">
         <div>
           <div class="section-label">ML-Powered Picks</div>
-          <div class="section-title">Today's Predictions</div>
+          <div class="section-title">MLB Predictions</div>
           <p style="color:var(--muted);font-size:0.85rem;margin-top:0.35rem" id="last-updated"></p>
         </div>
       </div>
 
-      <!-- Model Tabs -->
-      <div class="model-tabs" id="model-tabs"></div>
-
-      <!-- Model Info -->
-      <div class="model-source-note" id="model-source-note">
-        🔗 Predictions sourced from the Orb Analytics model repos via GitHub. Updated daily.
+      <!-- Main Tabs -->
+      <div class="main-tabs">
+        <button class="main-tab active" onclick="switchTab('today')" id="tab-today">Today's Picks</button>
+        <button class="main-tab" onclick="switchTab('history')" id="tab-history">Model History</button>
       </div>
 
-      <div class="model-info-bar" id="model-info-bar"></div>
+      <!-- Source note -->
+      <div class="source-note" id="source-note">
+        🔗 Loading predictions from Orb Analytics MLB Model...
+      </div>
 
-      <!-- Picks Grid -->
-      <div class="picks-grid" id="picks-container">
-        <div class="loading-state" style="grid-column:1/-1">
-          <div class="spinner"></div> Loading predictions...
+      <!-- ── TODAY'S PICKS ───────────────────────────────────── -->
+      <div class="tab-panel active" id="panel-today">
+        <div class="picks-grid" id="picks-container">
+          <div class="loading-state" style="grid-column:1/-1">
+            <div class="spinner"></div> Loading today's picks...
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HISTORY ─────────────────────────────────────────── -->
+      <div class="tab-panel" id="panel-history">
+
+        <!-- Summary Stats -->
+        <div class="summary-grid" id="summary-grid">
+          <div class="loading-state" style="grid-column:1/-1">
+            <div class="spinner"></div> Loading history...
+          </div>
+        </div>
+
+        <!-- Equity Curve -->
+        <div class="chart-card">
+          <div class="chart-card-title">Cumulative Units (Equity Curve)</div>
+          <div class="chart-wrap"><canvas id="equity-chart"></canvas></div>
+        </div>
+
+        <!-- Performance Splits -->
+        <div class="splits-grid" id="splits-grid"></div>
+
+        <!-- History Table -->
+        <div class="history-controls">
+          <select class="filter-select" id="filter-result" onchange="renderHistoryTable()">
+            <option value="all">All Results</option>
+            <option value="Win">Wins Only</option>
+            <option value="Loss">Losses Only</option>
+          </select>
+          <select class="filter-select" id="filter-side" onchange="renderHistoryTable()">
+            <option value="all">Home & Away</option>
+            <option value="home">Home Picks</option>
+            <option value="away">Away Picks</option>
+          </select>
+          <select class="filter-select" id="filter-odds" onchange="renderHistoryTable()">
+            <option value="all">All Odds</option>
+            <option value="fav">Favorites</option>
+            <option value="dog">Underdogs</option>
+          </select>
+          <span id="filter-count" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-500);margin-left:auto"></span>
+        </div>
+
+        <div class="history-table-wrap">
+          <div style="overflow-x:auto">
+            <table class="data-table" id="history-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Matchup</th>
+                  <th>Pick</th>
+                  <th>Line</th>
+                  <th>Edge</th>
+                  <th>Conf</th>
+                  <th>Score</th>
+                  <th>Result</th>
+                  <th>Units</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </main>
 
   <footer class="footer">
-    <p>Predictions by Orb Analytics ML Models · Not financial advice · © 2026 Orb Analytics</p>
+    <p>Predictions by Orb Analytics XGBoost MLB Model · Not financial advice · © 2026 Orb Analytics</p>
   </footer>
 
   <script src="js/nav.js"></script>
   <script>
     buildNav('predictions.html');
 
-    const MODEL_ORDER_KEY = 'orb_model_order_mode'; // 'fixed' | 'seasonal'
+    // ── URLs ──────────────────────────────────────────────────────
+    const PREDICTIONS_URL = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json';
+    const HISTORY_URL     = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions_history.json';
 
-    const MODEL_SOURCES = {
-      mlb: {
-        label: 'MLB Model',
-        emoji: '⚾',
-        url: 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json',
-        info: { features: '274', data: '18 seasons', type: 'XGBoost' },
-      },
-      nfl: {
-        label: 'NFL Model',
-        emoji: '🏈',
-        url: 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Model/main/predictions.json',
-        info: { features: '~150', data: '3 seasons PBP', type: 'XGBoost' },
-      },
-      nba: {
-        label: 'NBA Model',
-        emoji: '🏀',
-        url: 'https://raw.githubusercontent.com/Orb-Analytics/NBA-Model/main/predictions.json',
-        info: { features: '~80', data: '470+ games', type: 'ML Ensemble' },
-      }
-    };
+    let historyData = [];
+    let equityChart = null;
 
-    const SAMPLE_DATA = {
-      mlb: {
-        version: 'sample',
-        generated_at: new Date().toISOString(),
-        picks: [
-          { away_team: 'SFG', home_team: 'LAD', pick: 'LAD ML', line: -162, confidence: 0.66 },
-          { away_team: 'NYY', home_team: 'BOS', pick: 'Over 8.5', line: -110, confidence: 0.61 }
-        ]
-      },
-      nfl: {
-        version: 'sample',
-        generated_at: new Date().toISOString(),
-        picks: [
-          { away_team: 'DAL', home_team: 'PHI', pick: 'PHI -2.5', line: -115, confidence: 0.64 }
-        ]
-      },
-      nba: {
-        version: 'sample',
-        generated_at: new Date().toISOString(),
-        picks: [
-          { away_team: 'BOS', home_team: 'NYK', pick: 'BOS ML', line: -135, confidence: 0.63 }
-        ]
-      }
-    };
+    Chart.defaults.color = '#9CA3AF';
+    Chart.defaults.font  = { family: "'Inter', sans-serif", size: 11 };
 
-    let activeModel = 'mlb';
-
-    function getOrderMode() {
-      return localStorage.getItem(MODEL_ORDER_KEY) || 'fixed';
+    // ── Tab switch ────────────────────────────────────────────────
+    function switchTab(tab) {
+      ['today','history'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+        document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
+      });
     }
 
-    function setOrderMode(mode) {
-      localStorage.setItem(MODEL_ORDER_KEY, mode);
-      renderModelTabs();
-      loadPredictions();
+    // ── Confidence color ──────────────────────────────────────────
+    function confColor(conf) {
+      const pct = conf * 100;
+      if (pct >= 65) return 'var(--green)';
+      if (pct >= 58) return 'var(--purple-300)';
+      return 'var(--gray-400)';
     }
 
-    function getSeasonalOrder() {
-      const m = new Date().getMonth() + 1;
-      if (m >= 9 || m <= 2) return ['nfl', 'nba', 'mlb'];
-      if (m >= 3 && m <= 6) return ['nba', 'mlb', 'nfl'];
-      return ['mlb', 'nfl', 'nba'];
+    // ── Win rate badge class ──────────────────────────────────────
+    function wrClass(wr) {
+      if (wr >= 55) return 'good';
+      if (wr >= 50) return 'ok';
+      return 'bad';
     }
 
-    function getModelOrder() {
-      return getOrderMode() === 'seasonal' ? getSeasonalOrder() : ['nfl', 'nba', 'mlb'];
+    // ── Odds display ──────────────────────────────────────────────
+    function fmtOdds(line) {
+      if (!line && line !== 0) return '—';
+      return line > 0 ? `+${line}` : `${line}`;
     }
 
-    function renderModelTabs() {
-      const container = document.getElementById('model-tabs');
-      if (!container) return;
-
-      const mode = getOrderMode();
-      const order = getModelOrder();
-
-      container.innerHTML = `
-        <div class="model-order-toggle">
-          <button class="tab-btn ${mode === 'fixed' ? 'active' : ''}" type="button" id="order-fixed">Fixed</button>
-          <button class="tab-btn ${mode === 'seasonal' ? 'active' : ''}" type="button" id="order-seasonal">In-Season</button>
-        </div>
-        ${order.map(id => {
-          const s = MODEL_SOURCES[id];
-          return `<button class="tab-btn ${activeModel === id ? 'active' : ''}" type="button" data-model="${id}">${s.emoji} ${s.label}</button>`;
-        }).join('')}
-      `;
-
-      document.getElementById('order-fixed')?.addEventListener('click', () => setOrderMode('fixed'));
-      document.getElementById('order-seasonal')?.addEventListener('click', () => setOrderMode('seasonal'));
-      container.querySelectorAll('[data-model]').forEach(btn =>
-        btn.addEventListener('click', () => {
-          activeModel = btn.dataset.model;
-          renderModelTabs();
-          loadPredictions();
-        })
-      );
-    }
-
-    async function loadPredictions() {
-      const source = MODEL_SOURCES[activeModel];
-      const container = document.getElementById('picks-container');
-      const infoBar = document.getElementById('model-info-bar');
-      const sourceNote = document.getElementById('model-source-note');
-
-      container.innerHTML = `<div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading ${source.label}...</div>`;
-
-      let data;
-      let isSample = false;
-
+    // ── Load today's picks ────────────────────────────────────────
+    async function loadToday() {
       try {
-        const res = await fetch(source.url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        data = await res.json();
-      } catch {
-        data = SAMPLE_DATA[activeModel] || { picks: [] };
-        isSample = true;
+        const res  = await fetch(PREDICTIONS_URL);
+        const data = await res.json();
+
+        // Last updated
+        if (data.generated_at) {
+          const d = new Date(data.generated_at);
+          document.getElementById('last-updated').textContent =
+            `Updated ${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
+        }
+
+        // Source note
+        const note = document.getElementById('source-note');
+        note.innerHTML = `✅ Live predictions from <strong>Orb-Analytics/MLB-Model</strong> · XGBoost v2.1`;
+        note.style.borderColor = 'rgba(16,185,129,0.3)';
+        note.style.color = '#6EE7B7';
+
+        renderTodayPicks(data.picks || []);
+      } catch(e) {
+        document.getElementById('picks-container').innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1">
+            <p>Could not load predictions. Try again later.</p>
+          </div>`;
       }
-
-      if (isSample) {
-        sourceNote.innerHTML = `⚠️ <strong>Sample data</strong> — predictions.json not found for ${source.label}.`;
-      } else {
-        sourceNote.innerHTML = `✅ Live predictions loaded from <strong>Orb-Analytics/${activeModel.toUpperCase()}-Model</strong>.`;
-      }
-
-      if (data.generated_at) {
-        const d = new Date(data.generated_at);
-        document.getElementById('last-updated').textContent =
-          `Updated ${d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })} at ${d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })}`;
-      }
-
-      infoBar.innerHTML = `
-        <div class="model-info-chip">Type: <span>${source.info.type}</span></div>
-        <div class="model-info-chip">Features: <span>${source.info.features}</span></div>
-        <div class="model-info-chip">Training Data: <span>${source.info.data}</span></div>
-        ${data.version ? `<div class="model-info-chip">Version: <span>${data.version}</span></div>` : ''}
-      `;
-
-      renderPicks(data.picks || []);
-      renderPredictionPerformance();
     }
 
-    function renderPicks(picks) {
+    function renderTodayPicks(picks) {
       const container = document.getElementById('picks-container');
-      const source = MODEL_SOURCES[activeModel];
 
       if (!picks.length) {
-        container.innerHTML = `<div class="no-picks-state"><p>No picks available for ${source.label}.</p></div>`;
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+            </svg>
+            <p>No picks for today yet — check back after 9 AM ET.</p>
+          </div>`;
         return;
       }
 
       container.innerHTML = picks.map(pick => {
-        const conf = Math.round((pick.confidence || 0.5) * 100);
-        const oddsDisplay = pick.line > 0 ? `+${pick.line}` : `${pick.line ?? ''}`;
+        const conf     = pick.confidence || 0.5;
+        const confPct  = Math.round(conf * 100);
+        const color    = confColor(conf);
+        const isHome   = pick.pick === pick.home_team;
+        const side     = isHome ? 'Home' : 'Away';
+
         return `
           <div class="pick-card">
             <div class="pick-card-header">
-              <div class="pick-model-badge">${source.emoji} ${source.label}</div>
-              ${conf >= 65 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
+              <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--gray-500)">⚾ MLB · XGBoost</span>
+              ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
             </div>
-            <div class="pick-matchup">${pick.away_team} <span style="color:var(--gray-500);font-weight:400">@</span> ${pick.home_team}</div>
+
+            <div class="pick-matchup">
+              ${pick.away_team} <span class="vs">@</span> ${pick.home_team}
+            </div>
+
             <div class="pick-main">
               <div class="pick-label">Model Pick</div>
-              <div class="pick-value">${pick.pick}</div>
-              ${pick.line != null ? `<div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--gray-500);margin-top:0.2rem">Line: ${oddsDisplay}</div>` : ''}
+              <div class="pick-value">${pick.pick} ${side === 'Away' ? '(Away)' : '(Home)'}</div>
+              <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--gray-500);margin-top:0.2rem">
+                Line: ${fmtOdds(pick.line)}
+              </div>
             </div>
-          </div>
-        `;
+
+            <div class="pick-meta-row">
+              <div class="meta-chip">Edge: <span>+${pick.edge}%</span></div>
+              <div class="meta-chip">Conf: <span>${confPct}%</span></div>
+            </div>
+
+            <div class="confidence-row">
+              <div class="confidence-header">
+                <span class="confidence-label">Model Confidence</span>
+                <span class="confidence-pct" style="color:${color}">${confPct}%</span>
+              </div>
+              <div class="bar-bg">
+                <div class="bar-fill" style="width:${confPct}%;background:${color}"></div>
+              </div>
+            </div>
+          </div>`;
       }).join('');
     }
 
-    function renderPredictionPerformance() {
-      const bets = JSON.parse(localStorage.getItem('orb_bets_v1') || '[]');
-      const settled = bets.filter(b => b.result && b.result !== 'Pending');
-      const wins = settled.filter(b => b.result === 'Win').length;
-      const losses = settled.filter(b => b.result === 'Loss').length;
-      const pushes = settled.filter(b => b.result === 'Push').length;
-      const net = settled.reduce((s, b) => s + (Number(b.pl) || 0), 0);
-      const stake = settled.reduce((s, b) => s + (Number(b.stake) || 0), 0);
-      const winRate = settled.length ? (wins / settled.length) * 100 : 0;
-      const roi = stake ? (net / stake) * 100 : 0;
+    // ── Load history ──────────────────────────────────────────────
+    async function loadHistory() {
+      try {
+        const res  = await fetch(HISTORY_URL);
+        const data = await res.json();
+        historyData = data.picks || [];
 
-      const record = document.getElementById('pred-record');
-      const wr = document.getElementById('pred-winrate');
-      const netEl = document.getElementById('pred-net');
-      const roiEl = document.getElementById('pred-roi');
-      const body = document.getElementById('pred-history-body');
-      if (!record || !wr || !netEl || !roiEl || !body) return;
-
-      record.textContent = `${wins}-${losses}-${pushes}`;
-      wr.textContent = `${winRate.toFixed(1)}%`;
-      netEl.textContent = `${net >= 0 ? '+' : ''}$${net.toFixed(2)}`;
-      roiEl.textContent = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
-
-      const recent = [...bets].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
-      body.innerHTML = recent.length
-        ? recent.map(b => `
-          <tr>
-            <td>${b.date || '-'}</td>
-            <td>${b.sport || '-'}</td>
-            <td>${b.pick || '-'}</td>
-            <td>${b.odds ?? '-'}</td>
-            <td>$${Number(b.stake || 0).toFixed(2)}</td>
-            <td>${b.result || 'Pending'}</td>
-            <td>${b.pl == null ? '-' : `${b.pl >= 0 ? '+' : ''}$${Number(b.pl).toFixed(2)}`}</td>
-          </tr>
-        `).join('')
-        : `<tr><td colspan="7" style="text-align:center;color:var(--muted)">No tracked bets yet</td></tr>`;
+        renderSummaryStats(data.summary);
+        renderEquityCurve(historyData);
+        renderSplits(historyData);
+        renderHistoryTable();
+      } catch(e) {
+        document.getElementById('summary-grid').innerHTML =
+          `<div style="grid-column:1/-1;color:var(--red);font-size:0.875rem">Could not load history.</div>`;
+      }
     }
 
-    renderModelTabs();
-    loadPredictions();
+    // ── Summary Stats ─────────────────────────────────────────────
+    function renderSummaryStats(s) {
+      const unitsColor = s.total_units >= 0 ? 'stat-positive' : 'stat-negative';
+      const wrColor    = s.win_rate >= 52.4 ? 'stat-positive' : 'stat-negative';
+
+      document.getElementById('summary-grid').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Record</div>
+          <div class="stat-value stat-neutral">${s.wins}-${s.losses}</div>
+          <div class="stat-sub">${s.total_picks} settled picks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Win Rate</div>
+          <div class="stat-value ${wrColor}">${s.win_rate}%</div>
+          <div class="stat-sub">Break-even ≈ 52.4%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Units</div>
+          <div class="stat-value ${unitsColor}">${s.total_units >= 0 ? '+' : ''}${s.total_units}u</div>
+          <div class="stat-sub">Since June 22, 2026</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Edge</div>
+          <div class="stat-value stat-neutral">${(historyData.reduce((a,b)=>a+(b.edge||0),0)/historyData.length).toFixed(2)}%</div>
+          <div class="stat-sub">Per pick</div>
+        </div>`;
+    }
+
+    // ── Equity Curve ──────────────────────────────────────────────
+    function renderEquityCurve(picks) {
+      const sorted = [...picks].reverse();
+      let cum = 0;
+      const labels = [];
+      const values = [];
+
+      sorted.forEach(p => {
+        cum += (p.units || 0);
+        labels.push(p.date);
+        values.push(parseFloat(cum.toFixed(2)));
+      });
+
+      const finalVal = values[values.length - 1] || 0;
+      const color    = finalVal >= 0 ? '#10B981' : '#EF4444';
+
+      if (equityChart) equityChart.destroy();
+      equityChart = new Chart(document.getElementById('equity-chart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor: color,
+            backgroundColor: finalVal >= 0 ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { maxTicksLimit: 8, color: '#6B7280' } },
+            y: {
+              grid: { color: 'rgba(147,51,234,0.08)' },
+              ticks: { color: '#6B7280', callback: v => `${v > 0 ? '+' : ''}${v}u` }
+            }
+          }
+        }
+      });
+    }
+
+    // ── Performance Splits ────────────────────────────────────────
+    function renderSplits(picks) {
+      function calcSplit(arr) {
+        const w = arr.filter(p => p.result === 'Win').length;
+        const l = arr.filter(p => p.result === 'Loss').length;
+        const total = w + l;
+        const wr = total > 0 ? ((w/total)*100).toFixed(1) : '—';
+        const units = arr.reduce((a,b)=>a+(b.units||0),0).toFixed(2);
+        return { w, l, total, wr, units };
+      }
+
+      // Home vs Away picks
+      const homePicks = picks.filter(p => p.pick === p.home_team);
+      const awayPicks = picks.filter(p => p.pick === p.away_team);
+
+      // Favorites vs Underdogs
+      const favPicks = picks.filter(p => p.line < 0);
+      const dogPicks = picks.filter(p => p.line > 0);
+
+      // Confidence tiers
+      const hiConf  = picks.filter(p => p.confidence >= 0.60);
+      const midConf = picks.filter(p => p.confidence >= 0.52 && p.confidence < 0.60);
+      const loConf  = picks.filter(p => p.confidence < 0.52);
+
+      // Edge tiers
+      const hiEdge  = picks.filter(p => p.edge >= 2.0);
+      const loEdge  = picks.filter(p => p.edge < 2.0);
+
+      // Last 7 / Last 30
+      const sorted   = [...picks];
+      const last7    = sorted.slice(0, Math.min(7*8, sorted.length)).filter((_,i)=>i<56);
+      const last30d  = sorted.slice(0, 30);
+
+      function splitRows(rows) {
+        return rows.map(([label, arr]) => {
+          const s = calcSplit(arr);
+          const wr = parseFloat(s.wr);
+          const cls = isNaN(wr) ? '' : wrClass(wr);
+          const unitsDisplay = s.total > 0
+            ? `<span style="font-family:var(--font-mono);font-size:0.75rem;color:${parseFloat(s.units)>=0?'var(--green)':'var(--red)'}">
+                ${parseFloat(s.units)>=0?'+':''}${s.units}u
+               </span>`
+            : '';
+          return `<div class="split-row">
+            <span class="split-label">${label}</span>
+            <span class="split-record">${s.w}-${s.l}</span>
+            ${unitsDisplay}
+            <span class="split-winrate ${cls}">${s.wr}%</span>
+          </div>`;
+        }).join('');
+      }
+
+      document.getElementById('splits-grid').innerHTML = `
+        <div class="split-card">
+          <div class="split-card-title">Home vs Away</div>
+          ${splitRows([['Home Picks', homePicks], ['Away Picks', awayPicks]])}
+        </div>
+        <div class="split-card">
+          <div class="split-card-title">Favorites vs Underdogs</div>
+          ${splitRows([['Favorites (- odds)', favPicks], ['Underdogs (+ odds)', dogPicks]])}
+        </div>
+        <div class="split-card">
+          <div class="split-card-title">Confidence Tiers</div>
+          ${splitRows([['High (≥60%)', hiConf], ['Mid (52–60%)', midConf], ['Low (<52%)', loConf]])}
+        </div>
+        <div class="split-card">
+          <div class="split-card-title">Edge Tiers</div>
+          ${splitRows([['High Edge (≥2%)', hiEdge], ['Low Edge (<2%)', loEdge]])}
+        </div>`;
+    }
+
+    // ── History Table ─────────────────────────────────────────────
+    function renderHistoryTable() {
+      const resultFilter = document.getElementById('filter-result').value;
+      const sideFilter   = document.getElementById('filter-side').value;
+      const oddsFilter   = document.getElementById('filter-odds').value;
+
+      let filtered = historyData;
+
+      if (resultFilter !== 'all') filtered = filtered.filter(p => p.result === resultFilter);
+      if (sideFilter === 'home')  filtered = filtered.filter(p => p.pick === p.home_team);
+      if (sideFilter === 'away')  filtered = filtered.filter(p => p.pick === p.away_team);
+      if (oddsFilter === 'fav')   filtered = filtered.filter(p => p.line < 0);
+      if (oddsFilter === 'dog')   filtered = filtered.filter(p => p.line > 0);
+
+      const wins   = filtered.filter(p => p.result === 'Win').length;
+      const losses = filtered.filter(p => p.result === 'Loss').length;
+      const units  = filtered.reduce((a,b)=>a+(b.units||0),0);
+      document.getElementById('filter-count').textContent =
+        `${filtered.length} picks · ${wins}W-${losses}L · ${units>=0?'+':''}${units.toFixed(2)}u`;
+
+      const tbody = document.getElementById('history-tbody');
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:2rem">No picks match filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => {
+        const badgeClass = p.result === 'Win' ? 'badge-win' : 'badge-loss';
+        const unitsClass = p.units >= 0 ? 'units-positive' : 'units-negative';
+        const unitsDisplay = p.units >= 0 ? `+${p.units.toFixed(2)}u` : `${p.units.toFixed(2)}u`;
+        const confPct = Math.round((p.confidence||0.5)*100);
+
+        // Score display — bold the winner
+        let scoreDisplay = '—';
+        if (p.home_score !== null && p.away_score !== null) {
+          const homeWon = p.home_score > p.away_score;
+          const hs = homeWon
+            ? `<span class="winning-score">${p.home_score}</span>`
+            : p.home_score;
+          const as = !homeWon
+            ? `<span class="winning-score">${p.away_score}</span>`
+            : p.away_score;
+          scoreDisplay = `<span class="score-display">${as}-${hs}</span>`;
+        }
+
+        const side = p.pick === p.home_team ? '(H)' : '(A)';
+
+        return `<tr>
+          <td style="font-family:var(--font-mono);font-size:0.78rem;white-space:nowrap;color:var(--gray-500)">${p.date}</td>
+          <td style="font-size:0.85rem;white-space:nowrap">${p.away_team} @ ${p.home_team}</td>
+          <td style="font-weight:600;font-size:0.875rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-500);font-size:0.75rem">${side}</span></td>
+          <td style="font-family:var(--font-mono);font-size:0.8rem">${fmtOdds(p.line)}</td>
+          <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--purple-300)">+${p.edge}%</td>
+          <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--muted)">${confPct}%</td>
+          <td>${scoreDisplay}</td>
+          <td><span class="badge ${badgeClass}">${p.result}</span></td>
+          <td class="${unitsClass}">${unitsDisplay}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── Init ──────────────────────────────────────────────────────
+    loadToday();
+    loadHistory();
   </script>
 </body>
 </html>
