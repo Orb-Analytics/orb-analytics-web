@@ -106,6 +106,39 @@
 
     .pick-matchup .vs { color: var(--gray-500); font-weight: 400; font-size: 0.85rem; }
 
+    /* Team logo in pick card */
+    .pick-team-hero {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 0 0.25rem;
+    }
+
+    .pick-team-logo {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(147,51,234,0.3));
+    }
+
+    .pick-team-logo-fallback {
+      width: 52px;
+      height: 52px;
+      border-radius: 10px;
+      background: rgba(147,51,234,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--purple-300);
+    }
+
+    .pick-team-info { display: flex; flex-direction: column; gap: 0.1rem; }
+    .pick-team-name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--text); }
+    .pick-team-side { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.06em; }
+
     .pick-main {
       background: rgba(147,51,234,0.1);
       border: 1px solid var(--border);
@@ -430,6 +463,34 @@
     const PREDICTIONS_URL = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json';
     const HISTORY_URL     = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions_history.json';
 
+    // ── Team logo map (model abbr → ESPN abbr) ────────────────────
+    const TEAM_ESPN = {
+      ARI:'ari', ATL:'atl', BAL:'bal', BOS:'bos',
+      CHC:'chc', CIN:'cin', CLE:'cle', COL:'col',
+      CWS:'cws', CHW:'cws', DET:'det', HOU:'hou',
+      KC:'kc',   LAA:'laa', LAD:'lad', MIA:'mia',
+      MIL:'mil', MIN:'min', NYM:'nym', NYY:'nyy',
+      OAK:'oak', PHI:'phi', PIT:'pit', SD:'sd',
+      SEA:'sea', SF:'sf',   STL:'stl', TB:'tbr',
+      TEX:'tex', TOR:'tor', WSH:'wsh', WAS:'wsh'
+    };
+
+    function teamLogoURL(abbr) {
+      const espn = TEAM_ESPN[abbr];
+      if (!espn) return null;
+      return `https://a.espncdn.com/i/teamlogos/mlb/500/${espn}.png`;
+    }
+
+    function teamLogoHTML(abbr, size = 52) {
+      const url = teamLogoURL(abbr);
+      if (!url) return `<div class="pick-team-logo-fallback" style="width:${size}px;height:${size}px">${abbr}</div>`;
+      return `
+        <img class="pick-team-logo" src="${url}" alt="${abbr}"
+          style="width:${size}px;height:${size}px"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="pick-team-logo-fallback" style="width:${size}px;height:${size}px;display:none">${abbr}</div>`;
+    }
+
     let historyData = [];
     let equityChart = null;
 
@@ -465,15 +526,46 @@
       return line > 0 ? `+${line}` : `${line}`;
     }
 
+    // ── Fetch probable pitchers keyed by team abbr ────────────────
+    async function fetchProbablePitchers() {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const res   = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher`);
+        const data  = await res.json();
+        const map   = {};
+        for (const date of data.dates || []) {
+          for (const game of date.games || []) {
+            const away = game.teams?.away;
+            const home = game.teams?.home;
+            if (away?.team?.abbreviation && away?.probablePitcher)
+              map[away.team.abbreviation] = away.probablePitcher;
+            if (home?.team?.abbreviation && home?.probablePitcher)
+              map[home.team.abbreviation] = home.probablePitcher;
+          }
+        }
+        return map;
+      } catch { return {}; }
+    }
+
+    async function fetchERA(pitcherId) {
+      try {
+        const res  = await fetch(`https://statsapi.mlb.com/api/v1/people/${pitcherId}?hydrate=stats(group=pitching,type=season)`);
+        const data = await res.json();
+        return data.people?.[0]?.stats?.[0]?.splits?.[0]?.stat?.era ?? null;
+      } catch { return null; }
+    }
+
     // ── Load today's picks ────────────────────────────────────────
     async function loadToday() {
       try {
-        const res  = await fetch(PREDICTIONS_URL);
-        const data = await res.json();
+        const [picksData, pitcherMap] = await Promise.all([
+          fetch(PREDICTIONS_URL).then(r => r.json()),
+          fetchProbablePitchers()
+        ]);
 
         // Last updated
-        if (data.generated_at) {
-          const d = new Date(data.generated_at);
+        if (picksData.generated_at) {
+          const d = new Date(picksData.generated_at);
           document.getElementById('last-updated').textContent =
             `Updated ${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
         }
@@ -484,7 +576,19 @@
         note.style.borderColor = 'rgba(16,185,129,0.3)';
         note.style.color = '#6EE7B7';
 
-        renderTodayPicks(data.picks || []);
+        const picks = picksData.picks || [];
+
+        // Fetch ERA for each picked team's starter in parallel
+        const pitcherDetails = await Promise.all(
+          picks.map(async pick => {
+            const pitcher = pitcherMap[pick.pick];
+            if (!pitcher) return null;
+            const era = await fetchERA(pitcher.id);
+            return { name: pitcher.fullName, era };
+          })
+        );
+
+        renderTodayPicks(picks, pitcherDetails);
       } catch(e) {
         document.getElementById('picks-container').innerHTML = `
           <div class="empty-state" style="grid-column:1/-1">
@@ -493,7 +597,7 @@
       }
     }
 
-    function renderTodayPicks(picks) {
+    function renderTodayPicks(picks, pitcherDetails = []) {
       const container = document.getElementById('picks-container');
 
       if (!picks.length) {
@@ -507,12 +611,44 @@
         return;
       }
 
-      container.innerHTML = picks.map(pick => {
-        const conf     = pick.confidence || 0.5;
-        const confPct  = Math.round(conf * 100);
-        const color    = confColor(conf);
-        const isHome   = pick.pick === pick.home_team;
-        const side     = isHome ? 'Home' : 'Away';
+      container.innerHTML = picks.map((pick, i) => {
+        const conf    = pick.confidence || 0.5;
+        const confPct = Math.round(conf * 100);
+        const color   = confColor(conf);
+        const isHome  = pick.pick === pick.home_team;
+        const side    = isHome ? 'Home' : 'Away';
+        const line    = pick.line || 0;
+        const winProb = confPct;
+
+        // Implied prob from odds
+        let impliedPct = 50;
+        if (line < 0) impliedPct = Math.round((Math.abs(line) / (Math.abs(line) + 100)) * 100);
+        else if (line > 0) impliedPct = Math.round((100 / (line + 100)) * 100);
+
+        // Pitcher
+        const pd = pitcherDetails[i];
+        const eraVal = pd?.era !== null && pd?.era !== undefined ? parseFloat(pd.era) : null;
+        const eraColor = eraVal !== null
+          ? (eraVal < 3.50 ? 'var(--green)' : eraVal > 4.50 ? '#FCA5A5' : 'var(--text)')
+          : 'var(--gray-500)';
+        const pitcherHTML = pd
+          ? `<div style="display:flex;align-items:center;gap:0.65rem;padding:0.6rem 0.85rem;
+                         background:rgba(147,51,234,0.06);border:1px solid var(--border);border-radius:8px">
+               <span style="font-size:1rem;flex-shrink:0">⚾</span>
+               <div style="flex:1;min-width:0">
+                 <div style="font-family:var(--font-mono);font-size:0.63rem;color:var(--purple-400);
+                             letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.15rem">Starting Pitcher</div>
+                 <div style="font-size:0.875rem;font-weight:600;color:var(--text);
+                             white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pd.name}</div>
+               </div>
+               <div style="text-align:right;flex-shrink:0">
+                 <div style="font-family:var(--font-mono);font-size:0.63rem;color:var(--gray-500);margin-bottom:0.15rem">ERA</div>
+                 <div style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:${eraColor}">
+                   ${eraVal !== null ? eraVal.toFixed(2) : '—'}
+                 </div>
+               </div>
+             </div>`
+          : '';
 
         return `
           <div class="pick-card">
@@ -525,26 +661,44 @@
               ${pick.away_team} <span class="vs">@</span> ${pick.home_team}
             </div>
 
-            <div class="pick-main">
-              <div class="pick-label">Model Pick</div>
-              <div class="pick-value">${pick.pick} ${side === 'Away' ? '(Away)' : '(Home)'}</div>
-              <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--gray-500);margin-top:0.2rem">
-                Line: ${fmtOdds(pick.line)}
+            <!-- Team logo hero -->
+            <div class="pick-team-hero">
+              ${teamLogoHTML(pick.pick, 52)}
+              <div class="pick-team-info">
+                <div class="pick-team-name">${pick.pick}</div>
+                <div class="pick-team-side">${side.toUpperCase()} · ${fmtOdds(line)}</div>
               </div>
             </div>
 
+            <!-- Starting pitcher -->
+            ${pitcherHTML}
+
+            <!-- Win prob vs implied prob -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+              <div class="pick-main" style="padding:0.65rem 0.85rem">
+                <div class="pick-label">Win Probability</div>
+                <div style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:${color}">${winProb}%</div>
+              </div>
+              <div class="pick-main" style="padding:0.65rem 0.85rem">
+                <div class="pick-label">Market Implied</div>
+                <div style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--muted)">${impliedPct}%</div>
+              </div>
+            </div>
+
+            <!-- Edge chips -->
             <div class="pick-meta-row">
               <div class="meta-chip">Edge: <span>+${pick.edge}%</span></div>
-              <div class="meta-chip">Conf: <span>${confPct}%</span></div>
+              <div class="meta-chip">Line: <span>${fmtOdds(line)}</span></div>
             </div>
 
+            <!-- Edge bar -->
             <div class="confidence-row">
               <div class="confidence-header">
-                <span class="confidence-label">Model Confidence</span>
-                <span class="confidence-pct" style="color:${color}">${confPct}%</span>
+                <span class="confidence-label">Model vs Market Edge</span>
+                <span class="confidence-pct" style="color:${color}">+${pick.edge}%</span>
               </div>
               <div class="bar-bg">
-                <div class="bar-fill" style="width:${confPct}%;background:${color}"></div>
+                <div class="bar-fill" style="width:${Math.min(pick.edge * 10, 100)}%;background:${color}"></div>
               </div>
             </div>
           </div>`;
