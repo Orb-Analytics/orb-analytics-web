@@ -353,6 +353,163 @@
       align-items: center;
       gap: 0.5rem;
     }
+    /* ── Bet Tracker section ─────────────────────────────────── */
+    .tracker-section {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+
+    .tracker-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition);
+    }
+
+    .tracker-toggle:hover { background: rgba(147,51,234,0.06); }
+
+    .tracker-toggle-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tracker-toggle-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .tracker-toggle-sub {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .tracker-chevron {
+      color: var(--muted);
+      transition: transform 0.25s ease;
+      font-size: 1.1rem;
+    }
+
+    .tracker-chevron.open { transform: rotate(180deg); }
+
+    .tracker-body {
+      display: none;
+      padding: 0 1.25rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .tracker-body.open { display: block; }
+
+    .t-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1.25rem;
+      padding-top: 1.25rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) { .t-layout { grid-template-columns: 1fr; } }
+
+    .t-form-card {
+      background: var(--purple-900);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem;
+    }
+
+    .t-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem;
+    }
+
+    .t-full { grid-column: 1 / -1; }
+
+    .t-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 700px) { .t-stats { grid-template-columns: repeat(2, 1fr); } }
+
+    .t-charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 700px) { .t-charts { grid-template-columns: 1fr; } }
+
+    .t-chart-card {
+      background: var(--purple-900);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .t-chart-title {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--purple-400);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .t-chart-wrap { position: relative; height: 150px; }
+
+    .t-table-card {
+      background: var(--purple-900);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .t-table-header {
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .t-filter-sel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      padding: 0.25rem 0.55rem;
+      font-family: var(--font-body);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .t-del-btn {
+      background: none; border: none; color: var(--gray-500);
+      cursor: pointer; padding: 0.15rem 0.35rem; border-radius: 4px;
+      font-size: 0.82rem; transition: var(--transition);
+    }
+    .t-del-btn:hover { color: var(--red); background: rgba(239,68,68,0.1); }
+
+    .t-profit-pos { color: var(--green); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; }
+    .t-profit-neg { color: var(--red);   font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; }
+    .t-odds { font-family: var(--font-mono); font-size: 0.8rem; }
+    .t-odds-hint { font-size: 0.72rem; color: var(--gray-500); margin-top: 0.2rem; font-family: var(--font-mono); }
   </style>
 </head>
 <body>
@@ -360,6 +517,135 @@
 
   <main class="page">
     <div class="container">
+      <!-- ── BET TRACKER ─────────────────────────────────────── -->
+      <div class="tracker-section" style="margin-top:1.5rem">
+        <div class="tracker-toggle" onclick="toggleTracker()">
+          <div class="tracker-toggle-left">
+            <span style="font-size:1.2rem">📈</span>
+            <div>
+              <div class="tracker-toggle-title">Bet Tracker</div>
+              <div class="tracker-toggle-sub" id="tracker-summary">Log bets, track your record and P/L</div>
+            </div>
+          </div>
+          <span class="tracker-chevron" id="tracker-chevron">▾</span>
+        </div>
+
+        <div class="tracker-body" id="tracker-body">
+          <div class="t-layout">
+            <!-- Form -->
+            <div class="t-form-card">
+              <div style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin-bottom:1rem">＋ Log a Bet</div>
+              <div class="t-form-grid">
+                <div class="form-group t-full">
+                  <label class="form-label">Pick / Description</label>
+                  <input class="form-input" id="t-pick" type="text" placeholder="e.g. Dodgers ML" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sport</label>
+                  <select class="form-select" id="t-sport">
+                    <option value="MLB">⚾ MLB</option>
+                    <option value="NFL">🏈 NFL</option>
+                    <option value="NBA">🏀 NBA</option>
+                    <option value="NHL">🏒 NHL</option>
+                    <option value="Other">⚡ Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Bet Type</label>
+                  <select class="form-select" id="t-type">
+                    <option value="Moneyline">Moneyline</option>
+                    <option value="Spread">Spread</option>
+                    <option value="Over/Under">Over/Under</option>
+                    <option value="Prop">Prop</option>
+                    <option value="Parlay">Parlay</option>
+                    <option value="Futures">Futures</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Odds (American)</label>
+                  <input class="form-input" id="t-odds" type="number" placeholder="-110" oninput="updateOddsHint()" />
+                  <div class="t-odds-hint" id="t-odds-hint"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Stake ($)</label>
+                  <input class="form-input" id="t-stake" type="number" placeholder="100" min="0" step="0.01" />
+                </div>
+                <div class="form-group t-full">
+                  <label class="form-label">Game Date</label>
+                  <input class="form-input" id="t-date" type="date" />
+                </div>
+                <div class="form-group t-full">
+                  <label class="form-label">Result</label>
+                  <select class="form-select" id="t-result">
+                    <option value="Pending">⏳ Pending</option>
+                    <option value="Win">✅ Win</option>
+                    <option value="Loss">❌ Loss</option>
+                    <option value="Push">↩️ Push</option>
+                  </select>
+                </div>
+                <div class="form-group t-full">
+                  <label class="form-label">Notes (optional)</label>
+                  <input class="form-input" id="t-notes" type="text" placeholder="Model pick, line value, etc." />
+                </div>
+                <div class="t-full">
+                  <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="tAddBet()">Log Bet</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Stats + Charts + Table -->
+            <div>
+              <div class="t-stats" id="t-stats-row"></div>
+              <div class="t-charts">
+                <div class="t-chart-card">
+                  <div class="t-chart-title">P/L by Sport</div>
+                  <div class="t-chart-wrap"><canvas id="t-sport-chart"></canvas></div>
+                </div>
+                <div class="t-chart-card">
+                  <div class="t-chart-title">Cumulative P/L</div>
+                  <div class="t-chart-wrap"><canvas id="t-trend-chart"></canvas></div>
+                </div>
+              </div>
+              <div class="t-table-card">
+                <div class="t-table-header">
+                  <span style="font-family:var(--font-display);font-size:0.9rem;font-weight:700">Bet History</span>
+                  <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">
+                    <select class="t-filter-sel" id="t-filter-sport" onchange="tRenderTable()">
+                      <option value="all">All Sports</option>
+                      <option value="MLB">MLB</option>
+                      <option value="NFL">NFL</option>
+                      <option value="NBA">NBA</option>
+                    </select>
+                    <select class="t-filter-sel" id="t-filter-result" onchange="tRenderTable()">
+                      <option value="all">All Results</option>
+                      <option value="Win">Wins</option>
+                      <option value="Loss">Losses</option>
+                      <option value="Pending">Pending</option>
+                    </select>
+                    <button class="btn btn-ghost btn-sm" onclick="tClearAll()">Clear All</button>
+                  </div>
+                </div>
+                <div style="overflow-x:auto">
+                  <div class="empty-state" id="t-empty" style="padding:2rem">
+                    <p>No bets logged yet.</p>
+                  </div>
+                  <table class="data-table" id="t-table" style="display:none">
+                    <thead>
+                      <tr>
+                        <th>Date</th><th>Pick</th><th>Sport</th><th>Type</th>
+                        <th>Odds</th><th>Stake</th><th>P/L</th><th>Result</th><th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="t-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PREDICTIONS ────────────────────────────────────────── -->
       <div class="predictions-header">
         <div>
           <div class="section-label">ML-Powered Picks</div>
@@ -795,7 +1081,7 @@
         <div class="stat-card">
           <div class="stat-label">Win Rate</div>
           <div class="stat-value ${wrColor}">${s.win_rate}%</div>
-          <div class="stat-sub">Break-even ≈ 52.38%</div>
+          <div class="stat-sub">Break-even ≈ 52.4%</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Total Units</div>
@@ -988,7 +1274,157 @@
       }).join('');
     }
 
-    // ── Init ──────────────────────────────────────────────────────
+    // ── Bet Tracker ───────────────────────────────────────────────
+    const T_KEY = 'orb_bets_v1';
+    let tBets = JSON.parse(localStorage.getItem(T_KEY) || '[]');
+    let tSportChart, tTrendChart;
+
+    document.getElementById('t-date').value = new Date().toISOString().split('T')[0];
+
+    function saveTBets() { localStorage.setItem(T_KEY, JSON.stringify(tBets)); }
+
+    function toggleTracker() {
+      const body    = document.getElementById('tracker-body');
+      const chevron = document.getElementById('tracker-chevron');
+      body.classList.toggle('open');
+      chevron.classList.toggle('open');
+    }
+
+    function updateOddsHint() {
+      const odds = parseInt(document.getElementById('t-odds').value);
+      const hint = document.getElementById('t-odds-hint');
+      if (!odds) { hint.textContent = ''; return; }
+      const implied = odds > 0 ? (100/(odds+100))*100 : (Math.abs(odds)/(Math.abs(odds)+100))*100;
+      hint.textContent = `Implied: ${implied.toFixed(1)}%`;
+    }
+
+    function tCalcPL(odds, stake, result) {
+      if (result === 'Pending') return null;
+      if (result === 'Push')   return 0;
+      if (result === 'Loss')   return -Math.abs(stake);
+      const o = parseInt(odds);
+      return o > 0 ? (o/100)*stake : (100/Math.abs(o))*stake;
+    }
+
+    function tAddBet() {
+      const pick  = document.getElementById('t-pick').value.trim();
+      const sport = document.getElementById('t-sport').value;
+      const type  = document.getElementById('t-type').value;
+      const odds  = document.getElementById('t-odds').value;
+      const stake = parseFloat(document.getElementById('t-stake').value);
+      const date  = document.getElementById('t-date').value;
+      const result= document.getElementById('t-result').value;
+      const notes = document.getElementById('t-notes').value.trim();
+      if (!pick)  { alert('Enter a pick description.'); return; }
+      if (!odds)  { alert('Enter odds.'); return; }
+      if (!stake || stake <= 0) { alert('Enter a valid stake.'); return; }
+      if (!date)  { alert('Select a date.'); return; }
+      tBets.unshift({ id: Date.now(), pick, sport, type, odds: parseInt(odds), stake, date, result, notes, pl: tCalcPL(odds, stake, result) });
+      saveTBets();
+      tRefresh();
+      document.getElementById('t-pick').value = '';
+      document.getElementById('t-odds').value = '';
+      document.getElementById('t-stake').value = '';
+      document.getElementById('t-notes').value = '';
+      document.getElementById('t-result').value = 'Pending';
+      document.getElementById('t-odds-hint').textContent = '';
+    }
+
+    function tRenderStats() {
+      const settled = tBets.filter(b => b.result !== 'Pending');
+      const wins    = settled.filter(b => b.result === 'Win').length;
+      const losses  = settled.filter(b => b.result === 'Loss').length;
+      const totalPL = settled.reduce((s,b) => s+(b.pl||0), 0);
+      const totalStake = tBets.reduce((s,b) => s+b.stake, 0);
+      const roi     = totalStake > 0 ? (totalPL/totalStake)*100 : 0;
+      const wr      = settled.length > 0 ? (wins/settled.length)*100 : 0;
+      document.getElementById('t-stats-row').innerHTML = `
+        <div class="stat-card"><div class="stat-label">Record</div>
+          <div class="stat-value stat-neutral">${wins}-${losses}</div>
+          <div class="stat-sub">${settled.length} settled</div></div>
+        <div class="stat-card"><div class="stat-label">Win Rate</div>
+          <div class="stat-value ${wr>=52.4?'stat-positive':'stat-negative'}">${wr.toFixed(1)}%</div>
+          <div class="stat-sub">Break-even ≈ 52.4%</div></div>
+        <div class="stat-card"><div class="stat-label">Total P/L</div>
+          <div class="stat-value ${totalPL>=0?'stat-positive':'stat-negative'}">${totalPL>=0?'+':''}$${totalPL.toFixed(2)}</div>
+          <div class="stat-sub">on $${totalStake.toFixed(2)}</div></div>
+        <div class="stat-card"><div class="stat-label">ROI</div>
+          <div class="stat-value ${roi>=0?'stat-positive':'stat-negative'}">${roi>=0?'+':''}${roi.toFixed(1)}%</div>
+          <div class="stat-sub">${tBets.length} total bets</div></div>`;
+
+      // Update collapsed summary
+      const settled2 = tBets.filter(b => b.result !== 'Pending');
+      const w2 = settled2.filter(b => b.result==='Win').length;
+      const l2 = settled2.filter(b => b.result==='Loss').length;
+      const pl2 = settled2.reduce((s,b)=>s+(b.pl||0),0);
+      document.getElementById('tracker-summary').textContent =
+        tBets.length ? `${w2}-${l2} record · ${pl2>=0?'+':''}$${pl2.toFixed(2)} P/L · ${tBets.length} bets`
+                     : 'Log bets, track your record and P/L';
+    }
+
+    function tRenderCharts() {
+      const sportMap = {};
+      tBets.filter(b => b.result!=='Pending').forEach(b => {
+        if (!sportMap[b.sport]) sportMap[b.sport] = 0;
+        sportMap[b.sport] += (b.pl||0);
+      });
+      const sLabels = Object.keys(sportMap);
+      const sValues = Object.values(sportMap);
+      if (tSportChart) tSportChart.destroy();
+      tSportChart = new Chart(document.getElementById('t-sport-chart'), {
+        type: 'bar',
+        data: { labels: sLabels.length?sLabels:['No data'], datasets:[{ data: sLabels.length?sValues:[0], backgroundColor: sValues.map(v=>v>=0?'rgba(16,185,129,0.7)':'rgba(239,68,68,0.7)'), borderRadius:5, borderSkipped:false }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{color:'rgba(147,51,234,0.08)'},ticks:{color:'#9CA3AF'}}, y:{grid:{color:'rgba(147,51,234,0.08)'},ticks:{color:'#9CA3AF',callback:v=>`$${v}`}} } }
+      });
+      const settled = [...tBets].filter(b=>b.result!=='Pending').reverse();
+      let cum=0; const td = settled.map(b=>{cum+=(b.pl||0);return{x:b.date,y:parseFloat(cum.toFixed(2))};});
+      if (tTrendChart) tTrendChart.destroy();
+      tTrendChart = new Chart(document.getElementById('t-trend-chart'), {
+        type:'line',
+        data:{ labels:td.length?td.map(d=>d.x):['Start'], datasets:[{ data:td.length?td.map(d=>d.y):[0], borderColor:cum>=0?'#10B981':'#EF4444', backgroundColor:cum>=0?'rgba(16,185,129,0.08)':'rgba(239,68,68,0.08)', fill:true, tension:0.4, pointRadius:td.length<20?3:0, borderWidth:2 }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{color:'rgba(147,51,234,0.08)'},ticks:{color:'#9CA3AF',maxTicksLimit:5}}, y:{grid:{color:'rgba(147,51,234,0.08)'},ticks:{color:'#9CA3AF',callback:v=>`$${v}`}} } }
+      });
+    }
+
+    function tRenderTable() {
+      const sf = document.getElementById('t-filter-sport').value;
+      const rf = document.getElementById('t-filter-result').value;
+      let filtered = tBets;
+      if (sf !== 'all') filtered = filtered.filter(b=>b.sport===sf);
+      if (rf !== 'all') filtered = filtered.filter(b=>b.result===rf);
+      const empty = document.getElementById('t-empty');
+      const table = document.getElementById('t-table');
+      if (!filtered.length) { empty.style.display='flex'; table.style.display='none'; return; }
+      empty.style.display='none'; table.style.display='table';
+      document.getElementById('t-tbody').innerHTML = filtered.map(bet => {
+        const pl = bet.pl;
+        const plDisplay = bet.result==='Pending'?'—':pl===0?'$0.00 (Push)':pl>0?`+$${pl.toFixed(2)}`:`-$${Math.abs(pl).toFixed(2)}`;
+        const plClass = bet.result==='Pending'?'':pl>0?'t-profit-pos':pl<0?'t-profit-neg':'';
+        const badge = {Win:'badge-win',Loss:'badge-loss',Push:'badge-push',Pending:'badge-pending'}[bet.result]||'badge-pending';
+        const odds = bet.odds>0?`+${bet.odds}`:`${bet.odds}`;
+        return `<tr>
+          <td style="font-family:var(--font-mono);font-size:0.78rem;white-space:nowrap">${bet.date}</td>
+          <td><div style="font-weight:600;font-size:0.85rem">${bet.pick}</div>${bet.notes?`<div style="font-size:0.72rem;color:var(--gray-500)">${bet.notes}</div>`:''}</td>
+          <td style="font-size:0.8rem">${bet.sport}</td>
+          <td style="font-size:0.8rem;color:var(--muted)">${bet.type}</td>
+          <td class="t-odds">${odds}</td>
+          <td style="font-family:var(--font-mono);font-size:0.8rem">$${bet.stake.toFixed(2)}</td>
+          <td class="${plClass}">${plDisplay}</td>
+          <td><span class="badge ${badge}">${bet.result}</span></td>
+          <td><button class="t-del-btn" onclick="tDeleteBet(${bet.id})">✕</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function tDeleteBet(id) { tBets=tBets.filter(b=>b.id!==id); saveTBets(); tRefresh(); }
+    function tClearAll() {
+      if (!tBets.length) return;
+      if (confirm(`Delete all ${tBets.length} bets?`)) { tBets=[]; saveTBets(); tRefresh(); }
+    }
+    function tRefresh() { tRenderStats(); tRenderCharts(); tRenderTable(); }
+    tRefresh();
+
+    // ── Init predictions ──────────────────────────────────────────
     loadToday();
     loadHistory();
   </script>
