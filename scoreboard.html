@@ -122,7 +122,23 @@
     }
     .vs-at { font-family: var(--font-display); font-size: 1rem; color: var(--text); font-weight: 300; }
 
-    /* Pitcher matchup */
+    .team-odds {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      background: rgba(147,51,234,0.12);
+      border: 1px solid var(--border);
+      color: var(--purple-300);
+      white-space: nowrap;
+    }
+
+    .team-odds.pick {
+      background: rgba(147,51,234,0.22);
+      border-color: var(--purple-500);
+      color: var(--purple-200);
+    }
     .pitcher-matchup {
       background: rgba(147,51,234,0.06); border: 1px solid var(--border);
       border-radius: 7px; padding: 0.55rem 0.75rem;
@@ -190,7 +206,30 @@
     const cache     = {};
     const eraCache  = {};
 
-    document.getElementById('date-display').textContent =
+    let oddsMap = {}; // "AWAY|HOME" → { awayLine, homeLine, pick }
+
+    async function fetchOdds() {
+      try {
+        const res  = await fetch('https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json');
+        const data = await res.json();
+        const map  = {};
+        for (const pick of data.picks || []) {
+          const key = `${pick.away_team}|${pick.home_team}`;
+          const line = pick.line || 0;
+          // If pick is away team, their line is the pick line; home gets implied opposite
+          let awayLine, homeLine;
+          if (pick.pick === pick.away_team) {
+            awayLine = line;
+            homeLine = line > 0 ? -(line + 20) : Math.abs(line) - 20; // rough implied
+          } else {
+            homeLine = line;
+            awayLine = line > 0 ? -(line + 20) : Math.abs(line) - 20;
+          }
+          map[key] = { awayLine, homeLine, pick: pick.pick, away: pick.away_team, home: pick.home_team };
+        }
+        oddsMap = map;
+      } catch { oddsMap = {}; }
+    }
       new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
     // ── Helpers ───────────────────────────────────────────────────
@@ -280,20 +319,28 @@
       }
 
       // Team column
-      function teamCol(team, isWin, isLoss, side) {
+      function teamCol(team, isWin, isLoss, side, oddsLine, isPick) {
         const abbr   = team.team?.abbreviation || '???';
         const record = team.records?.[0]?.summary || '';
         const score  = team.score ?? '';
         const abbrClass = showScore ? (isWin ? 'winning' : isLoss ? 'losing' : '') : '';
         const scoreClass = isWin ? 'winning' : isLoss ? 'losing' : '';
+        const fmtOdds = o => o > 0 ? `+${o}` : `${o}`;
 
         return `<div class="team-col">
           ${logoHTML(abbr, leagueId)}
           <div class="team-abbr ${abbrClass}">${abbr}</div>
           ${record ? `<div class="team-record">${record}</div>` : ''}
+          ${oddsLine != null ? `<div class="team-odds${isPick ? ' pick' : ''}">${fmtOdds(Math.round(oddsLine))}${isPick ? ' ✓' : ''}</div>` : ''}
           ${showScore ? `<div class="team-score ${scoreClass}">${score}</div>` : ''}
         </div>`;
       }
+
+      // Look up odds from predictions.json
+      const awayAbbr = away.team?.abbreviation?.toUpperCase();
+      const homeAbbr = home.team?.abbreviation?.toUpperCase();
+      const oddsKey  = `${awayAbbr}|${homeAbbr}`;
+      const gameOdds = leagueId === 'mlb' ? (oddsMap[oddsKey] || null) : null;
 
       // Pitcher matchup (MLB only) — keyed by venue name
       let pitcherHTML = '';
@@ -330,11 +377,11 @@
             ${statusHTML}
           </div>
           <div class="teams-block">
-            ${teamCol(away, awayWin, homeWin, 'away')}
+            ${teamCol(away, awayWin, homeWin, 'away', gameOdds?.awayLine, gameOdds?.pick === awayAbbr)}
             <div class="vs-col">
               <span class="vs-at">@</span>
             </div>
-            ${teamCol(home, homeWin, awayWin, 'home')}
+            ${teamCol(home, homeWin, awayWin, 'home', gameOdds?.homeLine, gameOdds?.pick === homeAbbr)}
           </div>
           ${pitcherHTML}
           <div class="card-footer">
@@ -427,7 +474,10 @@
         let pitcherMap = {};
 
         if (leagueId === 'mlb') {
-          pitcherMap = await fetchPitchersTagged();
+          [pitcherMap] = await Promise.all([
+            fetchPitchersTagged(),
+            fetchOdds(),
+          ]);
           // Fetch all ERAs in parallel
           const allIds = [];
           Object.values(pitcherMap).forEach(p => {
