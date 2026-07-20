@@ -3,7 +3,6 @@ const NAV_LINKS = [
   { href: 'scoreboard.html',  label: 'Scoreboard' },
   { href: 'predictions.html', label: 'Predictions' },
   { href: 'tracker.html',     label: 'Bankroll' },
-  { href: 'feed.html',        label: 'Feed' },
 ];
 
 const SOCIAL_LINKS = [
