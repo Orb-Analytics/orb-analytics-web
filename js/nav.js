@@ -1,9 +1,9 @@
 // ─── Shared Nav Builder ───────────────────────────────────────────
 const NAV_LINKS = [
-  { href: 'index.html', label: 'Home' },
-  { href: 'scoreboard.html', label: 'Scoreboard' },
+  { href: 'scoreboard.html',  label: 'Scoreboard' },
   { href: 'predictions.html', label: 'Predictions' },
-  { href: 'tracker.html', label: 'Bankroll' },
+  { href: 'tracker.html',     label: 'Bankroll' },
+  { href: 'feed.html',        label: 'Feed' },
 ];
 
 const SOCIAL_LINKS = [
@@ -44,7 +44,7 @@ function buildNav(activePage = '') {
 
   root.innerHTML = `
     <div class="nav-logo">
-      <a class="nav-logo-link" href="index.html" aria-label="Orb Analytics Home">
+      <a class="nav-logo-link" href="scoreboard.html" aria-label="Orb Analytics Home">
         <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img" />
         <span class="nav-logo-text">Orb Analytics</span>
       </a>
@@ -64,7 +64,6 @@ function buildNav(activePage = '') {
 
 window.buildNav = buildNav;
 
-// add this helper if missing
 function link(href, label, activePage) {
   const active = activePage === href ? 'active' : '';
   return `<a class="${active}" href="${href}">${label}</a>`;
