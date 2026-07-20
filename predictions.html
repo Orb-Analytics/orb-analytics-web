@@ -958,12 +958,23 @@
             </div>
 
             <!-- Team logo hero -->
-            <div class="pick-team-hero">
-              ${teamLogoHTML(pick.pick, 52)}
-              <div class="pick-team-info">
-                <div class="pick-team-name">${pick.pick}</div>
-                <div class="pick-team-side">${side.toUpperCase()} · ${fmtOdds(line)}</div>
+            <div class="pick-team-hero" style="justify-content:space-between">
+              <div style="display:flex;align-items:center;gap:1rem">
+                ${teamLogoHTML(pick.pick, 52)}
+                <div class="pick-team-info">
+                  <div class="pick-team-name">${pick.pick}</div>
+                  <div class="pick-team-side">${side.toUpperCase()} · ${fmtOdds(line)}</div>
+                </div>
               </div>
+              <button
+                onclick="logPick('${pick.pick}','MLB',${line})"
+                style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);
+                       color:#6EE7B7;font-family:var(--font-body);font-size:0.75rem;font-weight:600;
+                       padding:0.35rem 0.75rem;border-radius:7px;cursor:pointer;white-space:nowrap;
+                       transition:all 0.2s ease;flex-shrink:0"
+                onmouseover="this.style.background='rgba(16,185,129,0.28)'"
+                onmouseout="this.style.background='rgba(16,185,129,0.15)'"
+              >＋ Log Pick</button>
             </div>
 
             <!-- Starting pitcher -->
@@ -1342,6 +1353,18 @@
           <td><button class="t-del-btn" onclick="tDeleteBet(${bet.id})">✕</button></td>
         </tr>`;
       }).join('');
+    }
+
+    function logPick(pick, sport, odds) {
+      // Pre-fill the bet form
+      document.getElementById('t-pick').value  = pick + ' ML';
+      document.getElementById('t-sport').value = sport;
+      document.getElementById('t-type').value  = 'Moneyline';
+      document.getElementById('t-odds').value  = odds;
+      updateOddsHint();
+      // Scroll to form
+      document.getElementById('t-pick').focus();
+      document.getElementById('t-pick').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function tDeleteBet(id) { tBets=tBets.filter(b=>b.id!==id); saveTBets(); tRefresh(); }
