@@ -226,7 +226,7 @@
     /* ── Performance Splits ──────────────────────────────────── */
     .splits-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
@@ -368,10 +368,17 @@
         </div>
       </div>
 
-      <!-- Main Tabs -->
-      <div class="main-tabs">
-        <button class="main-tab active" onclick="switchTab('today')" id="tab-today">Today's Picks</button>
-        <button class="main-tab" onclick="switchTab('history')" id="tab-history">Model History</button>
+      <!-- Sport Tabs -->
+      <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
+        <div class="main-tabs" style="margin-bottom:0">
+          <button class="main-tab active" onclick="switchSport('mlb')" id="sport-tab-mlb">⚾ MLB</button>
+          <button class="main-tab" onclick="switchSport('nfl')" id="sport-tab-nfl">🏈 NFL</button>
+          <button class="main-tab" onclick="switchSport('nba')" id="sport-tab-nba">🏀 NBA</button>
+        </div>
+        <div class="main-tabs" style="margin-bottom:0">
+          <button class="main-tab active" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
+          <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>
+        </div>
       </div>
 
       <!-- Source note -->
@@ -381,9 +388,38 @@
 
       <!-- ── TODAY'S PICKS ───────────────────────────────────── -->
       <div class="tab-panel active" id="panel-today">
-        <div class="picks-grid" id="picks-container">
-          <div class="loading-state" style="grid-column:1/-1">
-            <div class="spinner"></div> Loading today's picks...
+        <!-- MLB picks -->
+        <div id="picks-mlb">
+          <div class="picks-grid" id="picks-container">
+            <div class="loading-state" style="grid-column:1/-1">
+              <div class="spinner"></div> Loading today's picks...
+            </div>
+          </div>
+        </div>
+
+        <!-- NFL picks -->
+        <div id="picks-nfl" style="display:none">
+          <div class="picks-grid">
+            <div class="empty-state" style="grid-column:1/-1;padding:4rem 1.5rem">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+              </svg>
+              <p style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:0.3rem">NFL Model Coming Soon</p>
+              <p style="color:var(--gray-500);font-size:0.875rem">NFL predictions will appear here once the season begins and the model is connected.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NBA picks -->
+        <div id="picks-nba" style="display:none">
+          <div class="picks-grid">
+            <div class="empty-state" style="grid-column:1/-1;padding:4rem 1.5rem">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+              </svg>
+              <p style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:0.3rem">NBA Model Coming Soon</p>
+              <p style="color:var(--gray-500);font-size:0.875rem">NBA predictions will appear here once the season begins and the model is connected.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -497,11 +533,35 @@
     Chart.defaults.color = '#9CA3AF';
     Chart.defaults.font  = { family: "'Inter', sans-serif", size: 11 };
 
-    // ── Tab switch ────────────────────────────────────────────────
-    function switchTab(tab) {
-      ['today','history'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
-        document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
+    // ── Sport + View switching ────────────────────────────────────
+    let activeSport = 'mlb';
+    let activeView  = 'today';
+
+    function switchSport(sport) {
+      activeSport = sport;
+      ['mlb','nfl','nba'].forEach(s => {
+        document.getElementById(`sport-tab-${s}`).classList.toggle('active', s === sport);
+        const el = document.getElementById(`picks-${s}`);
+        if (el) el.style.display = s === sport ? 'block' : 'none';
+      });
+      // Update source note
+      const note = document.getElementById('source-note');
+      if (sport === 'mlb') {
+        note.innerHTML = `✅ Live predictions from <strong>Orb-Analytics/MLB-Model</strong> · XGBoost v2.1`;
+        note.style.borderColor = 'rgba(16,185,129,0.3)';
+        note.style.color = '#6EE7B7';
+      } else {
+        note.innerHTML = `⏳ <strong>${sport.toUpperCase()} Model</strong> — predictions will be available when the season begins.`;
+        note.style.borderColor = 'var(--border)';
+        note.style.color = 'var(--muted)';
+      }
+    }
+
+    function switchView(view) {
+      activeView = view;
+      ['today','history'].forEach(v => {
+        document.getElementById(`view-tab-${v}`).classList.toggle('active', v === view);
+        document.getElementById(`panel-${v}`).classList.toggle('active', v === view);
       });
     }
 
@@ -634,7 +694,6 @@
         const pitcherHTML = pd
           ? `<div style="display:flex;align-items:center;gap:0.65rem;padding:0.6rem 0.85rem;
                          background:rgba(147,51,234,0.06);border:1px solid var(--border);border-radius:8px">
-               <span style="font-size:1rem;flex-shrink:0">⚾</span>
                <div style="flex:1;min-width:0">
                  <div style="font-family:var(--font-mono);font-size:0.63rem;color:var(--purple-400);
                              letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.15rem">Starting Pitcher</div>
@@ -736,7 +795,7 @@
         <div class="stat-card">
           <div class="stat-label">Win Rate</div>
           <div class="stat-value ${wrColor}">${s.win_rate}%</div>
-          <div class="stat-sub">Break-even ≈ 52.4%</div>
+          <div class="stat-sub">Break-even ≈ 52.38%</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Total Units</div>
