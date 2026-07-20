@@ -366,10 +366,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem 1.25rem;
+      padding: 0.75rem 1.25rem;
       cursor: pointer;
       user-select: none;
       transition: background var(--transition);
+      gap: 1rem;
     }
 
     .tracker-toggle:hover { background: rgba(147,51,234,0.06); }
@@ -377,20 +378,49 @@
     .tracker-toggle-left {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 1rem;
+      flex: 1;
+      min-width: 0;
+      flex-wrap: wrap;
     }
 
     .tracker-toggle-title {
       font-family: var(--font-display);
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: var(--text);
+      white-space: nowrap;
     }
 
-    .tracker-toggle-sub {
+    .tracker-stat-pills {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tracker-stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: rgba(147,51,234,0.1);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.65rem;
+      white-space: nowrap;
+    }
+
+    .tracker-stat-pill .pill-label {
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--muted);
+      font-size: 0.68rem;
+      color: var(--gray-500);
+      letter-spacing: 0.04em;
+    }
+
+    .tracker-stat-pill .pill-value {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 700;
     }
 
     .tracker-chevron {
@@ -521,10 +551,25 @@
       <div class="tracker-section" style="margin-top:1.5rem">
         <div class="tracker-toggle" onclick="toggleTracker()">
           <div class="tracker-toggle-left">
-            <span style="font-size:1.2rem">📈</span>
-            <div>
-              <div class="tracker-toggle-title">Bet Tracker</div>
-              <div class="tracker-toggle-sub" id="tracker-summary">Log bets, track your record and P/L</div>
+            <span style="font-size:1rem">📈</span>
+            <span class="tracker-toggle-title">Bet Tracker</span>
+            <div class="tracker-stat-pills" id="tracker-stat-pills">
+              <div class="tracker-stat-pill">
+                <span class="pill-label">Record</span>
+                <span class="pill-value" id="tp-record" style="color:var(--text)">—</span>
+              </div>
+              <div class="tracker-stat-pill">
+                <span class="pill-label">Win Rate</span>
+                <span class="pill-value" id="tp-winrate" style="color:var(--muted)">—</span>
+              </div>
+              <div class="tracker-stat-pill">
+                <span class="pill-label">P/L</span>
+                <span class="pill-value" id="tp-pl" style="color:var(--muted)">$0.00</span>
+              </div>
+              <div class="tracker-stat-pill">
+                <span class="pill-label">ROI</span>
+                <span class="pill-value" id="tp-roi" style="color:var(--muted)">0%</span>
+              </div>
             </div>
           </div>
           <span class="tracker-chevron" id="tracker-chevron">▾</span>
@@ -1352,14 +1397,22 @@
           <div class="stat-value ${roi>=0?'stat-positive':'stat-negative'}">${roi>=0?'+':''}${roi.toFixed(1)}%</div>
           <div class="stat-sub">${tBets.length} total bets</div></div>`;
 
-      // Update collapsed summary
+      // Update collapsed pills
       const settled2 = tBets.filter(b => b.result !== 'Pending');
-      const w2 = settled2.filter(b => b.result==='Win').length;
-      const l2 = settled2.filter(b => b.result==='Loss').length;
+      const w2  = settled2.filter(b => b.result==='Win').length;
+      const l2  = settled2.filter(b => b.result==='Loss').length;
       const pl2 = settled2.reduce((s,b)=>s+(b.pl||0),0);
-      document.getElementById('tracker-summary').textContent =
-        tBets.length ? `${w2}-${l2} record · ${pl2>=0?'+':''}$${pl2.toFixed(2)} P/L · ${tBets.length} bets`
-                     : 'Log bets, track your record and P/L';
+      const wr2 = settled2.length > 0 ? (w2/settled2.length)*100 : null;
+      const stake2 = tBets.reduce((s,b)=>s+b.stake,0);
+      const roi2 = stake2 > 0 ? (pl2/stake2)*100 : 0;
+
+      document.getElementById('tp-record').textContent  = tBets.length ? `${w2}-${l2}` : '—';
+      document.getElementById('tp-winrate').textContent = wr2 !== null ? `${wr2.toFixed(1)}%` : '—';
+      document.getElementById('tp-winrate').style.color = wr2 === null ? 'var(--muted)' : wr2 >= 52.4 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('tp-pl').textContent      = `${pl2>=0?'+':''}$${pl2.toFixed(2)}`;
+      document.getElementById('tp-pl').style.color      = pl2 >= 0 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('tp-roi').textContent     = `${roi2>=0?'+':''}${roi2.toFixed(1)}%`;
+      document.getElementById('tp-roi').style.color     = roi2 >= 0 ? 'var(--green)' : 'var(--red)';
     }
 
     function tRenderCharts() {
