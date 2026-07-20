@@ -1,7 +1,7 @@
 // ─── Shared Nav Builder ───────────────────────────────────────────
 const NAV_LINKS = [
   { href: 'scoreboard.html',  label: 'Scoreboard' },
-  { href: 'predictions.html', label: 'Bet Tracker' },
+  { href: 'predictions.html', label: 'Predictions' },
 ];
 
 const SOCIAL_LINKS = [
