@@ -103,10 +103,13 @@
     /* ── Games grid ──────────────────────────────────────────── */
     .games-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
       padding-bottom: 3rem;
     }
+
+    @media (max-width: 900px) { .games-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .games-grid { grid-template-columns: 1fr; } }
 
     /* ── Game card ───────────────────────────────────────────── */
     .game-card {
@@ -553,13 +556,13 @@
                 <div class="pitcher-row">
                   <span class="pitcher-team">${away.team?.abbreviation}</span>
                   <span class="pitcher-name">${awayP.fullName}</span>
-                  <span class="pitcher-era" style="color:${eraColor(awayEra)}">${awayEra !== null ? parseFloat(awayEra).toFixed(2) : '—'}</span>
+                  <span class="pitcher-era" style="color:${eraColor(awayEra)}">ERA: ${awayEra !== null ? parseFloat(awayEra).toFixed(2) : '—'}</span>
                 </div>` : ''}
               ${homeP ? `
                 <div class="pitcher-row">
                   <span class="pitcher-team">${home.team?.abbreviation}</span>
                   <span class="pitcher-name">${homeP.fullName}</span>
-                  <span class="pitcher-era" style="color:${eraColor(homeEra)}">${homeEra !== null ? parseFloat(homeEra).toFixed(2) : '—'}</span>
+                  <span class="pitcher-era" style="color:${eraColor(homeEra)}">ERA: ${homeEra !== null ? parseFloat(homeEra).toFixed(2) : '—'}</span>
                 </div>` : ''}
             </div>`;
         }
@@ -619,10 +622,10 @@
       const upcomingGames = sorted.filter(e => isPre(e.status));
       const finalGames    = sorted.filter(e => isFinal(e.status));
 
-      let html = '<div class="games-grid">';
+      let html = '';
 
       if (liveGames.length) {
-        html += `</div>
+        html += `
           <div class="section-divider">
             <span class="section-divider-label live"><span class="live-dot"></span>Live Now</span>
             <div class="section-divider-line"></div>
@@ -633,19 +636,14 @@
       }
 
       if (upcomingGames.length) {
-        html += `
-          <div class="section-divider">
-            <span class="section-divider-label upcoming">Upcoming</span>
-            <div class="section-divider-line"></div>
-          </div>
-          <div class="games-grid">`;
+        html += `<div class="games-grid" style="margin-top:${liveGames.length ? '1.5rem' : '0'}">`;
         html += upcomingGames.map(e => buildCard(e, leagueId, pitcherMap)).join('');
         html += '</div>';
       }
 
       if (finalGames.length) {
         html += `
-          <div class="section-divider">
+          <div class="section-divider" style="margin-top:1rem">
             <span class="section-divider-label final">Final</span>
             <div class="section-divider-line"></div>
           </div>
