@@ -120,7 +120,6 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 0.15rem; flex-shrink: 0; padding: 0 0.4rem;
     }
-    .vs-side-label { font-family: var(--font-mono); font-size: 0.58rem; color: var(--gray-500); letter-spacing: 0.06em; }
     .vs-at { font-family: var(--font-display); font-size: 1rem; color: var(--gray-700, #374151); font-weight: 300; }
 
     /* Pitcher matchup */
@@ -226,22 +225,22 @@
       } catch { eraCache[id] = null; return null; }
     }
 
-    // ── Fetch probable pitchers → map keyed by home team abbr (uppercase) ──
+    // ── Fetch probable pitchers → map keyed by venue name ────────
     async function fetchPitchersTagged() {
       const today = new Date().toISOString().split('T')[0];
       try {
-        const r    = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher`);
+        const r    = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher,venue`);
         const data = await r.json();
-        const map  = {}; // homeAbbrUppercase → { away, home }
+        const map  = {}; // venueName → { away, home, awayAbbr, homeAbbr }
         for (const d of data.dates || []) {
           for (const g of d.games || []) {
-            const homeAbbr = g.teams?.home?.team?.abbreviation?.toUpperCase();
-            if (homeAbbr) {
-              map[homeAbbr] = {
+            const venueName = g.venue?.name;
+            if (venueName) {
+              map[venueName] = {
                 away: g.teams?.away?.probablePitcher || null,
                 home: g.teams?.home?.probablePitcher || null,
                 awayAbbr: g.teams?.away?.team?.abbreviation?.toUpperCase(),
-                homeAbbr,
+                homeAbbr: g.teams?.home?.team?.abbreviation?.toUpperCase(),
               };
             }
           }
@@ -296,11 +295,11 @@
         </div>`;
       }
 
-      // Pitcher matchup (MLB only) — keyed by home team abbreviation
+      // Pitcher matchup (MLB only) — keyed by venue name
       let pitcherHTML = '';
       if (leagueId === 'mlb') {
-        const homeAbbr = home.team?.abbreviation?.toUpperCase();
-        const pitchers = pitcherMap[homeAbbr];
+        const venueName = comp.venue?.fullName;
+        const pitchers  = pitcherMap[venueName];
         if (pitchers && (pitchers.away || pitchers.home)) {
           const awayEra = pitchers.away ? eraCache[pitchers.away.id] : null;
           const homeEra = pitchers.home ? eraCache[pitchers.home.id] : null;
@@ -313,7 +312,7 @@
                 <span class="pitcher-era" style="color:${eraColor(awayEra)}">ERA: ${awayEra != null ? parseFloat(awayEra).toFixed(2) : '—'}</span>
               </div>` : ''}
               ${pitchers.home ? `<div class="pitcher-row">
-                <span class="pitcher-team">${pitchers.homeAbbr || homeAbbr}</span>
+                <span class="pitcher-team">${pitchers.homeAbbr || home.team?.abbreviation}</span>
                 <span class="pitcher-name">${pitchers.home.fullName}</span>
                 <span class="pitcher-era" style="color:${eraColor(homeEra)}">ERA: ${homeEra != null ? parseFloat(homeEra).toFixed(2) : '—'}</span>
               </div>` : ''}
@@ -333,9 +332,7 @@
           <div class="teams-block">
             ${teamCol(away, awayWin, homeWin, 'away')}
             <div class="vs-col">
-              <span class="vs-side-label">AWAY</span>
               <span class="vs-at">@</span>
-              <span class="vs-side-label">HOME</span>
             </div>
             ${teamCol(home, homeWin, awayWin, 'home')}
           </div>
