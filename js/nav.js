@@ -40,6 +40,11 @@ function buildNav(activePage = '') {
   const root = document.getElementById('main-nav');
   if (!root) return;
 
+  // Apply saved theme
+  if (localStorage.getItem('orb-theme') === 'dark') {
+    document.body.classList.add('dark');
+  }
+
   root.innerHTML = `
     <div class="nav-logo">
       <a class="nav-logo-link" href="predictions.html" aria-label="Orb Analytics Home">
@@ -51,11 +56,15 @@ function buildNav(activePage = '') {
       ${NAV_LINKS.map(item => link(item.href, item.label, activePage)).join('')}
     </div>
     <div class="nav-social">
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
+      </button>
       ${SOCIAL_LINKS.map(s => `
         <a href="${s.href}" target="_blank" rel="noopener noreferrer" aria-label="${s.label}" title="${s.label}">
           ${s.svg}
         </a>
       `).join('')}
+    </div>
     </div>
   `;
 }
@@ -65,4 +74,11 @@ window.buildNav = buildNav;
 function link(href, label, activePage) {
   const active = activePage === href ? 'active' : '';
   return `<a class="${active}" href="${href}">${label}</a>`;
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('orb-theme', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
 }
