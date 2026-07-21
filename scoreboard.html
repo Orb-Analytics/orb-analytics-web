@@ -207,6 +207,13 @@
     const eraCache  = {};
 
     let oddsMap = {}; // "AWAY|HOME" → { awayLine, homeLine, pick }
+    // Map ESPN abbrs → model abbrs where they differ
+    const ESPN_TO_MODEL = {
+      'ATH': 'OAK', 'WAS': 'WSH', 'CWS': 'CHW'
+    };
+    function toModelAbbr(abbr) {
+      return ESPN_TO_MODEL[abbr] || abbr;
+    }
 
     async function fetchOdds() {
       try {
@@ -337,7 +344,7 @@
       // Look up odds from predictions.json
       const awayAbbr = away.team?.abbreviation?.toUpperCase();
       const homeAbbr = home.team?.abbreviation?.toUpperCase();
-      const oddsKey  = `${awayAbbr}|${homeAbbr}`;
+      const oddsKey  = `${toModelAbbr(awayAbbr)}|${toModelAbbr(homeAbbr)}`;
       const gameOdds = leagueId === 'mlb' ? (oddsMap[oddsKey] || null) : null;
 
       // Pitcher matchup (MLB only) — keyed by venue name
