@@ -531,6 +531,9 @@
 
     function renderTodayPicks(picks, pitcherDetails = []) {
       const container = document.getElementById('picks-container');
+      const filteredPicks   = picks.filter(p => p.has_pick === true);
+      const filteredDetails = pitcherDetails.filter((_, i) => picks[i]?.has_pick === true);
+
       if (!filteredPicks.length) {
         container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
@@ -538,8 +541,6 @@
         return;
       }
 
-      const filteredPicks = picks.filter(p => p.has_pick === true);
-      const filteredDetails = pitcherDetails.filter((_, i) => picks[i]?.has_pick === true);
       container.innerHTML = filteredPicks.map((pick, i) => {
         const conf    = pick.confidence || 0.5;
         const confPct = Math.round(conf * 100);
@@ -578,17 +579,16 @@
             <div style="display:flex;align-items:center;gap:0.85rem">
               ${teamLogoHTML(pick.pick, 48)}
               <div class="pick-team-info">
-              <div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--text)">${pick.pick} <span style="font-weight:600">${fmtOdds(line)}</span></div>
+                <div class="pick-team-name">${pick.pick}</div>
+                <div class="pick-team-side">${side.toUpperCase()} · ${fmtOdds(line)}</div>
               </div>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;flex-shrink:0">
-              <button onclick="logPick('${pick.pick}','MLB',${line})"
-                style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6EE7B7;
-                       font-family:var(--font-body);font-size:0.82rem;font-weight:600;padding:0.5rem 1rem;
-                       border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.2s"
-                onmouseover="this.style.background='rgba(16,185,129,0.28)'"
-                onmouseout="this.style.background='rgba(16,185,129,0.15)'">＋ Log Pick</button>
-            </div>
+            <button onclick="logPick('${pick.pick}','MLB',${line})"
+              style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6EE7B7;
+                     font-family:var(--font-body);font-size:0.73rem;font-weight:600;padding:0.32rem 0.7rem;
+                     border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.2s"
+              onmouseover="this.style.background='rgba(16,185,129,0.28)'"
+              onmouseout="this.style.background='rgba(16,185,129,0.15)'">＋ Log Pick</button>
           </div>
           ${pitcherHTML}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem">
@@ -604,7 +604,6 @@
           <div class="pick-meta-row">
             <div class="meta-chip">Edge: <span>+${pick.edge}%</span></div>
             <div class="meta-chip">Line: <span>${fmtOdds(line)}</span></div>
-            <div class="meta-chip">${side}</div>
           </div>
           <div class="confidence-row">
             <div class="confidence-header">
@@ -635,10 +634,10 @@
 
     function renderSummaryStats(s) {
       document.getElementById('summary-grid').innerHTML = `
-        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${s.wins}-${s.losses}</div></div>
-        <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${s.win_rate}%</div></div>
-        <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${s.total_units>=0?'+':''}${s.total_units}u</div></div>
-        <div class="stat-card"><div class="stat-label">Avg Edge</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${(historyData.reduce((a,b)=>a+(b.edge||0),0)/historyData.length).toFixed(2)}%</div></div>`;
+        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral">${s.wins}-${s.losses}</div><div class="stat-sub">${s.total_picks} settled picks</div></div>
+        <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value ${s.win_rate>=52.4?'stat-positive':'stat-negative'}">${s.win_rate}%</div><div class="stat-sub">Break-even ≈ 52.4%</div></div>
+        <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}">${s.total_units>=0?'+':''}${s.total_units}u</div><div class="stat-sub">Since June 22, 2026</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Edge</div><div class="stat-value stat-neutral">${(historyData.reduce((a,b)=>a+(b.edge||0),0)/historyData.length).toFixed(2)}%</div><div class="stat-sub">Per pick</div></div>`;
     }
 
     function renderEquityCurve(picks) {
