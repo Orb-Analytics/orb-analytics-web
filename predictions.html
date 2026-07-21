@@ -123,6 +123,9 @@
 
       .predictions-header .section-title { font-size: 1.3rem; }
 
+      #main-container { height: auto !important; overflow: visible !important; }
+      main.page { overflow: visible !important; }
+
       div[style*="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap"] {
         flex-direction: column;
         align-items: flex-start;
@@ -286,7 +289,7 @@
       <button class="mobile-page-tab active" onclick="switchMobileTab('picks')">📊 Picks</button>
       <button class="mobile-page-tab" onclick="switchMobileTab('tracker')">📈 Tracker</button>
     </div>
-    <div class="container" style="height:calc(100vh - 60px);padding-top:0;padding-bottom:0">
+    <div class="container" id="main-container" style="height:calc(100vh - 60px);padding-top:0;padding-bottom:0">
       <div class="page-split">
 
         <!-- ══ LEFT: PREDICTIONS ══════════════════════════════════ -->
