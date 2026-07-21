@@ -474,7 +474,7 @@
     // ── Pitcher fetch ─────────────────────────────────────────────
     async function fetchProbablePitchers() {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
         const res = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher`);
         const data = await res.json();
         const map = {};
