@@ -44,7 +44,7 @@ function buildNav(activePage = '') {
     <div class="nav-logo">
       <a class="nav-logo-link" href="predictions.html" aria-label="Orb Analytics Home">
         <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img" />
-        <span class="nav-logo-text">Orb Analytics</span>
+        <span class="nav-logo-text">Orb Analytics Ltd.</span>
       </a>
     </div>
     <div class="nav-links">
