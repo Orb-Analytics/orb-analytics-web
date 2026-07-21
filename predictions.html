@@ -557,6 +557,7 @@
         const el = document.getElementById(`picks-${s}`);
         if (el) el.style.display = s === sport ? 'block' : 'none';
       });
+      document.querySelector('.section-title').textContent = sport.toUpperCase() + ' Predictions';
       if (activeView === 'history') loadHistory();
     }
 
