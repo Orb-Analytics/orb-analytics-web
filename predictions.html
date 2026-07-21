@@ -631,10 +631,10 @@
 
     function renderSummaryStats(s) {
       document.getElementById('summary-grid').innerHTML = `
-        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral">${s.wins}-${s.losses}</div><div class="stat-sub">${s.total_picks} settled picks</div></div>
-        <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral">${s.win_rate}%</div></div>
-        <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}">${s.total_units>=0?'+':''}${s.total_units}u</div><div class="stat-sub">Since June 22, 2026</div></div>
-        <div class="stat-card"><div class="stat-label">Avg Edge</div><div class="stat-value stat-neutral">${(historyData.reduce((a,b)=>a+(b.edge||0),0)/historyData.length).toFixed(2)}%</div><div class="stat-sub">Per pick</div></div>`;
+        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${s.wins}-${s.losses}</div></div>
+        <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${s.win_rate}%</div></div>
+        <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${s.total_units>=0?'+':''}${s.total_units}u</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Edge</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${(historyData.reduce((a,b)=>a+(b.edge||0),0)/historyData.length).toFixed(2)}%</div></div>`;
     }
 
     function renderEquityCurve(picks) {
