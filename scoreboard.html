@@ -330,16 +330,18 @@
         const abbr   = team.team?.abbreviation || '???';
         const record = team.records?.[0]?.summary || '';
         const score  = team.score ?? '';
-        const abbrClass = showScore ? (isWin ? 'winning bold' : isLoss ? 'losing' : '') : '';
-        const scoreClass = live ? '' : isWin ? 'winning bold' : isLoss ? 'losing' : '';
+        const abbrClass  = showScore ? (isWin ? 'winning' : isLoss ? 'losing' : '') : '';
+        const scoreClass = live ? '' : isWin ? 'winning' : isLoss ? 'losing' : '';
+        const abbrWeight = (final && isWin) ? '800' : (final && isLoss) ? '400' : '600';
+        const scoreWeight = (final && isWin) ? '800' : (final && isLoss) ? '300' : '700';
         const fmtOdds = o => o > 0 ? `+${o}` : `${o}`;
 
         return `<div class="team-col">
           ${logoHTML(abbr, leagueId)}
-          <div class="team-abbr ${abbrClass}">${abbr}</div>
+          <div class="team-abbr ${abbrClass}" style="font-weight:${abbrWeight}">${abbr}</div>
           ${record ? `<div class="team-record">${record}</div>` : ''}
           ${oddsLine != null ? `<div class="team-odds${isPick ? ' pick' : ''}">${fmtOdds(Math.round(oddsLine))}${isPick ? (final && !isWin ? ' ✗' : ' ✓') : ''}</div>` : ''}
-          ${showScore ? `<div class="team-score ${scoreClass}">${score}</div>` : ''}
+          ${showScore ? `<div class="team-score ${scoreClass}" style="font-weight:${scoreWeight}">${score}</div>` : ''}
         </div>`;
       }
 
