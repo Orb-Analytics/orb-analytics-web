@@ -338,7 +338,7 @@
           ${logoHTML(abbr, leagueId)}
           <div class="team-abbr ${abbrClass}">${abbr}</div>
           ${record ? `<div class="team-record">${record}</div>` : ''}
-          ${oddsLine != null ? `<div class="team-odds${isPick ? ' pick' : ''}">${fmtOdds(Math.round(oddsLine))}${isPick ? ' ✓' : ''}</div>` : ''}
+          ${oddsLine != null ? `<div class="team-odds${isPick ? ' pick' : ''}">${fmtOdds(Math.round(oddsLine))}${isPick ? (final && !isWin ? ' ✗' : ' ✓') : ''}</div>` : ''}
           ${showScore ? `<div class="team-score ${scoreClass}">${score}</div>` : ''}
         </div>`;
       }
