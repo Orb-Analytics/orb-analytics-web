@@ -106,6 +106,7 @@
     }
     .team-abbr.winning { color: var(--text); }
     .team-abbr.losing  { color: var(--gray-500); }
+    .team-abbr.bold    { font-weight: 900; }
 
     .team-record { font-family: var(--font-mono); font-size: 0.63rem; color: var(--gray-500); }
 
@@ -114,6 +115,7 @@
     }
     .team-score.winning { color: var(--text); }
     .team-score.losing  { color: var(--gray-500); }
+    .team-score.bold   { font-weight: 900; }
 
     /* VS column */
     .vs-col {
@@ -328,8 +330,8 @@
         const abbr   = team.team?.abbreviation || '???';
         const record = team.records?.[0]?.summary || '';
         const score  = team.score ?? '';
-        const abbrClass = showScore ? (isWin ? 'winning' : isLoss ? 'losing' : '') : '';
-        const scoreClass = live ? 'winning' : isWin ? 'winning' : isLoss ? 'losing' : '';
+        const abbrClass = showScore ? (isWin ? 'winning bold' : isLoss ? 'losing' : '') : '';
+        const scoreClass = live ? '' : isWin ? 'winning bold' : isLoss ? 'losing' : '';
         const fmtOdds = o => o > 0 ? `+${o}` : `${o}`;
 
         return `<div class="team-col">
