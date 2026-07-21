@@ -215,21 +215,19 @@
         const map  = {};
         for (const pick of data.picks || []) {
           const key = `${pick.away_team}|${pick.home_team}`;
-          const line = pick.line || 0;
-          // If pick is away team, their line is the pick line; home gets implied opposite
-          let awayLine, homeLine;
-          if (pick.pick === pick.away_team) {
-            awayLine = line;
-            homeLine = line > 0 ? -(line + 20) : Math.abs(line) - 20; // rough implied
-          } else {
-            homeLine = line;
-            awayLine = line > 0 ? -(line + 20) : Math.abs(line) - 20;
-          }
-          map[key] = { awayLine, homeLine, pick: pick.pick, away: pick.away_team, home: pick.home_team };
+          map[key] = {
+            awayLine: pick.away_odds || null,
+            homeLine: pick.home_odds || null,
+            pick:     pick.pick,
+            away:     pick.away_team,
+            home:     pick.home_team
+          };
         }
         oddsMap = map;
       } catch { oddsMap = {}; }
     }
+
+    document.getElementById('date-display').textContent =
       new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
     // ── Helpers ───────────────────────────────────────────────────
