@@ -576,16 +576,20 @@
             <div style="display:flex;align-items:center;gap:0.85rem">
               ${teamLogoHTML(pick.pick, 48)}
               <div class="pick-team-info">
-                <div class="pick-team-name">${pick.pick}</div>
-                <div class="pick-team-side">${side.toUpperCase()} · ${fmtOdds(line)}</div>
+                <div class="pick-team-name" style="font-size:1.6rem">${pick.pick}</div>
+                <div style="font-family:var(--font-mono);font-size:0.85rem;color:var(--text);font-weight:600;letter-spacing:0.04em">${fmtOdds(line)}</div>
               </div>
             </div>
-            <button onclick="logPick('${pick.pick}','MLB',${line})"
-              style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6EE7B7;
-                     font-family:var(--font-body);font-size:0.73rem;font-weight:600;padding:0.32rem 0.7rem;
-                     border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.2s"
-              onmouseover="this.style.background='rgba(16,185,129,0.28)'"
-              onmouseout="this.style.background='rgba(16,185,129,0.15)'">＋ Log Pick</button>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;flex-shrink:0">
+              <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase">${side}</div>
+              <button onclick="logPick('${pick.pick}','MLB',${line})"
+                style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6EE7B7;
+                       font-family:var(--font-body);font-size:0.73rem;font-weight:600;padding:0.32rem 0.7rem;
+                       border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.2s"
+                onmouseover="this.style.background='rgba(16,185,129,0.28)'"
+                onmouseout="this.style.background='rgba(16,185,129,0.15)'">＋ Log Pick</button>
+                </div>
+            </div>
           </div>
           ${pitcherHTML}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem">
