@@ -271,7 +271,7 @@
 
     // ── Fetch probable pitchers → map keyed by venue name ────────
     async function fetchPitchersTagged() {
-      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
       try {
         const r    = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher,venue`);
         const data = await r.json();
