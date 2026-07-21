@@ -563,6 +563,7 @@
         document.getElementById(`view-tab-${v}`).classList.toggle('active', v === view);
         document.getElementById(`panel-${v}`).classList.toggle('active', v === view);
       });
+      if (view === 'history') loadHistory();
     }
 
     function confColor(conf) {
