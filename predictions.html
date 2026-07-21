@@ -531,14 +531,16 @@
 
     function renderTodayPicks(picks, pitcherDetails = []) {
       const container = document.getElementById('picks-container');
-      if (!picks.length) {
+      if (!filteredPicks.length) {
         container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
           <p>No picks for today yet — check back after 9 AM ET.</p></div>`;
         return;
       }
 
-      container.innerHTML = picks.map((pick, i) => {
+      const filteredPicks = picks.filter(p => p.has_pick === true);
+      const filteredDetails = pitcherDetails.filter((_, i) => picks[i]?.has_pick === true);
+      container.innerHTML = filteredPicks.map((pick, i) => {
         const conf    = pick.confidence || 0.5;
         const confPct = Math.round(conf * 100);
         const color   = confColor(conf);
@@ -550,7 +552,7 @@
         if (line < 0) impliedPct = Math.round((Math.abs(line) / (Math.abs(line) + 100)) * 100);
         else if (line > 0) impliedPct = Math.round((100 / (line + 100)) * 100);
 
-        const pd = pitcherDetails[i];
+        const pd = filteredDetails[i];
         const eraVal = pd?.era != null ? parseFloat(pd.era) : null;
         const eraCol = eraVal != null ? (eraVal < 3.5 ? 'var(--green)' : eraVal > 4.5 ? '#FCA5A5' : 'var(--text)') : 'var(--gray-500)';
         const pitcherHTML = pd ? `
