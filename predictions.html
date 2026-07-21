@@ -813,7 +813,10 @@
       function setActiveTab(name) {
         activeSplit = name;
         document.querySelectorAll('.split-tab').forEach(t => {
-          t.classList.toggle('active', t.dataset.tab === name);
+          const isActive = t.dataset.tab === name;
+          t.style.background = isActive ? 'var(--purple-600)' : 'transparent';
+          t.style.color = isActive ? 'white' : 'var(--muted)';
+          t.style.borderColor = isActive ? 'var(--purple-600)' : 'var(--border)';
         });
         renderSplitTable(name);
       }
