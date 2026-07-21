@@ -755,7 +755,7 @@
 
     function renderSummaryStats(s) {
       document.getElementById('summary-grid').innerHTML = `
-        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral" style="font-size:${String(s.wins+'-'+s.losses).length>7?'1.8rem':'2.5rem'}">${s.wins}-${s.losses}</div></div>
+        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral" style="font-size:${String(s.wins+'-'+s.losses).length>6?'1.8rem':'2.5rem'}">${s.wins}-${s.losses}</div></div>
         <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${s.win_rate}%</div></div>
         <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${s.total_units>=0?'+':''}${s.total_units}u</div></div>
         <div class="stat-card"><div class="stat-label">Avg Edge</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${(historyData.reduce((a,b)=>a+(b.edge||0),0)/historyData.length).toFixed(2)}%</div></div>`;
@@ -902,7 +902,6 @@
           <td style="font-family:var(--font-mono);font-size:0.78rem">${fmtOdds(p.line)}</td>
           <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--purple-300)">+${p.edge}%</td>
           <td style="font-family:var(--font-mono);font-size:0.76rem;color:var(--muted)">${confPct}%</td>
-          <td>${scoreDisplay}</td>
           <td><span class="badge ${badgeClass}">${p.result}</span></td>
           <td class="${uCls}">${uDisp}</td>
         </tr>`;
