@@ -333,7 +333,7 @@
         const abbrClass  = showScore ? (isWin ? 'winning' : isLoss ? 'losing' : '') : '';
         const scoreClass = live ? '' : isWin ? 'winning' : isLoss ? 'losing' : '';
         const abbrWeight = (final && isWin) ? '800' : (final && isLoss) ? '400' : '600';
-        const scoreWeight = (final && isWin) ? '800' : (final && isLoss) ? '300' : '700';
+        const scoreWeight = (final && isWin) ? '800' : (final && isLoss) ? '500' : '700';
         const fmtOdds = o => o > 0 ? `+${o}` : `${o}`;
 
         return `<div class="team-col">
