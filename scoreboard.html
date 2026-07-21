@@ -324,7 +324,7 @@
         const record = team.records?.[0]?.summary || '';
         const score  = team.score ?? '';
         const abbrClass = showScore ? (isWin ? 'winning' : isLoss ? 'losing' : '') : '';
-        const scoreClass = isWin ? 'winning' : isLoss ? 'losing' : '';
+        const scoreClass = live ? 'winning' : isWin ? 'winning' : isLoss ? 'losing' : '';
         const fmtOdds = o => o > 0 ? `+${o}` : `${o}`;
 
         return `<div class="team-col">
