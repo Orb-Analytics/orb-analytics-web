@@ -470,11 +470,12 @@ body {
 
 /* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .nav { padding: 0 1rem; }
-  .nav-links { display: none; }
+  .nav { padding: 0 0.75rem; }
+  .nav-links { display: flex; gap: 0.15rem; }
+  .nav-links a { font-size: 0.75rem; padding: 0.3rem 0.5rem; }
   .container { padding: 0 1rem; }
   .section-title { font-size: 1.3rem; }
-  .nav-logo-text { font-size: 0.95rem; }
-  .nav-social a { padding: 0.2rem; }
-  .nav-social svg { width: 15px; height: 15px; }
+  .nav-logo-text { font-size: 0.8rem; }
+  .orb-logo-img { width: 22px; height: 22px; }
+  .nav-social { display: none; }
 }
