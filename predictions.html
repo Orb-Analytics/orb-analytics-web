@@ -654,7 +654,7 @@
     }
 
     function renderEquityCurve(picks) {
-      const sorted = [...picks].reverse();
+      const sorted = [...picks].sort((a, b) => new Date(a.date) - new Date(b.date));
       let cum = 0;
       const labels = [], values = [];
       sorted.forEach(p => { cum += (p.units||0); labels.push(p.date); values.push(parseFloat(cum.toFixed(2))); });
