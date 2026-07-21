@@ -513,7 +513,11 @@
     buildNav('predictions.html');
 
     const PREDICTIONS_URL = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json';
-    const HISTORY_URL     = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions_history.json';
+    const HISTORY_URLS = {
+      mlb: 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions_history.json',
+      nba: 'https://raw.githubusercontent.com/Orb-Analytics/NBA-Model/main/nba_predictions_history.json',
+      nfl: null
+    };
 
     const TEAM_ESPN = {
       ARI:'ari', ATL:'atl', BAL:'bal', BOS:'bos', CHC:'chc', CIN:'cin', CLE:'cle', COL:'col',
@@ -550,6 +554,7 @@
         const el = document.getElementById(`picks-${s}`);
         if (el) el.style.display = s === sport ? 'block' : 'none';
       });
+      if (activeView === 'history') loadHistory();
     }
 
     function switchView(view) {
@@ -721,8 +726,17 @@
 
     // ── History ───────────────────────────────────────────────────
     async function loadHistory() {
+      const url = HISTORY_URLS[activeSport];
+      if (!url) {
+        document.getElementById('summary-grid').innerHTML =
+          `<div style="grid-column:1/-1;text-align:center;color:var(--gray-500);padding:2rem">No history available for ${activeSport.toUpperCase()} yet.</div>`;
+        document.getElementById('splits-grid').innerHTML = '';
+        document.getElementById('history-tbody').innerHTML = '';
+        if (equityChart) { equityChart.destroy(); equityChart = null; }
+        return;
+      }
       try {
-        const res  = await fetch(HISTORY_URL);
+        const res  = await fetch(url);
         const data = await res.json();
         historyData = data.picks || [];
         renderSummaryStats(data.summary);
