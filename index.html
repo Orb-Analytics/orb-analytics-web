@@ -756,6 +756,7 @@
       if (sf === 'away') filtered = filtered.filter(p=>p.pick===p.away_team);
       if (of === 'fav')  filtered = filtered.filter(p=>p.line<0);
       if (of === 'dog')  filtered = filtered.filter(p=>p.line>0);
+      filtered = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
       const wins = filtered.filter(p=>p.result==='Win').length;
       const losses = filtered.filter(p=>p.result==='Loss').length;
       const units = filtered.reduce((a,b)=>a+(b.units||0),0);
