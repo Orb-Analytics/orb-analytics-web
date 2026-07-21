@@ -739,6 +739,10 @@
         const res  = await fetch(url);
         const data = await res.json();
         historyData = data.picks || [];
+        // Normalize edge — NBA uses decimal (0.06), MLB uses percentage (2.34)
+        if (historyData.length && historyData[0].edge < 1) {
+          historyData = historyData.map(p => ({ ...p, edge: parseFloat((p.edge * 100).toFixed(4)) }));
+        }
         renderSummaryStats(data.summary);
         renderEquityCurve(historyData);
         renderSplits(historyData);
