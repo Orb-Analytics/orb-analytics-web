@@ -69,10 +69,10 @@ body {
 
 /* ─── Dark theme ─────────────────────────────────────────────────── */
 body.dark {
-  --bg:      #0D0118;
-  --surface: #1A0533;
-  --card:    #2D0A4E;
-  --border:  rgba(147, 51, 234, 0.25);
+  --bg:      #1A1A2E;
+  --surface: #2A2250;
+  --card:    #352B5E;
+  --border:  rgba(167, 100, 255, 0.25);
   --text:    #F0E6FF;
   --muted:   #C084FC;
   --purple-300: #C084FC;
