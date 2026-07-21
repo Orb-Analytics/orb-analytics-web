@@ -576,14 +576,14 @@
             <div style="display:flex;align-items:center;gap:0.85rem">
               ${teamLogoHTML(pick.pick, 48)}
               <div class="pick-team-info">
-              <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--text)">${pick.pick} <span style="font-weight:600">${fmtOdds(line)}</span></div>
+              <div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--text)">${pick.pick} <span style="font-weight:600">${fmtOdds(line)}</span></div>
               </div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;flex-shrink:0">
-              <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase">${side}</div>
+              <div style="font-family:var(--font-mono);font-size:0.82rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;line-height:1">${side}</div>
               <button onclick="logPick('${pick.pick}','MLB',${line})"
                 style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6EE7B7;
-                       font-family:var(--font-body);font-size:0.73rem;font-weight:600;padding:0.32rem 0.7rem;
+                       font-family:var(--font-body);font-size:0.82rem;font-weight:600;padding:0.5rem 1rem;
                        border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.2s"
                 onmouseover="this.style.background='rgba(16,185,129,0.28)'"
                 onmouseout="this.style.background='rgba(16,185,129,0.15)'">＋ Log Pick</button>
