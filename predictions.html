@@ -822,19 +822,12 @@
         <div class="split-card" style="grid-column:1/-1">
           <div style="display:flex;gap:0.25rem;padding:0.75rem 1rem;border-bottom:1px solid var(--border);flex-wrap:wrap">
             ${tabNames.map(name => `
-              <button class="split-tab ${name===activeSplit?'active':''}" data-tab="${name}"
+              <button class="split-tab" data-tab="${name}"
                 style="padding:0.35rem 0.85rem;border:1px solid var(--border);border-radius:6px;
                        background:${name===activeSplit?'var(--purple-600)':'transparent'};
                        color:${name===activeSplit?'white':'var(--muted)'};
                        font-family:var(--font-body);font-size:0.78rem;font-weight:600;
                        cursor:pointer;transition:all 0.2s;white-space:nowrap"
-                onclick="(function(el){
-                  document.querySelectorAll('.split-tab').forEach(t=>{
-                    t.style.background=t.dataset.tab===el.dataset.tab?'var(--purple-600)':'transparent';
-                    t.style.color=t.dataset.tab===el.dataset.tab?'white':'var(--muted)';
-                  });
-                  const rows = ${JSON.stringify(splits)}; 
-                })(this)"
               >${name}</button>
             `).join('')}
           </div>
