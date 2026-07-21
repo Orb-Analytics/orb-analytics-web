@@ -3,481 +3,837 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scoreboard · Orb Analytics</title>
+  <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
-    .scoreboard-header {
-      padding: 2rem 0 1.5rem;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .date-display {
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--gray-500);
-      margin-top: 0.3rem;
-    }
-
-    /* ── Tabs ──────────────────────────────────────────────────── */
-    .league-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
-    .league-tab {
-      display: flex; align-items: center; gap: 0.4rem;
-      padding: 0.45rem 1.1rem;
-      border: 1px solid var(--border); border-radius: 8px;
-      background: var(--surface); color: var(--muted);
-      font-size: 0.85rem; font-weight: 600; cursor: pointer;
-      white-space: nowrap; transition: var(--transition); font-family: var(--font-body);
-    }
-    .league-tab.active { background: var(--purple-600); border-color: var(--purple-600); color: white; box-shadow: var(--glow); }
-    .league-tab:hover:not(.active) { border-color: var(--purple-500); color: var(--text); background: rgba(147,51,234,0.1); }
-    .tab-live-count {
-      background: var(--red); color: white;
-      font-size: 0.65rem; font-weight: 700;
-      padding: 0.1rem 0.4rem; border-radius: 10px; line-height: 1.4;
-    }
-
-    /* ── Section dividers ──────────────────────────────────────── */
-    .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0 0.75rem; }
-    .sdl { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
-    .sdl.live { color: #FCA5A5; display: flex; align-items: center; gap: 0.35rem; }
-    .sdl.final { color: var(--gray-500); }
-    .sdl-line { flex: 1; height: 1px; background: var(--border); }
-
-    /* ── Games grid ────────────────────────────────────────────── */
-    .games-grid {
+    /* ── Two-column layout ───────────────────────────────────── */
+    .page-split {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      height: calc(100vh - 60px);
+      padding: 0;
+      overflow: hidden;
+    }
+    @media (max-width: 1024px) { .page-split { grid-template-columns: 1fr; height: auto; overflow: visible; } }
+
+    /* Left: predictions, independently scrollable */
+    .predictions-col {
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      padding: 1.25rem 0.75rem 2rem 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--purple-600) transparent;
+    }
+    .predictions-col::-webkit-scrollbar { width: 4px; }
+    .predictions-col::-webkit-scrollbar-thumb { background: var(--purple-600); border-radius: 2px; }
+
+    /* Right: tracker, independently scrollable */
+    .tracker-col {
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      padding: 1.25rem 0 2rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--purple-600) transparent;
+    }
+    .tracker-col::-webkit-scrollbar { width: 4px; }
+    .tracker-col::-webkit-scrollbar-thumb { background: var(--purple-600); border-radius: 2px; }
+
+    /* ── Predictions header ──────────────────────────────────── */
+    .predictions-header {
+      padding: 0.5rem 0 0.75rem;
+    }
+
+    .main-tabs {
+      display: flex;
+      gap: 0.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.25rem;
+      width: fit-content;
+    }
+
+    .main-tab {
+      padding: 0.45rem 1.25rem;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .main-tab.active { background: var(--purple-600); color: white; box-shadow: var(--glow); }
+    .main-tab:hover:not(.active) { color: var(--text); background: rgba(147,51,234,0.12); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Pick cards ──────────────────────────────────────────── */
+    .picks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1rem;
       padding-bottom: 1rem;
     }
-    @media (max-width: 900px) { .games-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 580px) { .games-grid { grid-template-columns: 1fr; } }
 
-    /* ── Game card ─────────────────────────────────────────────── */
-    .game-card {
+    .pick-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 1rem 1.1rem;
-      display: flex; flex-direction: column; gap: 0.7rem;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
       transition: border-color var(--transition), box-shadow var(--transition);
-      position: relative; overflow: hidden;
+      position: relative;
+      overflow: hidden;
     }
-    .game-card:hover { border-color: rgba(147,51,234,0.4); box-shadow: 0 0 18px rgba(147,51,234,0.12); }
-    .game-card.live { border-color: rgba(239,68,68,0.3); }
-    .game-card.live::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--red), rgba(239,68,68,0.2));
+    .pick-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--purple-600), var(--purple-400));
+      opacity: 0; transition: opacity var(--transition);
     }
+    .pick-card:hover { border-color: rgba(147,51,234,0.45); box-shadow: var(--glow); }
+    .pick-card:hover::after { opacity: 1; }
 
-    /* Card header */
-    .card-header { display: flex; align-items: center; justify-content: space-between; }
-    .card-league { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); letter-spacing: 0.08em; text-transform: uppercase; }
-    .card-status { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); }
-    .card-status.live-text { color: #FCA5A5; display: flex; align-items: center; gap: 0.3rem; }
+    .pick-card-header { display: flex; align-items: center; justify-content: space-between; }
+    .pick-matchup { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .pick-matchup .vs { color: var(--gray-500); font-weight: 400; font-size: 0.82rem; }
 
-    /* Side-by-side teams */
-    .teams-block { display: flex; align-items: stretch; gap: 0; }
-
-    .team-col {
-      flex: 1; min-width: 0;
-      display: flex; flex-direction: column; align-items: center;
-      gap: 0.3rem; padding: 0.4rem 0.25rem;
-      text-align: center;
+    .pick-team-hero { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0 0.15rem; }
+    .pick-team-logo { width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(147,51,234,0.3)); }
+    .pick-team-logo-fallback {
+      width: 48px; height: 48px; border-radius: 10px;
+      background: rgba(147,51,234,0.15); display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 0.9rem; font-weight: 800; color: var(--purple-300);
     }
+    .pick-team-info { display: flex; flex-direction: column; gap: 0.1rem; }
+    .pick-team-name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: var(--text); }
+    .pick-team-side { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; }
 
-    .team-logo {
-      width: 38px; height: 38px; object-fit: contain; flex-shrink: 0;
+    .pick-main {
+      background: rgba(147,51,234,0.1); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.65rem 0.85rem;
     }
-    .team-logo-fallback {
-      width: 38px; height: 38px; border-radius: 7px;
-      background: rgba(147,51,234,0.15);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; color: var(--purple-300);
-    }
+    .pick-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--purple-400); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.15rem; }
 
-    .team-abbr {
-      font-family: var(--font-display); font-size: 1rem; font-weight: 800;
-      white-space: nowrap;
+    .pick-meta-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .meta-chip {
+      background: rgba(147,51,234,0.08); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.18rem 0.5rem;
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);
     }
-    .team-abbr.winning { color: var(--text); }
-    .team-abbr.losing  { color: var(--gray-500); }
+    .meta-chip span { color: var(--purple-300); }
 
-    .team-record { font-family: var(--font-mono); font-size: 0.63rem; color: var(--gray-500); }
+    .confidence-row { display: flex; flex-direction: column; gap: 0.28rem; }
+    .confidence-header { display: flex; justify-content: space-between; align-items: center; }
+    .confidence-label { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+    .confidence-pct { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; }
+    .bar-bg { height: 4px; background: rgba(147,51,234,0.12); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
 
-    .team-score {
-      font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; line-height: 1;
-    }
-    .team-score.winning { color: var(--text); }
-    .team-score.losing  { color: var(--gray-500); }
+    /* ── Model History ────────────────────────────────────────── */
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+    @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
 
-    /* VS column */
-    .vs-col {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 0.15rem; flex-shrink: 0; padding: 0 0.4rem;
-    }
-    .vs-at { font-family: var(--font-display); font-size: 1rem; color: var(--text); font-weight: 300; }
+    .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+    .split-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .split-card-title { padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.7rem; color: var(--purple-400); letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    .split-row { display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 1rem; border-bottom: 1px solid rgba(147,51,234,0.06); font-size: 0.83rem; }
+    .split-row:last-child { border-bottom: none; }
+    .split-label { color: var(--muted); }
+    .split-record { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text); }
+    .split-winrate { font-family: var(--font-mono); font-size: 0.75rem; padding: 0.12rem 0.45rem; border-radius: 4px; }
+    .split-winrate.good { background: rgba(16,185,129,0.12); color: #6EE7B7; }
+    .split-winrate.ok   { background: rgba(147,51,234,0.12); color: var(--purple-300); }
+    .split-winrate.bad  { background: rgba(239,68,68,0.12);  color: #FCA5A5; }
 
-    /* Pitcher matchup */
-    .pitcher-matchup {
-      background: rgba(147,51,234,0.06); border: 1px solid var(--border);
-      border-radius: 7px; padding: 0.55rem 0.75rem;
-      display: flex; flex-direction: column; gap: 0.3rem;
-    }
-    .pitcher-matchup-label {
-      font-family: var(--font-mono); font-size: 0.63rem; color: var(--purple-400);
-      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.1rem;
-    }
-    .pitcher-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-    .pitcher-team { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gray-500); flex-shrink: 0; min-width: 2rem; }
-    .pitcher-name { font-size: 0.82rem; font-weight: 600; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pitcher-era  { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; flex-shrink: 0; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem; margin-bottom: 1.25rem; }
+    .chart-card-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--purple-400); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.85rem; }
+    .chart-wrap { position: relative; height: 190px; }
 
-    /* Card footer */
-    .card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.35rem; border-top: 1px solid var(--border); }
-    .card-venue { font-size: 0.75rem; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-    .card-time  { font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple-300); flex-shrink: 0; }
+    .history-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.85rem; }
+    .filter-select { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-size: 0.8rem; padding: 0.35rem 0.65rem; font-family: var(--font-body); outline: none; cursor: pointer; }
+    .filter-select:focus { border-color: var(--purple-500); color: var(--text); }
+    .history-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 2rem; }
+    .score-display { font-family: var(--font-mono); font-size: 0.78rem; color: var(--gray-500); }
+    .score-display .winning-score { color: var(--text); font-weight: 600; }
+    .units-positive { color: var(--green); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; }
+    .units-negative { color: var(--red);   font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; }
 
-    /* Refresh */
-    .refresh-btn {
-      display: flex; align-items: center; gap: 0.4rem;
-      background: transparent; border: 1px solid var(--border); border-radius: 7px;
-      color: var(--muted); font-size: 0.8rem; font-family: var(--font-body);
-      padding: 0.4rem 0.8rem; cursor: pointer; transition: var(--transition);
-    }
-    .refresh-btn:hover { color: var(--text); border-color: var(--purple-500); }
-    .refresh-btn svg { width: 13px; height: 13px; fill: currentColor; }
-    .refresh-btn.spinning svg { animation: spin 0.75s linear infinite; }
+    /* ── Bet Tracker sidebar ─────────────────────────────────── */
+    .tracker-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.5rem; padding-top: 0.25rem; }
+    .t-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .t-stat-mini { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 0.75rem; }
+    .t-stat-mini-label { font-family: var(--font-mono); font-size: 0.63rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.12rem; }
+    .t-stat-mini-value { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; }
+    .t-form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.9rem; }
+    .t-form-title { font-family: var(--font-display); font-size: 0.875rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text); }
+    .t-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+    .t-full { grid-column: 1 / -1; }
+    .t-history-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .t-history-header { padding: 0.6rem 0.85rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); gap: 0.4rem; flex-wrap: wrap; }
+    .t-filter-sel { background: var(--purple-900); border: 1px solid var(--border); border-radius: 5px; color: var(--muted); font-size: 0.73rem; padding: 0.18rem 0.4rem; font-family: var(--font-body); outline: none; cursor: pointer; }
+    .t-del-btn { background: none; border: none; color: var(--gray-500); cursor: pointer; padding: 0.12rem 0.3rem; border-radius: 4px; font-size: 0.78rem; transition: var(--transition); }
+    .t-del-btn:hover { color: var(--red); background: rgba(239,68,68,0.1); }
+    .t-profit-pos { color: var(--green); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; }
+    .t-profit-neg { color: var(--red);   font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; }
+    .t-odds { font-family: var(--font-mono); font-size: 0.75rem; }
+    .t-odds-hint { font-size: 0.68rem; color: var(--gray-500); margin-top: 0.18rem; font-family: var(--font-mono); }
   </style>
 </head>
 <body>
   <nav class="nav" id="main-nav"></nav>
-  <main class="page">
-    <div class="container">
-      <div class="scoreboard-header">
-        <div>
-          <div class="section-label">Live Scores</div>
-          <div class="section-title">Scoreboard</div>
-          <div class="date-display" id="date-display"></div>
-        </div>
-        <button class="refresh-btn" id="refresh-btn" onclick="doRefresh()">
-          <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-          Refresh
-        </button>
-      </div>
-      <div class="league-tabs" id="league-tabs"></div>
-      <div id="scoreboard-output"><div class="loading-state"><div class="spinner"></div> Loading games...</div></div>
-    </div>
+
+  <main class="page" style="overflow:hidden">
+    <div class="container" style="height:calc(100vh - 60px);padding-top:0;padding-bottom:0">
+      <div class="page-split">
+
+        <!-- ══ LEFT: PREDICTIONS ══════════════════════════════════ -->
+        <div class="predictions-col">
+          <div class="predictions-header">
+            <div class="section-label">ML-Powered Picks</div>
+            <div class="section-title">MLB Predictions</div>
+            <p style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem" id="last-updated"></p>
+          </div>
+
+          <!-- Tabs row -->
+          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
+            <div class="main-tabs">
+              <button class="main-tab active" onclick="switchSport('mlb')" id="sport-tab-mlb">⚾ MLB</button>
+              <button class="main-tab" onclick="switchSport('nfl')" id="sport-tab-nfl">🏈 NFL</button>
+              <button class="main-tab" onclick="switchSport('nba')" id="sport-tab-nba">🏀 NBA</button>
+            </div>
+            <div class="main-tabs">
+              <button class="main-tab active" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
+              <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>
+            </div>
+          </div>
+
+          <!-- TODAY'S PICKS -->
+          <div class="tab-panel active" id="panel-today">
+            <div id="picks-mlb">
+              <div class="picks-grid" id="picks-container">
+                <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
+              </div>
+            </div>
+            <div id="picks-nfl" style="display:none">
+              <div class="empty-state" style="padding:3rem 1rem">
+                <p style="font-size:0.95rem;font-weight:600;color:var(--text);margin-bottom:0.3rem">NFL Model Coming Soon</p>
+                <p style="color:var(--gray-500);font-size:0.85rem">Predictions will appear once the season begins.</p>
+              </div>
+            </div>
+            <div id="picks-nba" style="display:none">
+              <div class="empty-state" style="padding:3rem 1rem">
+                <p style="font-size:0.95rem;font-weight:600;color:var(--text);margin-bottom:0.3rem">NBA Model Coming Soon</p>
+                <p style="color:var(--gray-500);font-size:0.85rem">Predictions will appear once the season begins.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODEL HISTORY -->
+          <div class="tab-panel" id="panel-history">
+            <div class="summary-grid" id="summary-grid">
+              <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading history...</div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-title">Cumulative Units (Equity Curve)</div>
+              <div class="chart-wrap"><canvas id="equity-chart"></canvas></div>
+            </div>
+            <div class="splits-grid" id="splits-grid"></div>
+            <div class="history-controls">
+              <select class="filter-select" id="filter-result" onchange="renderHistoryTable()">
+                <option value="all">All Results</option>
+                <option value="Win">Wins Only</option>
+                <option value="Loss">Losses Only</option>
+              </select>
+              <select class="filter-select" id="filter-side" onchange="renderHistoryTable()">
+                <option value="all">Home & Away</option>
+                <option value="home">Home Picks</option>
+                <option value="away">Away Picks</option>
+              </select>
+              <select class="filter-select" id="filter-odds" onchange="renderHistoryTable()">
+                <option value="all">All Odds</option>
+                <option value="fav">Favorites</option>
+                <option value="dog">Underdogs</option>
+              </select>
+              <span id="filter-count" style="font-family:var(--font-mono);font-size:0.73rem;color:var(--gray-500);margin-left:auto"></span>
+            </div>
+            <div class="history-table-wrap">
+              <div style="overflow-x:auto">
+                <table class="data-table" id="history-table">
+                  <thead><tr>
+                    <th>Date</th><th>Matchup</th><th>Pick</th><th>Line</th>
+                    <th>Edge</th><th>Conf</th><th>Score</th><th>Result</th><th>Units</th>
+                  </tr></thead>
+                  <tbody id="history-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div><!-- end predictions-col -->
+
+        <!-- ══ RIGHT: BET TRACKER ════════════════════════════════ -->
+        <div class="tracker-col">
+          <div class="tracker-title">📈 Bet Tracker</div>
+
+          <!-- Stats -->
+          <div class="t-stat-grid">
+            <div class="t-stat-mini">
+              <div class="t-stat-mini-label">Record</div>
+              <div class="t-stat-mini-value" id="tp-record" style="color:var(--text)">—</div>
+            </div>
+            <div class="t-stat-mini">
+              <div class="t-stat-mini-label">Win Rate</div>
+              <div class="t-stat-mini-value" id="tp-winrate" style="color:var(--muted)">—</div>
+            </div>
+            <div class="t-stat-mini">
+              <div class="t-stat-mini-label">P/L</div>
+              <div class="t-stat-mini-value" id="tp-pl" style="color:var(--muted)">$0.00</div>
+            </div>
+            <div class="t-stat-mini">
+              <div class="t-stat-mini-label">ROI</div>
+              <div class="t-stat-mini-value" id="tp-roi" style="color:var(--muted)">0%</div>
+            </div>
+          </div>
+
+          <!-- Log a Bet -->
+          <div class="t-form-card">
+            <div class="t-form-title">＋ Log a Bet</div>
+            <div class="t-form-grid">
+              <div class="form-group t-full">
+                <label class="form-label">Pick</label>
+                <input class="form-input" id="t-pick" type="text" placeholder="e.g. Dodgers ML" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sport</label>
+                <select class="form-select" id="t-sport">
+                  <option value="MLB">⚾ MLB</option>
+                  <option value="NFL">🏈 NFL</option>
+                  <option value="NBA">🏀 NBA</option>
+                  <option value="NHL">🏒 NHL</option>
+                  <option value="Other">⚡ Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Type</label>
+                <select class="form-select" id="t-type">
+                  <option value="Moneyline">Moneyline</option>
+                  <option value="Spread">Spread</option>
+                  <option value="Over/Under">Over/Under</option>
+                  <option value="Prop">Prop</option>
+                  <option value="Parlay">Parlay</option>
+                  <option value="Futures">Futures</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Odds</label>
+                <input class="form-input" id="t-odds" type="number" placeholder="-110" oninput="updateOddsHint()" />
+                <div class="t-odds-hint" id="t-odds-hint"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stake ($)</label>
+                <input class="form-input" id="t-stake" type="number" placeholder="100" min="0" step="0.01" />
+              </div>
+              <div class="form-group t-full">
+                <label class="form-label">Date</label>
+                <input class="form-input" id="t-date" type="date" />
+              </div>
+              <div class="form-group t-full">
+                <label class="form-label">Result</label>
+                <select class="form-select" id="t-result">
+                  <option value="Pending">⏳ Pending</option>
+                  <option value="Win">✅ Win</option>
+                  <option value="Loss">❌ Loss</option>
+                  <option value="Push">↩️ Push</option>
+                </select>
+              </div>
+              <div class="form-group t-full">
+                <label class="form-label">Notes</label>
+                <input class="form-input" id="t-notes" type="text" placeholder="Optional notes" />
+              </div>
+              <div class="t-full">
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="tAddBet()">Log Bet</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div class="t-history-card">
+            <div class="t-history-header">
+              <span style="font-family:var(--font-display);font-size:0.85rem;font-weight:700">History</span>
+              <div style="display:flex;gap:0.35rem;align-items:center;flex-wrap:wrap">
+                <select class="t-filter-sel" id="t-filter-sport" onchange="tRenderTable()">
+                  <option value="all">All</option>
+                  <option value="MLB">MLB</option>
+                  <option value="NFL">NFL</option>
+                  <option value="NBA">NBA</option>
+                </select>
+                <select class="t-filter-sel" id="t-filter-result" onchange="tRenderTable()">
+                  <option value="all">All</option>
+                  <option value="Win">W</option>
+                  <option value="Loss">L</option>
+                  <option value="Pending">Pending</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" onclick="tClearAll()">Clear</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;max-height:300px;overflow-y:auto">
+              <div class="empty-state" id="t-empty" style="padding:1.25rem">
+                <p style="font-size:0.8rem">No bets logged yet.</p>
+              </div>
+              <table class="data-table" id="t-table" style="display:none;font-size:0.76rem">
+                <thead><tr>
+                  <th>Date</th><th>Pick</th><th>Odds</th><th>Stake</th><th>P/L</th><th>Result</th><th></th>
+                </tr></thead>
+                <tbody id="t-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div><!-- end tracker-col -->
+
+      </div><!-- end page-split -->
+    </div><!-- end container -->
   </main>
-  <footer class="footer"><p>Scores via ESPN API · Pitcher data via MLB Stats API · © 2026 Orb Analytics</p></footer>
 
   <script src="js/nav.js"></script>
   <script>
-    buildNav('index.html');
+    buildNav('predictions.html');
 
-    const LEAGUES = [
-      { id:'mlb', label:'MLB', emoji:'⚾', sport:'baseball',   slug:'mlb' },
-      { id:'nfl', label:'NFL', emoji:'🏈', sport:'football',   slug:'nfl' },
-      { id:'nba', label:'NBA', emoji:'🏀', sport:'basketball', slug:'nba' },
-      { id:'nhl', label:'NHL', emoji:'🏒', sport:'hockey',     slug:'nhl' },
-    ];
+    const PREDICTIONS_URL = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json';
+    const HISTORY_URL     = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions_history.json';
 
-    let activeLeague = 'mlb';
-    const cache     = {};
-    const eraCache  = {};
+    const TEAM_ESPN = {
+      ARI:'ari', ATL:'atl', BAL:'bal', BOS:'bos', CHC:'chc', CIN:'cin', CLE:'cle', COL:'col',
+      CWS:'cws', CHW:'cws', DET:'det', HOU:'hou', KC:'kc', LAA:'laa', LAD:'lad', MIA:'mia',
+      MIL:'mil', MIN:'min', NYM:'nym', NYY:'nyy', OAK:'oak', PHI:'phi', PIT:'pit', SD:'sd',
+      SEA:'sea', SF:'sf', STL:'stl', TB:'tb', TEX:'tex', TOR:'tor', WSH:'wsh', WAS:'wsh'
+    };
 
-    document.getElementById('date-display').textContent =
-      new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-    // ── Helpers ───────────────────────────────────────────────────
-    const isLive  = s => s?.type?.name === 'STATUS_IN_PROGRESS';
-    const isFinal = s => s?.type?.name === 'STATUS_FINAL';
-    const isPre   = s => s?.type?.state === 'pre';
-    const sortOrd = s => isLive(s) ? 0 : isPre(s) ? 1 : 2;
-
-    function eraColor(era) {
-      if (era === null || era === undefined) return 'var(--gray-500)';
-      const v = parseFloat(era);
-      return v < 3.50 ? 'var(--green)' : v > 4.50 ? '#FCA5A5' : 'var(--text)';
+    function teamLogoURL(abbr) {
+      const espn = TEAM_ESPN[abbr];
+      return espn ? `https://a.espncdn.com/i/teamlogos/mlb/500/${espn}.png` : null;
     }
 
-    function logoHTML(abbr, league) {
-      const url = `https://a.espncdn.com/i/teamlogos/${league}/500/${abbr.toLowerCase()}.png`;
-      return `<img class="team-logo" src="${url}" alt="${abbr}"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-              <div class="team-logo-fallback" style="display:none">${abbr.slice(0,3).toUpperCase()}</div>`;
+    function teamLogoHTML(abbr, size = 48) {
+      const url = teamLogoURL(abbr);
+      if (!url) return `<div class="pick-team-logo-fallback" style="width:${size}px;height:${size}px">${abbr}</div>`;
+      return `<img class="pick-team-logo" src="${url}" alt="${abbr}" style="width:${size}px;height:${size}px"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="pick-team-logo-fallback" style="width:${size}px;height:${size}px;display:none">${abbr}</div>`;
     }
 
-    // ── Fetch ERA ─────────────────────────────────────────────────
-    async function fetchERA(id) {
-      if (!id) return null;
-      if (eraCache[id] !== undefined) return eraCache[id];
+    let historyData = [];
+    let equityChart = null;
+    let activeSport = 'mlb';
+    let activeView  = 'today';
+
+    Chart.defaults.color = '#9CA3AF';
+    Chart.defaults.font  = { family: "'Inter', sans-serif", size: 11 };
+
+    function switchSport(sport) {
+      activeSport = sport;
+      ['mlb','nfl','nba'].forEach(s => {
+        document.getElementById(`sport-tab-${s}`).classList.toggle('active', s === sport);
+        const el = document.getElementById(`picks-${s}`);
+        if (el) el.style.display = s === sport ? 'block' : 'none';
+      });
+    }
+
+    function switchView(view) {
+      activeView = view;
+      ['today','history'].forEach(v => {
+        document.getElementById(`view-tab-${v}`).classList.toggle('active', v === view);
+        document.getElementById(`panel-${v}`).classList.toggle('active', v === view);
+      });
+    }
+
+    function confColor(conf) {
+      const p = conf * 100;
+      if (p >= 65) return 'var(--green)';
+      if (p >= 58) return 'var(--purple-300)';
+      return 'var(--gray-400)';
+    }
+
+    function wrClass(wr) { return wr >= 55 ? 'good' : wr >= 50 ? 'ok' : 'bad'; }
+
+    function fmtOdds(line) {
+      if (!line && line !== 0) return '—';
+      return line > 0 ? `+${line}` : `${line}`;
+    }
+
+    // ── Pitcher fetch ─────────────────────────────────────────────
+    async function fetchProbablePitchers() {
       try {
-        const r    = await fetch(`https://statsapi.mlb.com/api/v1/people/${id}?hydrate=stats(group=pitching,type=season)`);
-        const data = await r.json();
-        const era  = data.people?.[0]?.stats?.[0]?.splits?.[0]?.stat?.era ?? null;
-        eraCache[id] = era;
-        return era;
-      } catch { eraCache[id] = null; return null; }
-    }
-
-    // ── Fetch probable pitchers → map keyed by venue name ────────
-    async function fetchPitchersTagged() {
-      const today = new Date().toISOString().split('T')[0];
-      try {
-        const r    = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher,venue`);
-        const data = await r.json();
-        const map  = {}; // venueName → { away, home, awayAbbr, homeAbbr }
+        const today = new Date().toISOString().split('T')[0];
+        const res = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher`);
+        const data = await res.json();
+        const map = {};
         for (const d of data.dates || []) {
           for (const g of d.games || []) {
-            const venueName = g.venue?.name;
-            if (venueName) {
-              map[venueName] = {
-                away: g.teams?.away?.probablePitcher || null,
-                home: g.teams?.home?.probablePitcher || null,
-                awayAbbr: g.teams?.away?.team?.abbreviation?.toUpperCase(),
-                homeAbbr: g.teams?.home?.team?.abbreviation?.toUpperCase(),
-              };
-            }
+            const away = g.teams?.away;
+            const home = g.teams?.home;
+            if (away?.team?.abbreviation && away?.probablePitcher) map[away.team.abbreviation] = away.probablePitcher;
+            if (home?.team?.abbreviation && home?.probablePitcher) map[home.team.abbreviation] = home.probablePitcher;
           }
         }
         return map;
       } catch { return {}; }
     }
 
-    // ── Build one game card ───────────────────────────────────────
-    function buildCard(event, leagueId, pitcherMap) {
-      const comp = event.competitions?.[0];
-      if (!comp) return '';
-      const home = comp.competitors?.find(c => c.homeAway === 'home');
-      const away = comp.competitors?.find(c => c.homeAway === 'away');
-      if (!home || !away) return '';
-
-      const status = event.status;
-      const live   = isLive(status);
-      const final  = isFinal(status);
-      const pre    = isPre(status);
-      const showScore = live || final;
-
-      const homeScore = parseInt(home.score ?? 0);
-      const awayScore = parseInt(away.score ?? 0);
-      const homeWin = homeScore > awayScore;
-      const awayWin = awayScore > homeScore;
-
-      // Status badge
-      let statusHTML;
-      if (live) {
-        statusHTML = `<span class="card-status live-text"><span class="live-dot"></span>${status.type?.detail || 'Live'}</span>`;
-      } else if (final) {
-        statusHTML = `<span class="card-status">Final</span>`;
-      } else {
-        const t = event.date ? new Date(event.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
-        statusHTML = `<span class="card-status" style="color:var(--purple-300)">${t}</span>`;
-      }
-
-      // Team column
-      function teamCol(team, isWin, isLoss, side) {
-        const abbr   = team.team?.abbreviation || '???';
-        const record = team.records?.[0]?.summary || '';
-        const score  = team.score ?? '';
-        const abbrClass = showScore ? (isWin ? 'winning' : isLoss ? 'losing' : '') : '';
-        const scoreClass = isWin ? 'winning' : isLoss ? 'losing' : '';
-
-        return `<div class="team-col">
-          ${logoHTML(abbr, leagueId)}
-          <div class="team-abbr ${abbrClass}">${abbr}</div>
-          ${record ? `<div class="team-record">${record}</div>` : ''}
-          ${showScore ? `<div class="team-score ${scoreClass}">${score}</div>` : ''}
-        </div>`;
-      }
-
-      // Pitcher matchup (MLB only) — keyed by venue name
-      let pitcherHTML = '';
-      if (leagueId === 'mlb') {
-        const venueName = comp.venue?.fullName;
-        const pitchers  = pitcherMap[venueName];
-        if (pitchers && (pitchers.away || pitchers.home)) {
-          const awayEra = pitchers.away ? eraCache[pitchers.away.id] : null;
-          const homeEra = pitchers.home ? eraCache[pitchers.home.id] : null;
-          pitcherHTML = `
-            <div class="pitcher-matchup">
-              <div class="pitcher-matchup-label">Pitching Matchup</div>
-              ${pitchers.away ? `<div class="pitcher-row">
-                <span class="pitcher-team">${pitchers.awayAbbr || away.team?.abbreviation}</span>
-                <span class="pitcher-name">${pitchers.away.fullName}</span>
-                <span class="pitcher-era" style="color:${eraColor(awayEra)}">ERA: ${awayEra != null ? parseFloat(awayEra).toFixed(2) : '—'}</span>
-              </div>` : ''}
-              ${pitchers.home ? `<div class="pitcher-row">
-                <span class="pitcher-team">${pitchers.homeAbbr || home.team?.abbreviation}</span>
-                <span class="pitcher-name">${pitchers.home.fullName}</span>
-                <span class="pitcher-era" style="color:${eraColor(homeEra)}">ERA: ${homeEra != null ? parseFloat(homeEra).toFixed(2) : '—'}</span>
-              </div>` : ''}
-            </div>`;
-        }
-      }
-
-      const venue    = comp.venue?.fullName || '';
-      const gameTime = event.date ? new Date(event.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
-
-      return `
-        <div class="game-card ${live ? 'live' : ''}">
-          <div class="card-header">
-            <span class="card-league">${leagueId.toUpperCase()}</span>
-            ${statusHTML}
-          </div>
-          <div class="teams-block">
-            ${teamCol(away, awayWin, homeWin, 'away')}
-            <div class="vs-col">
-              <span class="vs-at">@</span>
-            </div>
-            ${teamCol(home, homeWin, awayWin, 'home')}
-          </div>
-          ${pitcherHTML}
-          <div class="card-footer">
-            <span class="card-venue">${venue}</span>
-            ${pre ? `<span class="card-time">${gameTime}</span>` : ''}
-          </div>
-        </div>`;
+    async function fetchERA(id) {
+      try {
+        const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${id}?hydrate=stats(group=pitching,type=season)`);
+        const data = await res.json();
+        return data.people?.[0]?.stats?.[0]?.splits?.[0]?.stat?.era ?? null;
+      } catch { return null; }
     }
 
-    // ── Render output ─────────────────────────────────────────────
-    function renderOutput(events, leagueId, pitcherMap) {
-      const output = document.getElementById('scoreboard-output');
+    // ── Load today ────────────────────────────────────────────────
+    async function loadToday() {
+      try {
+        const [picksData, pitcherMap] = await Promise.all([
+          fetch(PREDICTIONS_URL).then(r => r.json()),
+          fetchProbablePitchers()
+        ]);
 
-      if (!events.length) {
-        output.innerHTML = `<div class="empty-state">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          <p>No ${leagueId.toUpperCase()} games scheduled today.</p>
-        </div>`;
+        if (picksData.generated_at) {
+          const d = new Date(picksData.generated_at);
+          document.getElementById('last-updated').textContent =
+            `Updated ${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
+        }
+
+        const picks = picksData.picks || [];
+        const pitcherDetails = await Promise.all(
+          picks.map(async pick => {
+            const pitcher = pitcherMap[pick.pick];
+            if (!pitcher) return null;
+            const era = await fetchERA(pitcher.id);
+            return { name: pitcher.fullName, era };
+          })
+        );
+
+        renderTodayPicks(picks, pitcherDetails);
+      } catch(e) {
+        document.getElementById('picks-container').innerHTML =
+          `<div class="empty-state" style="grid-column:1/-1"><p>Could not load predictions. Try again later.</p></div>`;
+      }
+    }
+
+    function renderTodayPicks(picks, pitcherDetails = []) {
+      const container = document.getElementById('picks-container');
+      if (!picks.length) {
+        container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+          <p>No picks for today yet — check back after 9 AM ET.</p></div>`;
         return;
       }
 
-      const sorted   = [...events].sort((a, b) => sortOrd(a.status) - sortOrd(b.status));
-      const live     = sorted.filter(e => isLive(e.status));
-      const upcoming = sorted.filter(e => isPre(e.status));
-      const finals   = sorted.filter(e => isFinal(e.status));
+      container.innerHTML = picks.map((pick, i) => {
+        const conf    = pick.confidence || 0.5;
+        const confPct = Math.round(conf * 100);
+        const color   = confColor(conf);
+        const isHome  = pick.pick === pick.home_team;
+        const side    = isHome ? 'Home' : 'Away';
+        const line    = pick.line || 0;
 
-      let html = '';
+        let impliedPct = 50;
+        if (line < 0) impliedPct = Math.round((Math.abs(line) / (Math.abs(line) + 100)) * 100);
+        else if (line > 0) impliedPct = Math.round((100 / (line + 100)) * 100);
 
-      if (live.length) {
-        html += `<div class="section-divider">
-          <span class="sdl live"><span class="live-dot"></span>Live Now</span>
-          <div class="sdl-line"></div>
-        </div>
-        <div class="games-grid">${live.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
-      }
+        const pd = pitcherDetails[i];
+        const eraVal = pd?.era != null ? parseFloat(pd.era) : null;
+        const eraCol = eraVal != null ? (eraVal < 3.5 ? 'var(--green)' : eraVal > 4.5 ? '#FCA5A5' : 'var(--text)') : 'var(--gray-500)';
+        const pitcherHTML = pd ? `
+          <div style="display:flex;align-items:center;gap:0.65rem;padding:0.55rem 0.8rem;
+                      background:rgba(147,51,234,0.06);border:1px solid var(--border);border-radius:8px">
+            <div style="flex:1;min-width:0">
+              <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--purple-400);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.12rem">Starting Pitcher</div>
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pd.name}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--gray-500);margin-bottom:0.12rem">ERA</div>
+              <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:${eraCol}">${eraVal != null ? eraVal.toFixed(2) : '—'}</div>
+            </div>
+          </div>` : '';
 
-      if (upcoming.length) {
-        html += `<div class="games-grid" style="margin-top:${live.length ? '1.5rem' : '0'}">
-          ${upcoming.map(e => buildCard(e, leagueId, pitcherMap)).join('')}
+        return `<div class="pick-card">
+          <div class="pick-card-header">
+            <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--gray-500)">⚾ MLB · XGBoost</span>
+            ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
+          </div>
+          <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
+          <div class="pick-team-hero">
+            <div style="display:flex;align-items:center;gap:0.85rem">
+              ${teamLogoHTML(pick.pick, 48)}
+              <div class="pick-team-info">
+                <div class="pick-team-name">${pick.pick}</div>
+                <div class="pick-team-side">${side.toUpperCase()} · ${fmtOdds(line)}</div>
+              </div>
+            </div>
+            <button onclick="logPick('${pick.pick}','MLB',${line})"
+              style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6EE7B7;
+                     font-family:var(--font-body);font-size:0.73rem;font-weight:600;padding:0.32rem 0.7rem;
+                     border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.2s"
+              onmouseover="this.style.background='rgba(16,185,129,0.28)'"
+              onmouseout="this.style.background='rgba(16,185,129,0.15)'">＋ Log Pick</button>
+          </div>
+          ${pitcherHTML}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem">
+            <div class="pick-main" style="padding:0.6rem 0.8rem">
+              <div class="pick-label">Win Probability</div>
+              <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:${color}">${confPct}%</div>
+            </div>
+            <div class="pick-main" style="padding:0.6rem 0.8rem">
+              <div class="pick-label">Market Implied</div>
+              <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--muted)">${impliedPct}%</div>
+            </div>
+          </div>
+          <div class="pick-meta-row">
+            <div class="meta-chip">Edge: <span>+${pick.edge}%</span></div>
+            <div class="meta-chip">Line: <span>${fmtOdds(line)}</span></div>
+          </div>
+          <div class="confidence-row">
+            <div class="confidence-header">
+              <span class="confidence-label">Model vs Market Edge</span>
+              <span class="confidence-pct" style="color:${color}">+${pick.edge}%</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pick.edge*10,100)}%;background:${color}"></div></div>
+          </div>
         </div>`;
-      }
-
-      if (finals.length) {
-        html += `<div class="section-divider" style="margin-top:1rem">
-          <span class="sdl final">Final</span>
-          <div class="sdl-line"></div>
-        </div>
-        <div class="games-grid">${finals.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
-      }
-
-      output.innerHTML = html;
-
-      // Update live count badge
-      const liveCount = live.length;
-      const tab = document.querySelector(`[data-league="${leagueId}"]`);
-      if (tab) {
-        const existing = tab.querySelector('.tab-live-count');
-        if (existing) existing.remove();
-        if (liveCount > 0) {
-          const badge = document.createElement('span');
-          badge.className = 'tab-live-count';
-          badge.textContent = liveCount;
-          tab.appendChild(badge);
-        }
-      }
+      }).join('');
     }
 
-    // ── Load a league ─────────────────────────────────────────────
-    async function loadLeague(leagueId, force = false) {
-      const leagueObj = LEAGUES.find(l => l.id === leagueId);
-      const output    = document.getElementById('scoreboard-output');
-
-      output.innerHTML = `<div class="loading-state"><div class="spinner"></div> Loading ${leagueObj.label} games...</div>`;
-
+    // ── History ───────────────────────────────────────────────────
+    async function loadHistory() {
       try {
-        let data;
-        if (!force && cache[leagueId]) {
-          data = cache[leagueId];
-        } else {
-          const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${leagueObj.sport}/${leagueObj.slug}/scoreboard`);
-          data = await r.json();
-          cache[leagueId] = data;
-        }
-
-        const events = data.events || [];
-        let pitcherMap = {};
-
-        if (leagueId === 'mlb') {
-          pitcherMap = await fetchPitchersTagged();
-          // Fetch all ERAs in parallel
-          const allIds = [];
-          Object.values(pitcherMap).forEach(p => {
-            if (p.away?.id) allIds.push(p.away.id);
-            if (p.home?.id) allIds.push(p.home.id);
-          });
-          await Promise.all([...new Set(allIds)].map(fetchERA));
-        }
-
-        renderOutput(events, leagueId, pitcherMap);
-
-      } catch(err) {
-        output.innerHTML = `<div class="empty-state">
-          <p>Could not load ${leagueObj.label} scores.</p>
-          <button class="btn btn-ghost btn-sm" onclick="loadLeague('${leagueId}',true)" style="margin-top:0.5rem">Try Again</button>
-        </div>`;
+        const res  = await fetch(HISTORY_URL);
+        const data = await res.json();
+        historyData = data.picks || [];
+        renderSummaryStats(data.summary);
+        renderEquityCurve(historyData);
+        renderSplits(historyData);
+        renderHistoryTable();
+      } catch(e) {
+        document.getElementById('summary-grid').innerHTML =
+          `<div style="grid-column:1/-1;color:var(--red);font-size:0.875rem">Could not load history.</div>`;
       }
     }
 
-    // ── Tabs ──────────────────────────────────────────────────────
-    function buildTabs() {
-      document.getElementById('league-tabs').innerHTML = LEAGUES.map(l => `
-        <button class="league-tab ${l.id === activeLeague ? 'active' : ''}" data-league="${l.id}"
-                onclick="switchLeague('${l.id}')">
-          ${l.emoji} ${l.label}
-        </button>`).join('');
+    function renderSummaryStats(s) {
+      document.getElementById('summary-grid').innerHTML = `
+        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral">${s.wins}-${s.losses}</div><div class="stat-sub">${s.total_picks} settled picks</div></div>
+        <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value ${s.win_rate>=52.4?'stat-positive':'stat-negative'}">${s.win_rate}%</div><div class="stat-sub">Break-even ≈ 52.4%</div></div>
+        <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}">${s.total_units>=0?'+':''}${s.total_units}u</div><div class="stat-sub">Since June 22, 2026</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Edge</div><div class="stat-value stat-neutral">${(historyData.reduce((a,b)=>a+(b.edge||0),0)/historyData.length).toFixed(2)}%</div><div class="stat-sub">Per pick</div></div>`;
     }
 
-    function switchLeague(id) {
-      activeLeague = id;
-      document.querySelectorAll('.league-tab').forEach(t =>
-        t.classList.toggle('active', t.dataset.league === id));
-      loadLeague(id);
+    function renderEquityCurve(picks) {
+      const sorted = [...picks].reverse();
+      let cum = 0;
+      const labels = [], values = [];
+      sorted.forEach(p => { cum += (p.units||0); labels.push(p.date); values.push(parseFloat(cum.toFixed(2))); });
+      const finalVal = values[values.length-1] || 0;
+      const color = finalVal >= 0 ? '#10B981' : '#EF4444';
+      if (equityChart) equityChart.destroy();
+      equityChart = new Chart(document.getElementById('equity-chart'), {
+        type: 'line',
+        data: { labels, datasets: [{ data: values, borderColor: color, backgroundColor: finalVal>=0?'rgba(16,185,129,0.07)':'rgba(239,68,68,0.07)', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { maxTicksLimit: 8, color: '#6B7280' } },
+                    y: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { color: '#6B7280', callback: v => `${v>0?'+':''}${v}u` } } } }
+      });
     }
 
-    // ── Refresh ───────────────────────────────────────────────────
-    async function doRefresh() {
-      const btn = document.getElementById('refresh-btn');
-      btn.classList.add('spinning'); btn.disabled = true;
-      delete cache[activeLeague];
-      await loadLeague(activeLeague, true);
-      btn.classList.remove('spinning'); btn.disabled = false;
+    function renderSplits(picks) {
+      function calcSplit(arr) {
+        const w = arr.filter(p=>p.result==='Win').length, l = arr.filter(p=>p.result==='Loss').length;
+        const wr = (w+l)>0 ? ((w/(w+l))*100).toFixed(1) : '—';
+        const units = arr.reduce((a,b)=>a+(b.units||0),0).toFixed(2);
+        return {w, l, wr, units, total: w+l};
+      }
+      function splitRows(rows) {
+        return rows.map(([label, arr]) => {
+          const s = calcSplit(arr); const wr = parseFloat(s.wr);
+          const cls = isNaN(wr) ? '' : wrClass(wr);
+          const ud = s.total>0 ? `<span style="font-family:var(--font-mono);font-size:0.73rem;color:${parseFloat(s.units)>=0?'var(--green)':'var(--red)'}"> ${parseFloat(s.units)>=0?'+':''}${s.units}u</span>` : '';
+          return `<div class="split-row"><span class="split-label">${label}</span><span class="split-record">${s.w}-${s.l}</span>${ud}<span class="split-winrate ${cls}">${s.wr}%</span></div>`;
+        }).join('');
+      }
+      document.getElementById('splits-grid').innerHTML = `
+        <div class="split-card"><div class="split-card-title">Home vs Away</div>
+          ${splitRows([['Home Picks', picks.filter(p=>p.pick===p.home_team)], ['Away Picks', picks.filter(p=>p.pick===p.away_team)]])}</div>
+        <div class="split-card"><div class="split-card-title">Favorites vs Underdogs</div>
+          ${splitRows([['Favorites', picks.filter(p=>p.line<0)], ['Underdogs', picks.filter(p=>p.line>0)]])}</div>
+        <div class="split-card"><div class="split-card-title">Confidence Tiers</div>
+          ${splitRows([['High (≥60%)', picks.filter(p=>p.confidence>=0.60)], ['Mid (52–60%)', picks.filter(p=>p.confidence>=0.52&&p.confidence<0.60)], ['Low (<52%)', picks.filter(p=>p.confidence<0.52)]])}</div>
+        <div class="split-card"><div class="split-card-title">Edge Tiers</div>
+          ${splitRows([['High Edge (≥2%)', picks.filter(p=>p.edge>=2)], ['Low Edge (<2%)', picks.filter(p=>p.edge<2)]])}</div>`;
     }
 
-    // Auto-refresh every 45s
-    setInterval(() => { delete cache[activeLeague]; loadLeague(activeLeague, true); }, 45000);
+    function renderHistoryTable() {
+      const rf = document.getElementById('filter-result').value;
+      const sf = document.getElementById('filter-side').value;
+      const of = document.getElementById('filter-odds').value;
+      let filtered = historyData;
+      if (rf !== 'all') filtered = filtered.filter(p=>p.result===rf);
+      if (sf === 'home') filtered = filtered.filter(p=>p.pick===p.home_team);
+      if (sf === 'away') filtered = filtered.filter(p=>p.pick===p.away_team);
+      if (of === 'fav')  filtered = filtered.filter(p=>p.line<0);
+      if (of === 'dog')  filtered = filtered.filter(p=>p.line>0);
+      const wins = filtered.filter(p=>p.result==='Win').length;
+      const losses = filtered.filter(p=>p.result==='Loss').length;
+      const units = filtered.reduce((a,b)=>a+(b.units||0),0);
+      document.getElementById('filter-count').textContent = `${filtered.length} picks · ${wins}W-${losses}L · ${units>=0?'+':''}${units.toFixed(2)}u`;
+      const tbody = document.getElementById('history-tbody');
+      if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:2rem">No picks match filters.</td></tr>`; return; }
+      tbody.innerHTML = filtered.map(p => {
+        const badgeClass = p.result==='Win'?'badge-win':'badge-loss';
+        const uCls = p.units>=0?'units-positive':'units-negative';
+        const uDisp = p.units>=0?`+${p.units.toFixed(2)}u`:`${p.units.toFixed(2)}u`;
+        const confPct = Math.round((p.confidence||0.5)*100);
+        let scoreDisplay = '—';
+        if (p.home_score!=null && p.away_score!=null) {
+          const hw = p.home_score>p.away_score;
+          const hs = hw ? `<span class="winning-score">${p.home_score}</span>` : p.home_score;
+          const as = !hw ? `<span class="winning-score">${p.away_score}</span>` : p.away_score;
+          scoreDisplay = `<span class="score-display">${as}-${hs}</span>`;
+        }
+        const side = p.pick===p.home_team?'(H)':'(A)';
+        return `<tr>
+          <td style="font-family:var(--font-mono);font-size:0.76rem;white-space:nowrap;color:var(--gray-500)">${p.date}</td>
+          <td style="font-size:0.83rem;white-space:nowrap">${p.away_team} @ ${p.home_team}</td>
+          <td style="font-weight:600;font-size:0.85rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-500);font-size:0.73rem">${side}</span></td>
+          <td style="font-family:var(--font-mono);font-size:0.78rem">${fmtOdds(p.line)}</td>
+          <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--purple-300)">+${p.edge}%</td>
+          <td style="font-family:var(--font-mono);font-size:0.76rem;color:var(--muted)">${confPct}%</td>
+          <td>${scoreDisplay}</td>
+          <td><span class="badge ${badgeClass}">${p.result}</span></td>
+          <td class="${uCls}">${uDisp}</td>
+        </tr>`;
+      }).join('');
+    }
 
-    // ── Init ──────────────────────────────────────────────────────
-    buildTabs();
-    loadLeague(activeLeague);
+    // ── Bet Tracker ───────────────────────────────────────────────
+    const T_KEY = 'orb_bets_v1';
+    let tBets = JSON.parse(localStorage.getItem(T_KEY) || '[]');
+
+    document.getElementById('t-date').value = new Date().toISOString().split('T')[0];
+    function saveTBets() { localStorage.setItem(T_KEY, JSON.stringify(tBets)); }
+
+    function updateOddsHint() {
+      const odds = parseInt(document.getElementById('t-odds').value);
+      const hint = document.getElementById('t-odds-hint');
+      if (!odds) { hint.textContent = ''; return; }
+      const implied = odds > 0 ? (100/(odds+100))*100 : (Math.abs(odds)/(Math.abs(odds)+100))*100;
+      hint.textContent = `Implied: ${implied.toFixed(1)}%`;
+    }
+
+    function tCalcPL(odds, stake, result) {
+      if (result === 'Pending') return null;
+      if (result === 'Push') return 0;
+      if (result === 'Loss') return -Math.abs(stake);
+      const o = parseInt(odds);
+      return o > 0 ? (o/100)*stake : (100/Math.abs(o))*stake;
+    }
+
+    function tAddBet() {
+      const pick  = document.getElementById('t-pick').value.trim();
+      const sport = document.getElementById('t-sport').value;
+      const type  = document.getElementById('t-type').value;
+      const odds  = document.getElementById('t-odds').value;
+      const stake = parseFloat(document.getElementById('t-stake').value);
+      const date  = document.getElementById('t-date').value;
+      const result= document.getElementById('t-result').value;
+      const notes = document.getElementById('t-notes').value.trim();
+      if (!pick)  { alert('Enter a pick description.'); return; }
+      if (!odds)  { alert('Enter odds.'); return; }
+      if (!stake || stake <= 0) { alert('Enter a valid stake.'); return; }
+      if (!date)  { alert('Select a date.'); return; }
+      tBets.unshift({ id: Date.now(), pick, sport, type, odds: parseInt(odds), stake, date, result, notes, pl: tCalcPL(odds, stake, result) });
+      saveTBets(); tRefresh();
+      document.getElementById('t-pick').value = '';
+      document.getElementById('t-odds').value = '';
+      document.getElementById('t-stake').value = '';
+      document.getElementById('t-notes').value = '';
+      document.getElementById('t-result').value = 'Pending';
+      document.getElementById('t-odds-hint').textContent = '';
+    }
+
+    function tRenderStats() {
+      const settled = tBets.filter(b => b.result !== 'Pending');
+      const wins = settled.filter(b => b.result==='Win').length;
+      const losses = settled.filter(b => b.result==='Loss').length;
+      const totalPL = settled.reduce((s,b) => s+(b.pl||0), 0);
+      const totalStake = tBets.reduce((s,b) => s+b.stake, 0);
+      const roi = totalStake > 0 ? (totalPL/totalStake)*100 : 0;
+      const wr  = settled.length > 0 ? (wins/settled.length)*100 : 0;
+      document.getElementById('tp-record').textContent  = tBets.length ? `${wins}-${losses}` : '—';
+      document.getElementById('tp-winrate').textContent = settled.length ? `${wr.toFixed(1)}%` : '—';
+      document.getElementById('tp-winrate').style.color = !settled.length ? 'var(--muted)' : wr >= 52.4 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('tp-pl').textContent = `${totalPL>=0?'+':''}$${totalPL.toFixed(2)}`;
+      document.getElementById('tp-pl').style.color = totalPL >= 0 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('tp-roi').textContent = `${roi>=0?'+':''}${roi.toFixed(1)}%`;
+      document.getElementById('tp-roi').style.color = roi >= 0 ? 'var(--green)' : 'var(--red)';
+    }
+
+    function tRenderTable() {
+      const sf = document.getElementById('t-filter-sport').value;
+      const rf = document.getElementById('t-filter-result').value;
+      let filtered = tBets;
+      if (sf !== 'all') filtered = filtered.filter(b=>b.sport===sf);
+      if (rf !== 'all') filtered = filtered.filter(b=>b.result===rf);
+      const empty = document.getElementById('t-empty');
+      const table = document.getElementById('t-table');
+      if (!filtered.length) { empty.style.display='flex'; table.style.display='none'; return; }
+      empty.style.display='none'; table.style.display='table';
+      document.getElementById('t-tbody').innerHTML = filtered.map(bet => {
+        const pl = bet.pl;
+        const plDisp = bet.result==='Pending'?'—':pl===0?'$0':pl>0?`+$${pl.toFixed(2)}`:`-$${Math.abs(pl).toFixed(2)}`;
+        const plCls = bet.result==='Pending'?'':pl>0?'t-profit-pos':pl<0?'t-profit-neg':'';
+        const badge = {Win:'badge-win',Loss:'badge-loss',Push:'badge-push',Pending:'badge-pending'}[bet.result]||'badge-pending';
+        const odds = bet.odds>0?`+${bet.odds}`:`${bet.odds}`;
+        return `<tr>
+          <td style="font-family:var(--font-mono);font-size:0.7rem;white-space:nowrap;color:var(--gray-500)">${bet.date}</td>
+          <td style="font-weight:600;font-size:0.78rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${bet.pick}</td>
+          <td class="t-odds">${odds}</td>
+          <td style="font-family:var(--font-mono);font-size:0.73rem">$${bet.stake.toFixed(0)}</td>
+          <td class="${plCls}">${plDisp}</td>
+          <td><span class="badge ${badge}" style="font-size:0.58rem;padding:0.08rem 0.35rem">${bet.result}</span></td>
+          <td><button class="t-del-btn" onclick="tDeleteBet(${bet.id})">✕</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function logPick(pick, sport, odds) {
+      document.getElementById('t-pick').value  = pick + ' ML';
+      document.getElementById('t-sport').value = sport;
+      document.getElementById('t-type').value  = 'Moneyline';
+      document.getElementById('t-odds').value  = odds;
+      updateOddsHint();
+      document.querySelector('.tracker-col').scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('t-pick').focus();
+    }
+
+    function tDeleteBet(id) { tBets=tBets.filter(b=>b.id!==id); saveTBets(); tRefresh(); }
+    function tClearAll() {
+      if (!tBets.length) return;
+      if (confirm(`Delete all ${tBets.length} bets?`)) { tBets=[]; saveTBets(); tRefresh(); }
+    }
+    function tRefresh() { tRenderStats(); tRenderTable(); }
+
+    tRefresh();
+    loadToday();
+    loadHistory();
   </script>
 </body>
 </html>

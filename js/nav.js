@@ -1,7 +1,7 @@
 // ─── Shared Nav Builder ───────────────────────────────────────────
 const NAV_LINKS = [
-  { href: 'scoreboard.html',  label: 'Scoreboard' },
   { href: 'predictions.html', label: 'Predictions' },
+  { href: 'scoreboard.html',  label: 'Scoreboard' },
 ];
 
 const SOCIAL_LINKS = [
@@ -42,7 +42,7 @@ function buildNav(activePage = '') {
 
   root.innerHTML = `
     <div class="nav-logo">
-      <a class="nav-logo-link" href="scoreboard.html" aria-label="Orb Analytics Home">
+      <a class="nav-logo-link" href="predictions.html" aria-label="Orb Analytics Home">
         <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img" />
         <span class="nav-logo-text">Orb Analytics</span>
       </a>
