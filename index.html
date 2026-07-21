@@ -17,7 +17,6 @@
       padding: 0;
       overflow: hidden;
     }
-    @media (max-width: 1024px) { .page-split { grid-template-columns: 1fr; height: auto; overflow: visible; } }
 
     /* Left: predictions, independently scrollable */
     .predictions-col {
@@ -43,6 +42,93 @@
     }
     .tracker-col::-webkit-scrollbar { width: 4px; }
     .tracker-col::-webkit-scrollbar-thumb { background: var(--purple-600); border-radius: 2px; }
+
+    /* ── Mobile tab switcher (hidden on desktop) ─────────────── */
+    .mobile-page-tabs {
+      display: none;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 0;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .mobile-page-tab {
+      flex: 1;
+      padding: 0.75rem 0.5rem;
+      border: none;
+      background: transparent;
+      color: var(--gray-500);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: var(--transition);
+    }
+
+    .mobile-page-tab.active {
+      color: var(--purple-600);
+      border-bottom-color: var(--purple-600);
+    }
+
+    /* ── Mobile responsive ───────────────────────────────────── */
+    @media (max-width: 768px) {
+      .mobile-page-tabs { display: flex; }
+
+      .page-split {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+        gap: 0;
+      }
+
+      .predictions-col {
+        height: auto;
+        overflow-y: visible;
+        padding: 1rem 1rem 1.5rem;
+      }
+
+      .tracker-col {
+        height: auto;
+        overflow-y: visible;
+        padding: 1rem 1rem 1.5rem;
+      }
+
+      .predictions-col.mobile-hidden,
+      .tracker-col.mobile-hidden {
+        display: none;
+      }
+
+      .picks-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+
+      .splits-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .t-form-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .t-full { grid-column: 1 !important; }
+
+      .predictions-header .section-title { font-size: 1.3rem; }
+
+      div[style*="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap"] {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
 
     /* ── Predictions header ──────────────────────────────────── */
     .predictions-header {
@@ -195,13 +281,18 @@
   <nav class="nav" id="main-nav"></nav>
 
   <main class="page" style="overflow:hidden">
+    <!-- Mobile tab switcher -->
+    <div class="mobile-page-tabs">
+      <button class="mobile-page-tab active" onclick="switchMobileTab('picks')">📊 Picks</button>
+      <button class="mobile-page-tab" onclick="switchMobileTab('tracker')">📈 Tracker</button>
+    </div>
     <div class="container" style="height:calc(100vh - 60px);padding-top:0;padding-bottom:0">
       <div class="page-split">
 
         <!-- ══ LEFT: PREDICTIONS ══════════════════════════════════ -->
         <div class="predictions-col">
           <div class="predictions-header">
-            <div class="section-label">ML-Powered Picks</div>
+            <div class="section-label">Data Driven Picks</div>
             <div class="section-title">MLB Predictions</div>
             <p style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem" id="last-updated"></p>
           </div>
@@ -909,6 +1000,22 @@
       if (confirm(`Delete all ${tBets.length} bets?`)) { tBets=[]; saveTBets(); tRefresh(); }
     }
     function tRefresh() { tRenderStats(); tRenderTable(); }
+
+    // ── Mobile tab switching ──────────────────────────────────────
+    function switchMobileTab(tab) {
+      const picksCol   = document.querySelector('.predictions-col');
+      const trackerCol = document.querySelector('.tracker-col');
+      document.querySelectorAll('.mobile-page-tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'picks') || (i === 1 && tab === 'tracker'));
+      });
+      if (tab === 'picks') {
+        picksCol.classList.remove('mobile-hidden');
+        trackerCol.classList.add('mobile-hidden');
+      } else {
+        picksCol.classList.add('mobile-hidden');
+        trackerCol.classList.remove('mobile-hidden');
+      }
+    }
 
     tRefresh();
     loadToday();

@@ -1,13 +1,5 @@
 /* ─── Orb Analytics – Design System (Light Theme) ────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
-@font-face {
-  font-family: 'Roboto Slab';
-  src: url('../fonts/RobotoSlab-VariableFont_wght.ttf') format('truetype');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   --purple-950: #0D0118;
@@ -30,8 +22,8 @@
   --gray-900: #111827;
   --gray-800: #1F2937;
   --gray-700: #374151;
-  --gray-500: #111827;
-  --gray-400: #374151;
+  --gray-500: #6B7280;
+  --gray-400: #9CA3AF;
   --gray-200: #E5E7EB;
   --gray-100: #F9FAFB;
 
@@ -43,7 +35,7 @@
   --muted:   #6D28D9;
   --accent:  var(--purple-600);
 
-  --font-display: 'Roboto Slab', serif;
+  --font-display: 'Syne', sans-serif;
   --font-body:    'Inter', sans-serif;
   --font-mono:    'JetBrains Mono', monospace;
 
@@ -476,148 +468,13 @@ body {
   margin-top: 4rem;
 }
 
-/* ─── Email Signup ───────────────────────────────────────────────── */
-.email-signup {
-  background: linear-gradient(135deg, var(--purple-600) 0%, var(--purple-800) 100%);
-  border-radius: var(--radius-lg);
-  padding: 2.5rem 2rem;
-  text-align: center;
-  margin: 2rem 0;
-}
-
-.email-signup-title {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 0.4rem;
-}
-
-.email-signup-sub {
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.75);
-  margin-bottom: 1.25rem;
-}
-
-.email-signup-form {
-  display: flex;
-  gap: 0.5rem;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.email-signup-input {
-  flex: 1;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 8px;
-  color: white;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  padding: 0.6rem 1rem;
-  outline: none;
-  transition: var(--transition);
-}
-
-.email-signup-input::placeholder { color: rgba(255,255,255,0.5); }
-.email-signup-input:focus { border-color: white; background: rgba(255,255,255,0.2); }
-
-.email-signup-btn {
-  background: white;
-  color: var(--purple-700);
-  border: none;
-  border-radius: 8px;
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 700;
-  padding: 0.6rem 1.25rem;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: var(--transition);
-}
-
-.email-signup-btn:hover { background: var(--purple-100); }
-
-.email-signup-disclaimer {
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.5);
-  margin-top: 0.75rem;
-}
-
-/* ─── Dark theme ────────────────────────────────────────────────── */
-body.dark {
-  --bg:      #0D0118;
-  --surface: #1A0533;
-  --card:    #2D0A4E;
-  --border:  rgba(147, 51, 234, 0.25);
-  --text:    #F0E6FF;
-  --muted:   #C084FC;
-  --purple-300: #C084FC;
-  --gray-500: #9CA3AF;
-  --gray-400: #6B7280;
-  --green:   #10B981;
-  --red:     #EF4444;
-}
-
-body.dark .nav {
-  background: rgba(13, 1, 24, 0.88);
-}
-
-body.dark .form-input,
-body.dark .form-select {
-  background: #1A0533;
-  color: #F0E6FF;
-}
-
-body.dark .form-select option {
-  background: #1A0533;
-}
-
-body.dark .data-table th {
-  background: #2D0A4E;
-}
-
-body.dark .nav-links a {
-  color: #C084FC;
-}
-
-body.dark .nav-links a:hover,
-body.dark .nav-links a.active {
-  color: #F0E6FF;
-  background: rgba(147,51,234,0.18);
-}
-
-body.dark .nav-social a {
-  color: #6B7280;
-}
-
-/* ─── Theme toggle button ────────────────────────────────────────── */
-.theme-toggle {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition);
-  color: var(--gray-500);
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.theme-toggle:hover {
-  border-color: var(--purple-500);
-  background: rgba(109,40,217,0.08);
-  color: var(--purple-500);
-}
-
 /* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .nav { padding: 0 1rem; }
   .nav-links { display: none; }
   .container { padding: 0 1rem; }
   .section-title { font-size: 1.3rem; }
+  .nav-logo-text { font-size: 0.95rem; }
+  .nav-social a { padding: 0.2rem; }
+  .nav-social svg { width: 15px; height: 15px; }
 }
