@@ -376,8 +376,8 @@
       } else if (final) {
         statusHTML = `<span class="card-status">Final</span>`;
       } else {
-        const t = event.date ? new Date(event.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
-        statusHTML = `<span class="card-status" style="color:var(--purple-300)">${t}</span>`;
+        const broadcast = comp.broadcasts?.[0]?.names?.join('/') || comp.geoBroadcasts?.[0]?.media?.shortName || '';
+        statusHTML = broadcast ? `<span class="card-status" style="color:var(--purple-300)">${broadcast}</span>` : '';
       }
 
       // Team column
