@@ -37,17 +37,17 @@
     .league-tab {
       display: flex; align-items: center; gap: 0.4rem;
       padding: 0.45rem 1.1rem;
-      border: 1px solid var(--border); border-radius: 8px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
       background: var(--surface); color: var(--muted);
       font-size: 0.85rem; font-weight: 600; cursor: pointer;
       white-space: nowrap; transition: var(--transition); font-family: var(--font-body);
     }
     .league-tab.active { background: var(--purple-600); border-color: var(--purple-600); color: white; }
-    .league-tab:hover:not(.active) { border-color: var(--gray-300); color: var(--text); background: var(--gray-50); }
+    .league-tab:hover:not(.active) { border-color: var(--hover-border); color: var(--text); background: var(--hover-tint); }
     .tab-live-count {
       background: var(--red); color: white;
       font-size: 0.65rem; font-weight: 700;
-      padding: 0.1rem 0.4rem; border-radius: 10px; line-height: 1.4;
+      padding: 0.1rem 0.4rem; border-radius: var(--radius-pill); line-height: 1.4;
     }
 
     /* ── Section dividers ──────────────────────────────────────── */
@@ -89,7 +89,7 @@
       transition: border-color var(--transition), box-shadow var(--transition);
       position: relative; overflow: hidden;
     }
-    .game-card:hover { border-color: var(--gray-300); box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .game-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
     .game-card.live { border-color: rgba(239,68,68,0.3); }
     .game-card.live::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
@@ -116,7 +116,7 @@
       width: 38px; height: 38px; object-fit: contain; flex-shrink: 0;
     }
     .team-logo-fallback {
-      width: 38px; height: 38px; border-radius: 7px;
+      width: 38px; height: 38px; border-radius: var(--radius);
       background: var(--gray-100);
       display: flex; align-items: center; justify-content: center;
       font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; color: var(--gray-600);
@@ -151,7 +151,7 @@
       font-size: 0.7rem;
       font-weight: 600;
       padding: 0.1rem 0.4rem;
-      border-radius: 4px;
+      border-radius: var(--radius-pill);
       background: var(--gray-100);
       border: 1px solid var(--border);
       color: var(--gray-700);
@@ -166,7 +166,7 @@
 
     .pitcher-matchup {
       background: var(--gray-50); border: 1px solid var(--border);
-      border-radius: 7px; padding: 0.55rem 0.75rem;
+      border-radius: var(--radius-sm); padding: 0.55rem 0.75rem;
       display: flex; flex-direction: column; gap: 0.3rem;
     }
     .pitcher-matchup-label {
@@ -186,11 +186,11 @@
     /* Refresh */
     .refresh-btn {
       display: flex; align-items: center; gap: 0.4rem;
-      background: transparent; border: 1px solid var(--border); border-radius: 7px;
+      background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
       color: var(--gray-600); font-size: 0.8rem; font-family: var(--font-body);
       padding: 0.4rem 0.8rem; cursor: pointer; transition: var(--transition);
     }
-    .refresh-btn:hover { color: var(--text); border-color: var(--gray-400); }
+    .refresh-btn:hover { color: var(--text); border-color: var(--hover-border); background: var(--hover-tint); }
     .refresh-btn svg { width: 13px; height: 13px; fill: currentColor; }
     .refresh-btn.spinning svg { animation: spin 0.75s linear infinite; }
   </style>
