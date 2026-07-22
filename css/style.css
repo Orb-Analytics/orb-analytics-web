@@ -92,7 +92,7 @@ body.dark .nav-links a { color: #C084FC; }
 body.dark .nav-links a:hover,
 body.dark .nav-links a.active { color: #F0E6FF; background: rgba(147,51,234,0.18); }
 body.dark .nav-social a { color: #6B7280; }
-body.dark .email-signup { background: linear-gradient(135deg, #2D0A4E 0%, #1A0533 100%); }
+body.dark .email-signup { background: var(--purple-900); border-color: var(--purple-700); }
 
 /* ─── Theme toggle ───────────────────────────────────────────────── */
 .theme-toggle {
@@ -458,7 +458,8 @@ body.dark .sidebar { background: var(--surface); border-right-color: var(--borde
 
 /* ─── Email Signup ───────────────────────────────────────────────── */
 .email-signup {
-  background: linear-gradient(135deg, var(--purple-600) 0%, var(--purple-800) 100%);
+  background: var(--purple-600);
+  border: 1px solid var(--purple-700);
   border-radius: var(--radius-lg);
   padding: 2.5rem 2rem;
   text-align: center;
