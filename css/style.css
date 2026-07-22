@@ -1,5 +1,5 @@
 /* ─── Orb Analytics – Design System (Light Theme) ────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
   --purple-950: #0D0118;
@@ -40,7 +40,7 @@
 
   --font-display: 'Roboto Slab', serif;
   --font-body:    'Inter', sans-serif;
-  --font-mono:    'JetBrains Mono', monospace;
+  --font-mono:    var(--font-body);
 
   --radius-sm: 8px;
   --radius: 10px;
