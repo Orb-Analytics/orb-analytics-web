@@ -132,8 +132,38 @@
         gap: 0.5rem;
       }
 
-      .data-table { font-size: 0.7rem; min-width: 500px; }
-      .data-table th, .data-table td { padding: 0.5rem 0.4rem; }
+      .data-table thead { display: none; }
+      .data-table, .data-table tbody, .data-table tr { display: block; width: 100%; }
+      .data-table tr {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 0.6rem;
+        padding: 0.4rem 0.75rem;
+        background: var(--surface);
+      }
+      .data-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.4rem 0;
+        border-bottom: 1px dashed var(--border);
+        max-width: none !important;
+        white-space: normal !important;
+        text-align: right;
+      }
+      .data-table td:last-child { border-bottom: none; }
+      .data-table td::before {
+        content: attr(data-label);
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: left;
+        flex-shrink: 0;
+      }
     }
 
     /* ── Predictions header ──────────────────────────────────── */
@@ -700,11 +730,11 @@
           <div style="display:flex;align-items:center;gap:0.65rem;padding:0.55rem 0.8rem;
                       background:var(--gray-50);border:1px solid var(--border);border-radius:8px">
             <div style="flex:1;min-width:0">
-              <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--gray-600);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.12rem">Starting Pitcher</div>
+              <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--gray-600);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.12rem">Starting Pitcher</div>
               <div style="font-size:0.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pd.name}</div>
             </div>
             <div style="text-align:right;flex-shrink:0">
-              <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--gray-600);margin-bottom:0.12rem">ERA</div>
+              <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--gray-600);margin-bottom:0.12rem">ERA</div>
               <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:${eraCol}">${eraVal != null ? eraVal.toFixed(2) : '—'}</div>
             </div>
           </div>` : '';
@@ -932,15 +962,15 @@
         const side = p.pick===p.home_team?'(H)':'(A)';
         const spread = p.spread != null ? (p.spread > 0 ? `+${p.spread}` : `${p.spread}`) : '—';
         return `<tr>
-          <td style="font-family:var(--font-mono);font-size:0.76rem;white-space:nowrap;color:var(--gray-500)">${p.date}</td>
-          <td style="font-size:0.83rem;white-space:nowrap">${p.away_team} @ ${p.home_team}</td>
-          <td style="font-weight:600;font-size:0.85rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-500);font-size:0.73rem">${side}</span></td>
-          ${showLine ? `<td style="font-family:var(--font-mono);font-size:0.78rem">${spread}</td>` : ''}
-          <td style="font-family:var(--font-mono);font-size:0.78rem">${fmtOdds(p.line)}</td>
-          <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--purple-300)">+${p.edge}%</td>
-          ${showConf ? `<td style="font-family:var(--font-mono);font-size:0.76rem;color:var(--muted)">${confPct}%</td>` : ''}
-          <td><span class="badge ${badgeClass}">${p.result}</span></td>
-          <td class="${uCls}">${uDisp}</td>
+          <td data-label="Date" style="font-family:var(--font-mono);font-size:0.76rem;white-space:nowrap;color:var(--gray-500)">${p.date}</td>
+          <td data-label="Matchup" style="font-size:0.83rem;white-space:nowrap">${p.away_team} @ ${p.home_team}</td>
+          <td data-label="Pick" style="font-weight:600;font-size:0.85rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-500);font-size:0.73rem">${side}</span></td>
+          ${showLine ? `<td data-label="Line" style="font-family:var(--font-mono);font-size:0.78rem">${spread}</td>` : ''}
+          <td data-label="Odds" style="font-family:var(--font-mono);font-size:0.78rem">${fmtOdds(p.line)}</td>
+          <td data-label="Edge" style="font-family:var(--font-mono);font-size:0.78rem;color:var(--purple-300)">+${p.edge}%</td>
+          ${showConf ? `<td data-label="Conf" style="font-family:var(--font-mono);font-size:0.76rem;color:var(--muted)">${confPct}%</td>` : ''}
+          <td data-label="Result"><span class="badge ${badgeClass}">${p.result}</span></td>
+          <td data-label="Units" class="${uCls}">${uDisp}</td>
         </tr>`;
       }).join('');
     }
@@ -1025,12 +1055,12 @@
         const badge = {Win:'badge-win',Loss:'badge-loss',Push:'badge-push',Pending:'badge-pending'}[bet.result]||'badge-pending';
         const odds = bet.odds>0?`+${bet.odds}`:`${bet.odds}`;
         return `<tr>
-          <td style="font-family:var(--font-mono);font-size:0.7rem;white-space:nowrap;color:var(--gray-500)">${bet.date}</td>
-          <td style="font-weight:600;font-size:0.78rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${bet.pick}</td>
-          <td class="t-odds">${odds}</td>
-          <td style="font-family:var(--font-mono);font-size:0.73rem">$${bet.stake.toFixed(0)}</td>
-          <td class="${plCls}">${plDisp}</td>
-          <td><span class="badge ${badge}" style="font-size:0.58rem;padding:0.08rem 0.35rem">${bet.result}</span></td>
+          <td data-label="Date" style="font-family:var(--font-mono);font-size:0.7rem;white-space:nowrap;color:var(--gray-500)">${bet.date}</td>
+          <td data-label="Pick" style="font-weight:600;font-size:0.78rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${bet.pick}</td>
+          <td class="t-odds" data-label="Odds">${odds}</td>
+          <td data-label="Stake" style="font-family:var(--font-mono);font-size:0.73rem">$${bet.stake.toFixed(0)}</td>
+          <td data-label="P/L" class="${plCls}">${plDisp}</td>
+          <td data-label="Result"><span class="badge ${badge}" style="font-size:0.65rem;padding:0.08rem 0.35rem">${bet.result}</span></td>
           <td><button class="t-del-btn" onclick="tDeleteBet(${bet.id})">✕</button></td>
         </tr>`;
       }).join('');
