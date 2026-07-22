@@ -723,7 +723,6 @@
       container.innerHTML = filteredPicks.map((pick, i) => {
         const conf    = pick.confidence || 0.5;
         const confPct = Math.round(conf * 100);
-        const color   = confColor(conf);
         const isHome  = pick.pick === pick.home_team;
         const side    = isHome ? 'Home' : 'Away';
         const line    = pick.line || 0;
@@ -767,7 +766,7 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem">
             <div class="pick-main" style="padding:0.6rem 0.8rem">
               <div class="pick-label">Win Probability</div>
-              <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:${color}">${(conf*100).toFixed(1)}%</div>
+              <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--gray-600)">${(conf*100).toFixed(1)}%</div>
             </div>
             <div class="pick-main" style="padding:0.6rem 0.8rem">
               <div class="pick-label">Market Implied</div>
@@ -782,9 +781,9 @@
           <div class="confidence-row">
             <div class="confidence-header">
               <span class="confidence-label">Model vs Market Edge</span>
-              <span class="confidence-pct" style="color:${color}">+${pick.edge}%</span>
+              <span class="confidence-pct" style="color:var(--gray-600)">+${pick.edge}%</span>
             </div>
-            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pick.edge*10,100)}%;background:${color}"></div></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pick.edge*10,100)}%;background:var(--gray-600)"></div></div>
           </div>
         </div>`;
       }).join('');
