@@ -377,8 +377,8 @@
               <div style="overflow-x:auto">
                 <table class="data-table" id="history-table">
                   <thead><tr>
-                    <th>Date</th><th>Matchup</th><th>Pick</th><th>Line</th>
-                    <th>Odds</th><th>Edge</th><th>Conf</th><th>Result</th><th>Units</th>
+                    <th>Date</th><th>Matchup</th><th>Pick</th><th id="th-line">Line</th>
+                    <th>Odds</th><th>Edge</th><th id="th-conf">Conf</th><th>Result</th><th>Units</th>
                   </tr></thead>
                   <tbody id="history-tbody"></tbody>
                 </table>
@@ -885,6 +885,10 @@
       const rf = document.getElementById('filter-result').value;
       const sf = document.getElementById('filter-side').value;
       const of = document.getElementById('filter-odds').value;
+      const showLine = activeSport !== 'mlb';
+      const showConf = activeSport !== 'nba';
+      document.getElementById('th-line').style.display = showLine ? '' : 'none';
+      document.getElementById('th-conf').style.display = showConf ? '' : 'none';
       let filtered = historyData;
       if (rf !== 'all') filtered = filtered.filter(p=>p.result===rf);
       if (sf === 'home') filtered = filtered.filter(p=>p.pick===p.home_team);
@@ -897,7 +901,8 @@
       const units = filtered.reduce((a,b)=>a+(b.units||0),0);
       document.getElementById('filter-count').textContent = `${filtered.length} picks · ${wins}W-${losses}L · ${units>=0?'+':''}${units.toFixed(2)}u`;
       const tbody = document.getElementById('history-tbody');
-      if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:2rem">No picks match filters.</td></tr>`; return; }
+      const colCount = 7 + (showLine ? 1 : 0) + (showConf ? 1 : 0);
+      if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--gray-500);padding:2rem">No picks match filters.</td></tr>`; return; }
       tbody.innerHTML = filtered.map(p => {
         const badgeClass = p.result==='Win'?'badge-win':'badge-loss';
         const uCls = p.units>=0?'units-positive':'units-negative';
@@ -916,10 +921,10 @@
           <td style="font-family:var(--font-mono);font-size:0.76rem;white-space:nowrap;color:var(--gray-500)">${p.date}</td>
           <td style="font-size:0.83rem;white-space:nowrap">${p.away_team} @ ${p.home_team}</td>
           <td style="font-weight:600;font-size:0.85rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-500);font-size:0.73rem">${side}</span></td>
-          <td style="font-family:var(--font-mono);font-size:0.78rem">${spread}</td>
+          ${showLine ? `<td style="font-family:var(--font-mono);font-size:0.78rem">${spread}</td>` : ''}
           <td style="font-family:var(--font-mono);font-size:0.78rem">${fmtOdds(p.line)}</td>
           <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--purple-300)">+${p.edge}%</td>
-          <td style="font-family:var(--font-mono);font-size:0.76rem;color:var(--muted)">${confPct}%</td>
+          ${showConf ? `<td style="font-family:var(--font-mono);font-size:0.76rem;color:var(--muted)">${confPct}%</td>` : ''}
           <td><span class="badge ${badgeClass}">${p.result}</span></td>
           <td class="${uCls}">${uDisp}</td>
         </tr>`;
