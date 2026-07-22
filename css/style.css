@@ -116,6 +116,7 @@ body.dark .email-signup { background: var(--purple-900); border-color: var(--pur
   flex-shrink: 0;
 }
 .theme-toggle:hover { border-color: var(--hover-border); background: var(--hover-tint); }
+.nav-theme-toggle { display: none; }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
@@ -504,6 +505,8 @@ body.dark .sidebar { background: var(--surface); border-right-color: var(--borde
   .nav-logo-text { font-size: 0.8rem; }
   .orb-logo-img { width: 22px; height: 22px; }
   .nav-social { display: none; }
+  .nav-theme-toggle { display: flex; }
+  .sidebar-footer { display: none; }
   .email-signup-form { flex-direction: column; }
   .email-signup-input { width: 100%; }
 
