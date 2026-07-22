@@ -54,7 +54,7 @@ function buildNav(activePage = '') {
             </a>
           `).join('')}
         </nav>
-        <div style="padding:0.75rem 0.85rem;border-top:1px solid var(--border);margin-top:1rem">
+        <div class="sidebar-footer">
           <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" style="width:100%;justify-content:center;gap:0.5rem;font-size:0.85rem;font-family:var(--font-body)">
             ${document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>

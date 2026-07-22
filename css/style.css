@@ -177,7 +177,7 @@ body.dark .email-signup { background: linear-gradient(135deg, #2D0A4E 0%, #1A053
 /* ─── Page Shell ─────────────────────────────────────────────────── */
 .page { min-height: calc(100vh - 60px); }
 
-.container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+.container { max-width: 1360px; margin: 0 auto; padding: 0 2rem; }
 
 /* ─── App layout (sidebar + content) ────────────────────────────── */
 .app-layout {
@@ -203,7 +203,19 @@ body.dark .email-signup { background: linear-gradient(135deg, #2D0A4E 0%, #1A053
 
 body.dark .sidebar { background: var(--surface); border-right-color: var(--border); }
 
-.sidebar-inner { padding: 1rem 0.75rem; flex: 1; }
+.sidebar-inner {
+  padding: 1rem 0.75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 0.75rem 0.85rem 0;
+  border-top: 1px solid var(--border);
+}
 
 .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; }
 
@@ -309,7 +321,7 @@ body.dark .sidebar { background: var(--surface); border-right-color: var(--borde
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1.25rem;
+  padding: 1.5rem;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 .card:hover { border-color: rgba(109,40,217,0.35); box-shadow: var(--glow); }
@@ -387,7 +399,7 @@ body.dark .sidebar { background: var(--surface); border-right-color: var(--borde
 .data-table tr:hover td { background: var(--gray-50); }
 
 /* ─── Stat card ──────────────────────────────────────────────────── */
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.35rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .stat-card .stat-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; }
 .stat-card .stat-value { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; line-height: 1; }
 .stat-card .stat-sub { font-size: 0.78rem; color: var(--gray-600); }
