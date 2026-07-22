@@ -35,9 +35,6 @@ function buildNav(activePage = '') {
             <a href="${s.href}" target="_blank" rel="noopener noreferrer" aria-label="${s.label}" title="${s.label}">${s.svg}</a>
           `).join('')}
         </div>
-        <button class="theme-toggle nav-theme-toggle" id="theme-toggle-mobile" onclick="toggleTheme()" title="Toggle theme">
-          ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
-        </button>
       </div>
     `;
   }
@@ -90,6 +87,4 @@ function toggleTheme() {
   localStorage.setItem('orb-theme', isDark ? 'dark' : 'light');
   const btn = document.getElementById('theme-toggle');
   if (btn) btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-  const mBtn = document.getElementById('theme-toggle-mobile');
-  if (mBtn) mBtn.textContent = isDark ? '☀️' : '🌙';
 }
