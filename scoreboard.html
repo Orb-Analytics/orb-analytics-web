@@ -164,11 +164,11 @@
       color: white;
     }
 
-    /* Mini live situation (bases + outs) */
+    /* Mini live situation (bases + count + outs) */
     .mini-situation {
-      display: flex; align-items: center; gap: 0.7rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
       background: var(--gray-50); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm); padding: 0.5rem 0.9rem;
     }
     .mini-bases { position: relative; width: 32px; height: 32px; flex-shrink: 0; }
     .mini-base {
@@ -179,8 +179,10 @@
     .mini-base-2 { top: 0; left: 10.5px; }
     .mini-base-3 { top: 10.5px; left: 0; }
     .mini-base-1 { top: 10.5px; left: 21px; }
-    .mini-count { display: flex; flex-direction: column; gap: 0.25rem; font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-600); }
-    .mini-outs { display: flex; align-items: center; gap: 0.3rem; }
+    .mini-stat { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; font-family: var(--font-mono); }
+    .mini-stat-label { font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-500); }
+    .mini-stat-value { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .mini-outs-row { display: flex; align-items: center; gap: 0.3rem; }
     .mini-out-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gray-200); border: 1px solid var(--border); }
     .mini-out-dot.filled { background: #FCA5A5; border-color: #FCA5A5; }
 
@@ -438,9 +440,13 @@
               <div class="mini-base mini-base-3 ${s.onThird ? 'occupied' : ''}"></div>
               <div class="mini-base mini-base-1 ${s.onFirst ? 'occupied' : ''}"></div>
             </div>
-            <div class="mini-count">
-              <span>${s.balls ?? 0}-${s.strikes ?? 0} Count</span>
-              <div class="mini-outs">${[0,1,2].map(i => `<span class="mini-out-dot ${i < outs ? 'filled' : ''}"></span>`).join('')}<span>Outs</span></div>
+            <div class="mini-stat">
+              <span class="mini-stat-label">Count</span>
+              <span class="mini-stat-value">${s.balls ?? 0}-${s.strikes ?? 0}</span>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-stat-label">Outs</span>
+              <div class="mini-outs-row">${[0,1,2].map(i => `<span class="mini-out-dot ${i < outs ? 'filled' : ''}"></span>`).join('')}</div>
             </div>
           </div>`;
       }
