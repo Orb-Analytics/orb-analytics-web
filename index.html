@@ -747,7 +747,7 @@
             </div>
           </div>` : '';
 
-        return `<div class="pick-card">
+        return `<div class="pick-card" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb'" style="cursor:pointer">
           <div class="pick-card-header">
             <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--gray-500)">⚾ MLB · XGBoost</span>
             ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
@@ -760,7 +760,7 @@
                 <div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--text)">${pick.pick} <span style="font-weight:600">${fmtOdds(line)}</span></div>
               </div>
             </div>
-            <button class="log-pick-btn" onclick="logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
+            <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
           </div>
           ${pitcherHTML}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem">

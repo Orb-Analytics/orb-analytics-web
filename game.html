@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Game · Orb Analytics</title>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="stylesheet" href="css/style.css?v=20260722" />
+  <style>
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-family: var(--font-mono); font-size: 0.8rem; color: var(--gray-600);
+      text-decoration: none; margin: 1.5rem 0 1rem; transition: var(--transition);
+    }
+    .back-link:hover { color: var(--text); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    /* ── Game header ───────────────────────────────────────────── */
+    .game-header {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.5rem 1.25rem; display: flex; align-items: center; justify-content: space-between;
+      gap: 0.75rem; margin-bottom: 1rem;
+    }
+    .gh-team { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; min-width: 0; }
+    .gh-logo { width: 56px; height: 56px; object-fit: contain; }
+    .gh-logo-fallback {
+      width: 56px; height: 56px; border-radius: var(--radius); background: var(--gray-100);
+      align-items: center; justify-content: center; font-family: var(--font-mono);
+      font-size: 0.8rem; font-weight: 700; color: var(--gray-600);
+    }
+    .gh-abbr { font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; }
+    .gh-name { font-size: 0.72rem; color: var(--gray-600); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+    .gh-center { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0 0.75rem; }
+    .gh-score { font-family: var(--font-display); font-size: 2.1rem; font-weight: 800; line-height: 1; }
+    .gh-time { font-family: var(--font-mono); font-size: 1rem; color: var(--gray-600); }
+    .gh-status { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); white-space: nowrap; }
+    .gh-status.live { color: #FCA5A5; display: flex; align-items: center; gap: 0.3rem; }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #FCA5A5; animation: pulse-dot 1.4s infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .gh-meta { text-align: center; font-size: 0.78rem; color: var(--gray-600); margin-bottom: 1.5rem; }
+
+    /* ── Section card ──────────────────────────────────────────── */
+    .section-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.25rem 1.25rem 1.5rem; margin-bottom: 1.25rem;
+    }
+    .section-card h2 {
+      font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--gray-500); margin: 0 0 1rem;
+    }
+    .muted-note { color: var(--gray-500); font-size: 0.85rem; text-align: center; padding: 1rem 0; margin: 0; }
+
+    /* ── Live panel (bases + count) ────────────────────────────── */
+    .live-panel { display: flex; align-items: center; justify-content: center; gap: 2.5rem; flex-wrap: wrap; }
+    .bases-diamond { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
+    .base {
+      position: absolute; width: 22px; height: 22px; background: var(--gray-100);
+      border: 2px solid var(--border); transform: rotate(45deg); border-radius: 3px;
+    }
+    .base.occupied { background: var(--purple-600); border-color: var(--purple-600); }
+    .base-2 { top: 0; left: 31px; }
+    .base-3 { top: 31px; left: 0; }
+    .base-1 { top: 31px; left: 62px; }
+    .base-home {
+      position: absolute; bottom: -2px; left: 34px; width: 16px; height: 16px;
+      background: var(--gray-200); border: 2px solid var(--border); transform: rotate(45deg); border-radius: 2px;
+    }
+    .count-row { display: flex; gap: 1.5rem; }
+    .count-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+    .count-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; }
+    .count-value { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; }
+
+    /* ── Linescore table ───────────────────────────────────────── */
+    .linescore-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .linescore-table th, .linescore-table td { padding: 0.4rem 0.5rem; text-align: center; }
+    .linescore-table th { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); border-bottom: 1px solid var(--border); }
+    .linescore-table td.ls-team { text-align: left; font-weight: 700; }
+    .linescore-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+
+    /* ── Team stat comparison ──────────────────────────────────── */
+    .stat-cat-title {
+      font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--purple-600); margin: 1.1rem 0 0.5rem;
+    }
+    .stat-cat-title:first-child { margin-top: 0; }
+    .stat-compare-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border); }
+    .stat-compare-row:last-child { border-bottom: none; }
+    .sc-val { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; width: 3.5rem; flex-shrink: 0; }
+    .sc-val.away { text-align: left; }
+    .sc-val.home { text-align: right; }
+    .sc-label { flex: 1; text-align: center; font-size: 0.78rem; color: var(--gray-600); }
+
+    /* ── Starting pitchers ─────────────────────────────────────── */
+    .pitchers-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .pitcher-card { flex: 1; min-width: 220px; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.9rem 1rem; }
+    .pc-team { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .pc-name { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .pc-stats { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; font-size: 0.8rem; color: var(--gray-700); }
+    .pc-stats b { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gray-500); margin-right: 0.25rem; }
+
+    @media (max-width: 580px) {
+      .game-header { padding: 1.1rem 0.75rem; }
+      .gh-logo, .gh-logo-fallback { width: 42px; height: 42px; }
+      .gh-score { font-size: 1.6rem; }
+      .gh-name { max-width: 90px; }
+      .live-panel { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- App layout -->
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-content">
+  <main class="page">
+    <div class="container" style="max-width: 760px;">
+      <a class="back-link" href="scoreboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Scoreboard
+      </a>
+      <div id="game-root"><div class="loading-state"><div class="spinner"></div> Loading game...</div></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Scores via ESPN API · © 2026 Orb Analytics</p>
+  </footer>
+
+    </div><!-- end sidebar-content -->
+  </div><!-- end app-layout -->
+
+  <script src="js/nav.js?v=20260722"></script>
+  <script>
+    buildNav('scoreboard.html');
+
+    // ── URL params ──────────────────────────────────────────────
+    const params     = new URLSearchParams(location.search);
+    let   eventId    = params.get('event');
+    const sport      = params.get('sport') || 'baseball';
+    const slug       = params.get('slug')  || 'mlb';
+    const leagueId   = (params.get('league') || slug).toUpperCase();
+    const awayParam  = params.get('away');
+    const homeParam  = params.get('home');
+
+    // Map ESPN abbrs → model abbrs where they differ (and back)
+    const ESPN_TO_MODEL = { 'ATH': 'OAK', 'WAS': 'WSH', 'CWS': 'CHW' };
+    const MODEL_TO_ESPN = Object.fromEntries(Object.entries(ESPN_TO_MODEL).map(([e, m]) => [m, e]));
+    const toEspnAbbr = a => (MODEL_TO_ESPN[a] || a || '').toUpperCase();
+
+    // Curated stat allowlist per sport/category so the page stays readable.
+    // Sports without an entry fall back to showing a handful of raw stats.
+    const KEY_STATS = {
+      baseball: {
+        batting:  ['runs', 'hits', 'homeRuns', 'RBIs', 'walks', 'strikeouts', 'avg', 'onBasePct', 'OPS'],
+        pitching: ['strikeouts', 'walks', 'hits', 'earnedRuns', 'homeRuns', 'ERA', 'WHIP'],
+        fielding: ['errors', 'doublePlays'],
+      },
+    };
+
+    let refreshTimer = null;
+
+    function logoHTML(abbr) {
+      const a = (abbr || '?').toLowerCase();
+      const url = `https://a.espncdn.com/i/teamlogos/${slug}/500/${a}.png`;
+      return `<img class="gh-logo" src="${url}" alt="${abbr}"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+              <div class="gh-logo-fallback" style="display:none">${(abbr || '?').slice(0, 3).toUpperCase()}</div>`;
+    }
+
+    function showEmpty(msg) {
+      document.getElementById('game-root').innerHTML = `<div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        <p>${msg}</p>
+      </div>`;
+    }
+
+    // ── Resolve an ESPN event id when only team abbrs were given ─
+    async function resolveEventId() {
+      if (eventId) return eventId;
+      if (!awayParam || !homeParam) return null;
+      const wantAway = toEspnAbbr(awayParam);
+      const wantHome = toEspnAbbr(homeParam);
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${slug}/scoreboard`);
+      const data = await r.json();
+      for (const ev of data.events || []) {
+        const comp = ev.competitions?.[0];
+        const away = comp?.competitors?.find(c => c.homeAway === 'away');
+        const home = comp?.competitors?.find(c => c.homeAway === 'home');
+        if (away?.team?.abbreviation?.toUpperCase() === wantAway && home?.team?.abbreviation?.toUpperCase() === wantHome) {
+          return ev.id;
+        }
+      }
+      return null;
+    }
+
+    async function fetchAndRender(id) {
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${slug}/summary?event=${id}`);
+      if (!r.ok) throw new Error('bad response');
+      const data = await r.json();
+      render(data);
+      return data;
+    }
+
+    async function loadGame() {
+      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+      try {
+        const id = await resolveEventId();
+        if (!id) { showEmpty("Couldn't find this game."); return; }
+        eventId = id;
+        const data = await fetchAndRender(id);
+        const status = data.header?.competitions?.[0]?.status;
+        if (status?.type?.state === 'in') {
+          refreshTimer = setInterval(() => { fetchAndRender(id).catch(() => {}); }, 20000);
+        }
+      } catch (e) {
+        showEmpty('Could not load game data.');
+      }
+    }
+
+    // ── Rendering ─────────────────────────────────────────────────
+    function findStat(cat, name) {
+      return cat?.stats?.find(s => s.name === name);
+    }
+
+    function teamStatsHTML(awayBx, homeBx) {
+      if (!awayBx || !homeBx) return '<p class="muted-note">Team stats will be available once the game begins.</p>';
+      const curated = KEY_STATS[sport];
+      let html = '';
+      for (const cat of awayBx.statistics || []) {
+        if (!cat.stats?.length) continue;
+        const homeCat = (homeBx.statistics || []).find(c => c.name === cat.name);
+        if (!homeCat) continue;
+        const whitelist = curated?.[cat.name];
+        const statsToShow = whitelist
+          ? whitelist.map(n => findStat(cat, n)).filter(Boolean)
+          : cat.stats.slice(0, 8);
+        if (!statsToShow.length) continue;
+        html += `<div class="stat-cat-title">${cat.displayName || cat.name}</div>`;
+        for (const stat of statsToShow) {
+          const hStat = findStat(homeCat, stat.name);
+          html += `<div class="stat-compare-row">
+            <span class="sc-val away">${stat.displayValue ?? '—'}</span>
+            <span class="sc-label">${stat.displayName || stat.name}</span>
+            <span class="sc-val home">${hStat?.displayValue ?? '—'}</span>
+          </div>`;
+        }
+      }
+      return html || '<p class="muted-note">No team stats available.</p>';
+    }
+
+    function starterFor(playersEntry) {
+      if (!playersEntry) return null;
+      const pitching = playersEntry.statistics?.find(s => s.type === 'pitching');
+      const ath = pitching?.athletes?.[0];
+      if (!ath) return null;
+      const labels = pitching.labels || pitching.names || [];
+      const vals = ath.stats || [];
+      const map = {};
+      labels.forEach((l, i) => { map[l] = vals[i]; });
+      return { name: ath.athlete?.shortName || ath.athlete?.displayName || 'TBD', map };
+    }
+
+    function pitcherCardHTML(starter, abbr) {
+      if (!starter) return `<div class="pitcher-card"><div class="pc-team">${abbr}</div><div class="pc-name muted-note" style="padding:0">TBD</div></div>`;
+      const keys = ['IP', 'H', 'R', 'ER', 'BB', 'K', 'ERA'];
+      return `<div class="pitcher-card">
+        <div class="pc-team">${abbr}</div>
+        <div class="pc-name">${starter.name}</div>
+        <div class="pc-stats">${keys.map(k => `<span><b>${k}</b>${starter.map[k] ?? '—'}</span>`).join('')}</div>
+      </div>`;
+    }
+
+    function render(data) {
+      const comp   = data.header?.competitions?.[0];
+      const status = comp?.status;
+      const competitors = comp?.competitors || [];
+      const awayComp = competitors.find(c => c.homeAway === 'away');
+      const homeComp = competitors.find(c => c.homeAway === 'home');
+      if (!awayComp || !homeComp) { showEmpty('Could not load game data.'); return; }
+
+      const awayAbbr = awayComp.team?.abbreviation || '?';
+      const homeAbbr = homeComp.team?.abbreviation || '?';
+      const isLive  = status?.type?.state === 'in';
+      const isPre   = status?.type?.state === 'pre';
+      const isBaseball = sport === 'baseball';
+
+      const scheduledTime = comp?.date
+        ? new Date(comp.date).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+        : '';
+
+      const gameInfo = data.gameInfo || {};
+      const venue = gameInfo.venue;
+      const venueBits = [venue?.fullName, venue?.address?.city, venue?.address?.state].filter(Boolean).join(' · ');
+
+      const headerHTML = `
+        <div class="game-header">
+          <div class="gh-team">
+            ${logoHTML(awayAbbr)}
+            <div class="gh-abbr">${awayAbbr}</div>
+            <div class="gh-name">${awayComp.team?.displayName || ''}</div>
+          </div>
+          <div class="gh-center">
+            ${isPre ? `<div class="gh-time">${scheduledTime}</div>` : `<div class="gh-score">${awayComp.score ?? '0'} - ${homeComp.score ?? '0'}</div>`}
+            <div class="gh-status ${isLive ? 'live' : ''}">${isLive ? '<span class="live-dot"></span>' : ''}${status?.type?.detail || status?.type?.description || ''}</div>
+          </div>
+          <div class="gh-team">
+            ${logoHTML(homeAbbr)}
+            <div class="gh-abbr">${homeAbbr}</div>
+            <div class="gh-name">${homeComp.team?.displayName || ''}</div>
+          </div>
+        </div>
+        <div class="gh-meta">${venueBits}</div>
+      `;
+
+      // ── Live bases / count / outs (baseball only) ──────────────
+      let liveHTML = '';
+      if (isBaseball && isLive && data.situation) {
+        const s = data.situation;
+        liveHTML = `
+          <div class="section-card">
+            <h2>Live Situation</h2>
+            <div class="live-panel">
+              <div class="bases-diamond">
+                <div class="base base-2 ${s.onSecond ? 'occupied' : ''}"></div>
+                <div class="base base-3 ${s.onThird ? 'occupied' : ''}"></div>
+                <div class="base base-1 ${s.onFirst ? 'occupied' : ''}"></div>
+                <div class="base-home"></div>
+              </div>
+              <div class="count-row">
+                <div class="count-item"><span class="count-label">Count</span><span class="count-value">${s.balls ?? 0}-${s.strikes ?? 0}</span></div>
+                <div class="count-item"><span class="count-label">Outs</span><span class="count-value">${s.outs ?? 0}</span></div>
+                <div class="count-item"><span class="count-label">Inning</span><span class="count-value">${status?.period ?? ''}</span></div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      // ── Linescore ───────────────────────────────────────────────
+      const awayLS = awayComp.linescores || [];
+      const homeLS = homeComp.linescores || [];
+      const numPeriods = Math.max(awayLS.length, homeLS.length);
+      let linescoreHTML = '';
+      if (numPeriods > 0) {
+        let headCells = '';
+        for (let i = 0; i < numPeriods; i++) headCells += `<th>${i + 1}</th>`;
+        headCells += isBaseball ? `<th>R</th><th>H</th><th>E</th>` : `<th>T</th>`;
+
+        function lsRow(abbr, ls, score) {
+          let cells = '';
+          for (let i = 0; i < numPeriods; i++) cells += `<td>${ls[i]?.displayValue ?? '-'}</td>`;
+          if (isBaseball) {
+            const hits = ls.reduce((a, b) => a + (b.hits || 0), 0);
+            const errs = ls.reduce((a, b) => a + (b.errors || 0), 0);
+            cells += `<td><strong>${score ?? 0}</strong></td><td>${hits}</td><td>${errs}</td>`;
+          } else {
+            cells += `<td><strong>${score ?? 0}</strong></td>`;
+          }
+          return `<tr><td class="ls-team">${abbr}</td>${cells}</tr>`;
+        }
+
+        linescoreHTML = `
+          <div class="section-card">
+            <h2>Inning by Inning</h2>
+            <table class="linescore-table">
+              <thead><tr><th></th>${headCells}</tr></thead>
+              <tbody>
+                ${lsRow(awayAbbr, awayLS, awayComp.score)}
+                ${lsRow(homeAbbr, homeLS, homeComp.score)}
+              </tbody>
+            </table>
+          </div>`;
+      }
+
+      // ── Team stats ──────────────────────────────────────────────
+      const bxTeams = data.boxscore?.teams || [];
+      const awayBx = bxTeams.find(t => t.homeAway === 'away');
+      const homeBx = bxTeams.find(t => t.homeAway === 'home');
+      const statsHTML = `
+        <div class="section-card">
+          <h2>Team Stats</h2>
+          ${teamStatsHTML(awayBx, homeBx)}
+        </div>`;
+
+      // ── Starting pitchers (baseball only) ───────────────────────
+      let pitchersHTML = '';
+      if (isBaseball) {
+        const bxPlayers = data.boxscore?.players || [];
+        const awayPl = bxPlayers.find(p => p.team?.abbreviation === awayAbbr);
+        const homePl = bxPlayers.find(p => p.team?.abbreviation === homeAbbr);
+        const awayStarter = starterFor(awayPl);
+        const homeStarter = starterFor(homePl);
+        pitchersHTML = `
+          <div class="section-card">
+            <h2>Starting Pitchers</h2>
+            ${(!awayStarter && !homeStarter)
+              ? '<p class="muted-note">Starting pitcher stats will be available once the game begins.</p>'
+              : `<div class="pitchers-row">${pitcherCardHTML(awayStarter, awayAbbr)}${pitcherCardHTML(homeStarter, homeAbbr)}</div>`}
+          </div>`;
+      }
+
+      document.getElementById('game-root').innerHTML = headerHTML + liveHTML + linescoreHTML + statsHTML + pitchersHTML;
+    }
+
+    loadGame();
+  </script>
+</body>
+</html>

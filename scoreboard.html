@@ -164,6 +164,26 @@
       color: white;
     }
 
+    /* Mini live situation (bases + outs) */
+    .mini-situation {
+      display: flex; align-items: center; gap: 0.7rem;
+      background: var(--gray-50); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;
+    }
+    .mini-bases { position: relative; width: 32px; height: 32px; flex-shrink: 0; }
+    .mini-base {
+      position: absolute; width: 11px; height: 11px; background: var(--gray-200);
+      border: 1.5px solid var(--border); transform: rotate(45deg); border-radius: 2px;
+    }
+    .mini-base.occupied { background: var(--purple-600); border-color: var(--purple-600); }
+    .mini-base-2 { top: 0; left: 10.5px; }
+    .mini-base-3 { top: 10.5px; left: 0; }
+    .mini-base-1 { top: 10.5px; left: 21px; }
+    .mini-count { display: flex; flex-direction: column; gap: 0.25rem; font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-600); }
+    .mini-outs { display: flex; align-items: center; gap: 0.3rem; }
+    .mini-out-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gray-200); border: 1px solid var(--border); }
+    .mini-out-dot.filled { background: #FCA5A5; border-color: #FCA5A5; }
+
     .pitcher-matchup {
       background: var(--gray-50); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding: 0.55rem 0.75rem;
@@ -406,6 +426,25 @@
       const oddsKey  = `${toModelAbbr(awayAbbr)}|${toModelAbbr(homeAbbr)}`;
       const gameOdds = leagueId === 'mlb' ? (oddsMap[oddsKey] || null) : null;
 
+      // Live bases/outs (MLB only, in-progress games)
+      let situationHTML = '';
+      if (leagueId === 'mlb' && live && comp.situation) {
+        const s    = comp.situation;
+        const outs = s.outs ?? 0;
+        situationHTML = `
+          <div class="mini-situation">
+            <div class="mini-bases">
+              <div class="mini-base mini-base-2 ${s.onSecond ? 'occupied' : ''}"></div>
+              <div class="mini-base mini-base-3 ${s.onThird ? 'occupied' : ''}"></div>
+              <div class="mini-base mini-base-1 ${s.onFirst ? 'occupied' : ''}"></div>
+            </div>
+            <div class="mini-count">
+              <span>${s.balls ?? 0}-${s.strikes ?? 0} Count</span>
+              <div class="mini-outs">${[0,1,2].map(i => `<span class="mini-out-dot ${i < outs ? 'filled' : ''}"></span>`).join('')}<span>Outs</span></div>
+            </div>
+          </div>`;
+      }
+
       // Pitcher matchup (MLB only) — keyed by venue name
       let pitcherHTML = '';
       if (leagueId === 'mlb') {
@@ -434,9 +473,11 @@
       const venue    = comp.venue?.fullName || '';
       const gameDate = event.date ? new Date(event.date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
       const gameTime = event.date ? new Date(event.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
+      const leagueObj = LEAGUES.find(l => l.id === leagueId);
+      const gameUrl  = `game.html?event=${event.id}&sport=${leagueObj.sport}&slug=${leagueObj.slug}&league=${leagueId}`;
 
       return `
-        <div class="game-card ${live ? 'live' : ''}">
+        <div class="game-card ${live ? 'live' : ''}" onclick="location.href='${gameUrl}'" style="cursor:pointer">
           <div class="card-header">
             <span class="card-league">${leagueId.toUpperCase()}</span>
             ${statusHTML}
@@ -448,6 +489,7 @@
             </div>
             ${teamCol(home, homeWin, awayWin, 'home', gameOdds?.homeLine, gameOdds?.pick === homeAbbr)}
           </div>
+          ${situationHTML}
           ${pitcherHTML}
           <div class="card-footer">
             <span class="card-venue">${venue}</span>
