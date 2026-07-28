@@ -301,7 +301,16 @@
     .split-winrate.bad  { background: #FEF2F2; color: #B91C1C; }
 
     .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem; margin-bottom: 1.25rem; }
-    .chart-card-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.85rem; }
+    .chart-card-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
+    .chart-card-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; }
+    .chart-toggle { display: flex; gap: 0.25rem; }
+    .chart-toggle-btn {
+      padding: 0.3rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; background: transparent;
+      color: var(--muted); font-family: var(--font-body); font-size: 0.72rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .chart-toggle-btn.active { background: var(--purple-600); color: white; }
+    .chart-toggle-btn:hover:not(.active) { background: var(--hover-tint); }
     .chart-wrap { position: relative; height: 190px; }
 
     .history-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.85rem; }
@@ -422,7 +431,13 @@
               <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading history...</div>
             </div>
             <div class="chart-card">
-              <div class="chart-card-title">Cumulative Units (Equity Curve)</div>
+              <div class="chart-card-header">
+                <div class="chart-card-title" id="chart-title">Cumulative Units (Equity Curve)</div>
+                <div class="chart-toggle">
+                  <button class="chart-toggle-btn active" data-mode="units" onclick="setChartMode('units')">Units</button>
+                  <button class="chart-toggle-btn" data-mode="winrate" onclick="setChartMode('winrate')">Win Rate</button>
+                </div>
+              </div>
               <div class="chart-wrap"><canvas id="equity-chart"></canvas></div>
             </div>
             <div class="splits-grid" id="splits-grid"></div>
@@ -628,6 +643,7 @@
 
     let historyData = [];
     let equityChart = null;
+    let chartMode = 'units';
     let activeSport = 'mlb';
     let activeView  = 'today';
 
@@ -827,7 +843,7 @@
           historyData = historyData.map(p => ({ ...p, edge: parseFloat((p.edge * 100).toFixed(4)) }));
         }
         renderSummaryStats(data.summary);
-        renderEquityCurve(historyData);
+        renderChart();
         renderSplits(historyData);
         renderHistoryTable();
       } catch(e) {
@@ -873,6 +889,55 @@
           scales: { x: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { maxTicksLimit: 8, color: '#6B7280' } },
                     y: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { color: '#6B7280', callback: v => `${v>0?'+':''}${v}u` } } } }
       });
+    }
+
+    function renderWinRateCurve(picks) {
+      const sorted = [...picks].sort((a, b) => new Date(a.date) - new Date(b.date));
+      let wins = 0, losses = 0;
+      const labels = [], values = [];
+      sorted.forEach(p => {
+        if (p.result === 'Win') wins++;
+        else if (p.result === 'Loss') losses++;
+        const total = wins + losses;
+        labels.push(p.date);
+        values.push(total > 0 ? parseFloat(((wins / total) * 100).toFixed(1)) : 50);
+      });
+      const finalVal = values[values.length-1] ?? 50;
+      const color = finalVal >= 50 ? '#10B981' : '#EF4444';
+      const segColor = (ctx, posColor, negColor) => ((ctx.p0.parsed.y + ctx.p1.parsed.y) / 2 >= 50 ? posColor : negColor);
+      if (equityChart) equityChart.destroy();
+      equityChart = new Chart(document.getElementById('equity-chart'), {
+        type: 'line',
+        data: { labels, datasets: [
+          {
+            data: values,
+            borderColor: color,
+            backgroundColor: 'rgba(16,185,129,0.1)',
+            segment: {
+              borderColor: ctx => segColor(ctx, '#10B981', '#EF4444'),
+              backgroundColor: ctx => segColor(ctx, 'rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)'),
+            },
+            fill: { target: { value: 50 } },
+            tension: 0.3, pointRadius: 0, borderWidth: 2,
+          },
+          { data: values.map(() => 50), borderColor: '#EF4444', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false }
+        ] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { maxTicksLimit: 8, color: '#6B7280' } },
+                    y: { min: 0, max: 100, grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { color: '#6B7280', callback: v => `${v}%` } } } }
+      });
+    }
+
+    function renderChart() {
+      if (chartMode === 'winrate') renderWinRateCurve(historyData);
+      else renderEquityCurve(historyData);
+    }
+
+    function setChartMode(mode) {
+      chartMode = mode;
+      document.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      document.getElementById('chart-title').textContent = mode === 'winrate' ? 'Cumulative Win Rate' : 'Cumulative Units (Equity Curve)';
+      renderChart();
     }
 
     function renderSplits(picks) {
