@@ -6,6 +6,7 @@
   <title>Game · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="stylesheet" href="css/style.css?v=20260722" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     .back-link {
       display: inline-flex; align-items: center; gap: 0.35rem;
@@ -98,6 +99,13 @@
     .pc-stats { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; font-size: 0.8rem; color: var(--gray-700); }
     .pc-stats b { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gray-500); margin-right: 0.25rem; }
 
+    /* ── Win probability ───────────────────────────────────────── */
+    .wp-current { display: flex; align-items: center; justify-content: space-around; margin-bottom: 1rem; }
+    .wp-team { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+    .wp-abbr { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; }
+    .wp-pct { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; }
+    .wp-chart-wrap { position: relative; height: 180px; }
+
     @media (max-width: 580px) {
       .game-header { padding: 1.1rem 0.75rem; }
       .gh-logo, .gh-logo-fallback { width: 42px; height: 42px; }
@@ -163,6 +171,7 @@
     };
 
     let refreshTimer = null;
+    let wpChart = null;
 
     function logoHTML(abbr) {
       const a = (abbr || '?').toLowerCase();
@@ -376,6 +385,24 @@
           </div>`;
       }
 
+      // ── Win probability ──────────────────────────────────────────
+      const wp = data.winprobability || [];
+      let winProbHTML = '';
+      if (wp.length > 1) {
+        const last    = wp[wp.length - 1];
+        const homePct = Math.round((last.homeWinPercentage ?? 0.5) * 100);
+        const awayPct = 100 - homePct;
+        winProbHTML = `
+          <div class="section-card">
+            <h2>Win Probability</h2>
+            <div class="wp-current">
+              <div class="wp-team"><span class="wp-abbr">${awayAbbr}</span><span class="wp-pct">${awayPct}%</span></div>
+              <div class="wp-team"><span class="wp-abbr">${homeAbbr}</span><span class="wp-pct">${homePct}%</span></div>
+            </div>
+            <div class="wp-chart-wrap"><canvas id="wp-chart"></canvas></div>
+          </div>`;
+      }
+
       // ── Team stats ──────────────────────────────────────────────
       const bxTeams = data.boxscore?.teams || [];
       const awayBx = bxTeams.find(t => t.homeAway === 'away');
@@ -403,7 +430,37 @@
           </div>`;
       }
 
-      document.getElementById('game-root').innerHTML = headerHTML + liveHTML + linescoreHTML + statsHTML + pitchersHTML;
+      document.getElementById('game-root').innerHTML = headerHTML + liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML;
+
+      if (wp.length > 1) {
+        const homeSeries = wp.map(p => Math.round((p.homeWinPercentage ?? 0.5) * 100));
+        if (wpChart) wpChart.destroy();
+        wpChart = new Chart(document.getElementById('wp-chart'), {
+          type: 'line',
+          data: {
+            labels: homeSeries.map((_, i) => i + 1),
+            datasets: [{
+              label: `${homeAbbr} Win %`,
+              data: homeSeries,
+              borderColor: 'rgb(124, 58, 237)',
+              backgroundColor: 'rgba(124, 58, 237, 0.1)',
+              fill: true,
+              tension: 0.25,
+              pointRadius: 0,
+              borderWidth: 2,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { display: false },
+              y: { min: 0, max: 100, ticks: { callback: v => `${v}%` } }
+            }
+          }
+        });
+      }
     }
 
     loadGame();
