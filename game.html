@@ -104,6 +104,7 @@
     .wp-team { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
     .wp-dot { width: 9px; height: 9px; border-radius: 50%; }
     .wp-abbr { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; display: flex; align-items: center; gap: 0.3rem; }
+    .wp-arrow { font-size: 0.6rem; line-height: 1; }
     .wp-pct { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; }
     .wp-chart-wrap { position: relative; height: 180px; }
 
@@ -424,8 +425,8 @@
           <div class="section-card">
             <h2>Win Probability</h2>
             <div class="wp-current">
-              <div class="wp-team"><span class="wp-abbr"><span class="wp-dot" style="background:${awayColor}"></span>${awayAbbr}</span><span class="wp-pct">${awayPct}%</span></div>
-              <div class="wp-team"><span class="wp-abbr"><span class="wp-dot" style="background:${homeColor}"></span>${homeAbbr}</span><span class="wp-pct">${homePct}%</span></div>
+              <div class="wp-team"><span class="wp-abbr"><span class="wp-dot" style="background:${awayColor}"></span>${awayAbbr}<span class="wp-arrow" style="color:${awayColor}">▲</span></span><span class="wp-pct">${awayPct}%</span></div>
+              <div class="wp-team"><span class="wp-abbr"><span class="wp-dot" style="background:${homeColor}"></span>${homeAbbr}<span class="wp-arrow" style="color:${homeColor}">▼</span></span><span class="wp-pct">${homePct}%</span></div>
             </div>
             <div class="wp-chart-wrap"><canvas id="wp-chart"></canvas></div>
           </div>`;
