@@ -102,7 +102,8 @@
     /* ── Win probability ───────────────────────────────────────── */
     .wp-current { display: flex; align-items: center; justify-content: space-around; margin-bottom: 1rem; }
     .wp-team { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
-    .wp-abbr { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; }
+    .wp-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .wp-abbr { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; display: flex; align-items: center; gap: 0.3rem; }
     .wp-pct { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; }
     .wp-chart-wrap { position: relative; height: 180px; }
 
@@ -172,6 +173,8 @@
 
     let refreshTimer = null;
     let wpChart = null;
+    Chart.defaults.color = '#9CA3AF';
+    Chart.defaults.font  = { family: "'Inter', sans-serif", size: 11 };
 
     function logoHTML(abbr) {
       const a = (abbr || '?').toLowerCase();
@@ -179,6 +182,29 @@
       return `<img class="gh-logo" src="${url}" alt="${abbr}"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
               <div class="gh-logo-fallback" style="display:none">${(abbr || '?').slice(0, 3).toUpperCase()}</div>`;
+    }
+
+    // Pick a team's brand color that will actually be visible on the
+    // chart background, falling back to the alternate color (or a
+    // neutral default) when the primary color is too close to white.
+    function hexLuminance(hex) {
+      const n = parseInt((hex || '').replace('#', ''), 16);
+      if (Number.isNaN(n)) return 1;
+      const r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    }
+    function teamColor(team, fallback) {
+      const primary = team?.color;
+      const alt = team?.alternateColor;
+      const pick = (primary && hexLuminance(primary) < 0.85) ? primary
+                 : (alt && hexLuminance(alt) < 0.85) ? alt
+                 : null;
+      return pick ? `#${pick}` : fallback;
+    }
+    function hexToRgba(hex, alpha) {
+      const n = parseInt((hex || '').replace('#', ''), 16);
+      const r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
     function showEmpty(msg) {
@@ -387,6 +413,8 @@
 
       // ── Win probability ──────────────────────────────────────────
       const wp = data.winprobability || [];
+      const awayColor = teamColor(awayComp.team, 'rgb(124, 58, 237)');
+      const homeColor = teamColor(homeComp.team, 'rgb(148, 163, 184)');
       let winProbHTML = '';
       if (wp.length > 1) {
         const last    = wp[wp.length - 1];
@@ -396,8 +424,8 @@
           <div class="section-card">
             <h2>Win Probability</h2>
             <div class="wp-current">
-              <div class="wp-team"><span class="wp-abbr">${awayAbbr}</span><span class="wp-pct">${awayPct}%</span></div>
-              <div class="wp-team"><span class="wp-abbr">${homeAbbr}</span><span class="wp-pct">${homePct}%</span></div>
+              <div class="wp-team"><span class="wp-abbr"><span class="wp-dot" style="background:${awayColor}"></span>${awayAbbr}</span><span class="wp-pct">${awayPct}%</span></div>
+              <div class="wp-team"><span class="wp-abbr"><span class="wp-dot" style="background:${homeColor}"></span>${homeAbbr}</span><span class="wp-pct">${homePct}%</span></div>
             </div>
             <div class="wp-chart-wrap"><canvas id="wp-chart"></canvas></div>
           </div>`;
@@ -436,6 +464,10 @@
         // ESPN plots the AWAY team's win probability: above the 50 line
         // means the away team is favored, below it means the home team is.
         const awaySeries = wp.map(p => Math.round((1 - (p.homeWinPercentage ?? 0.5) - (p.tiePercentage ?? 0)) * 100));
+        const leaderColor = ctx => {
+          const y0 = ctx.p0.parsed.y, y1 = ctx.p1.parsed.y;
+          return (y0 + y1) / 2 >= 50 ? awayColor : homeColor;
+        };
         if (wpChart) wpChart.destroy();
         wpChart = new Chart(document.getElementById('wp-chart'), {
           type: 'line',
@@ -445,17 +477,24 @@
               {
                 label: `${awayAbbr} Win %`,
                 data: awaySeries,
-                borderColor: 'rgb(124, 58, 237)',
-                backgroundColor: 'rgba(124, 58, 237, 0.12)',
-                fill: 'origin',
-                tension: 0.2,
+                borderColor: awayColor,
+                backgroundColor: hexToRgba(awayColor, 0.15),
+                segment: {
+                  borderColor: leaderColor,
+                  backgroundColor: ctx => {
+                    const y0 = ctx.p0.parsed.y, y1 = ctx.p1.parsed.y;
+                    return hexToRgba((y0 + y1) / 2 >= 50 ? awayColor : homeColor, 0.15);
+                  },
+                },
+                fill: { target: { value: 50 } },
+                tension: 0,
                 pointRadius: 0,
                 borderWidth: 2,
               },
               {
                 label: '50/50',
                 data: awaySeries.map(() => 50),
-                borderColor: 'rgba(148, 163, 184, 0.6)',
+                borderColor: 'rgba(148, 163, 184, 0.7)',
                 borderWidth: 1,
                 borderDash: [4, 4],
                 pointRadius: 0,
