@@ -433,22 +433,35 @@
       document.getElementById('game-root').innerHTML = headerHTML + liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML;
 
       if (wp.length > 1) {
-        const homeSeries = wp.map(p => Math.round((p.homeWinPercentage ?? 0.5) * 100));
+        // ESPN plots the AWAY team's win probability: above the 50 line
+        // means the away team is favored, below it means the home team is.
+        const awaySeries = wp.map(p => Math.round((1 - (p.homeWinPercentage ?? 0.5) - (p.tiePercentage ?? 0)) * 100));
         if (wpChart) wpChart.destroy();
         wpChart = new Chart(document.getElementById('wp-chart'), {
           type: 'line',
           data: {
-            labels: homeSeries.map((_, i) => i + 1),
-            datasets: [{
-              label: `${homeAbbr} Win %`,
-              data: homeSeries,
-              borderColor: 'rgb(124, 58, 237)',
-              backgroundColor: 'rgba(124, 58, 237, 0.1)',
-              fill: true,
-              tension: 0.25,
-              pointRadius: 0,
-              borderWidth: 2,
-            }]
+            labels: awaySeries.map((_, i) => i + 1),
+            datasets: [
+              {
+                label: `${awayAbbr} Win %`,
+                data: awaySeries,
+                borderColor: 'rgb(124, 58, 237)',
+                backgroundColor: 'rgba(124, 58, 237, 0.12)',
+                fill: 'origin',
+                tension: 0.2,
+                pointRadius: 0,
+                borderWidth: 2,
+              },
+              {
+                label: '50/50',
+                data: awaySeries.map(() => 50),
+                borderColor: 'rgba(148, 163, 184, 0.6)',
+                borderWidth: 1,
+                borderDash: [4, 4],
+                pointRadius: 0,
+                fill: false,
+              },
+            ]
           },
           options: {
             responsive: true,
@@ -456,7 +469,13 @@
             plugins: { legend: { display: false } },
             scales: {
               x: { display: false },
-              y: { min: 0, max: 100, ticks: { callback: v => `${v}%` } }
+              y: {
+                min: 0, max: 100,
+                ticks: {
+                  stepSize: 25,
+                  callback: v => `${v >= 50 ? v : 100 - v}%`
+                }
+              }
             }
           }
         });
