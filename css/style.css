@@ -1,5 +1,5 @@
 /* ─── Orb Analytics – Design System (Light Theme) ────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&family=Inter:wght@300;400;500;600&family=Audiowide&display=swap');
 
 :root {
   --purple-950: #0D0118;
@@ -160,7 +160,9 @@ body.dark .email-signup { background: var(--purple-900); border-color: var(--pur
 }
 
 .orb-logo-img { width: 28px; height: 28px; object-fit: contain; }
-.nav-logo-text { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; color: var(--text); white-space: nowrap; }
+.nav-logo-text { font-family: 'Audiowide', var(--font-display); font-size: 1.1rem; color: var(--text); white-space: nowrap; }
+.nav-logo-text .nav-logo-bold { font-weight: 700; }
+.nav-logo-text .nav-logo-light { font-weight: 400; }
 
 .nav-links {
   display: flex;
