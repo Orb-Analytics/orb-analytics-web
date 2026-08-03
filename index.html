@@ -184,7 +184,9 @@
       }
 
       .chart-card-header { flex-direction: column; align-items: stretch; gap: 0.6rem; }
-      .chart-toggle { width: 100%; }
+      .chart-controls { width: 100%; }
+      .chart-date-filter { flex: 1; }
+      .chart-toggle { flex: 1; }
       .chart-toggle-btn { flex: 1; text-align: center; }
     }
 
@@ -315,6 +317,8 @@
     }
     .chart-toggle-btn.active { background: var(--purple-600); color: white; }
     .chart-toggle-btn:hover:not(.active) { background: var(--hover-tint); }
+    .chart-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .chart-date-filter { font-size: 0.72rem; padding: 0.3rem 1.5rem 0.3rem 0.55rem; }
     .chart-wrap { position: relative; height: 190px; }
 
     .history-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.85rem; }
@@ -437,9 +441,17 @@
             <div class="chart-card">
               <div class="chart-card-header">
                 <div class="chart-card-title" id="chart-title">Cumulative Units (Equity Curve)</div>
-                <div class="chart-toggle">
-                  <button class="chart-toggle-btn active" data-mode="units" onclick="setChartMode('units')">Units</button>
-                  <button class="chart-toggle-btn" data-mode="winrate" onclick="setChartMode('winrate')">Win Rate</button>
+                <div class="chart-controls">
+                  <select class="filter-select chart-date-filter" id="chart-date-filter" onchange="setChartDateFilter(this.value)">
+                    <option value="all">All Time</option>
+                    <option value="7">Last 7 Days</option>
+                    <option value="14">Last 14 Days</option>
+                    <option value="30">Last 30 Days</option>
+                  </select>
+                  <div class="chart-toggle">
+                    <button class="chart-toggle-btn active" data-mode="units" onclick="setChartMode('units')">Units</button>
+                    <button class="chart-toggle-btn" data-mode="roi" onclick="setChartMode('roi')">ROI</button>
+                  </div>
                 </div>
               </div>
               <div class="chart-wrap"><canvas id="equity-chart"></canvas></div>
@@ -648,6 +660,7 @@
     let historyData = [];
     let equityChart = null;
     let chartMode = 'units';
+    let chartDateFilter = 'all';
     let activeSport = 'mlb';
     let activeView  = 'today';
 
@@ -842,8 +855,8 @@
         const res  = await fetch(url);
         const data = await res.json();
         historyData = data.picks || [];
-        // Normalize edge — NBA uses decimal (0.06), MLB uses percentage (2.34)
-        if (historyData.length && historyData[0].edge < 1) {
+        // MLB edge is already a percentage (0.7 = 0.7%); NBA stores it as a decimal (0.06 = 6%)
+        if (activeSport === 'nba') {
           historyData = historyData.map(p => ({ ...p, edge: parseFloat((p.edge * 100).toFixed(4)) }));
         }
         renderSummaryStats(data.summary);
@@ -857,11 +870,12 @@
     }
 
     function renderSummaryStats(s) {
+      const roi = s.total_picks ? ((s.total_units / s.total_picks) * 100) : 0;
       document.getElementById('summary-grid').innerHTML = `
         <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral" style="font-size:${String(s.wins+'-'+s.losses).length>6?'1.8rem':'2.5rem'}">${s.wins}-${s.losses}</div></div>
         <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${s.win_rate}%</div></div>
         <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${s.total_units>=0?'+':''}${s.total_units}u</div></div>
-        <div class="stat-card"><div class="stat-label">Avg Edge</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${(historyData.reduce((a,b)=>a+(b.edge||0),0)/historyData.length).toFixed(2)}%</div></div>`;
+        <div class="stat-card"><div class="stat-label">ROI %</div><div class="stat-value ${roi>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${roi>=0?'+':''}${roi.toFixed(2)}%</div></div>`;
     }
 
     function renderEquityCurve(picks) {
@@ -895,20 +909,18 @@
       });
     }
 
-    function renderWinRateCurve(picks) {
+    function renderROICurve(picks) {
       const sorted = [...picks].sort((a, b) => new Date(a.date) - new Date(b.date));
-      let wins = 0, losses = 0;
+      let cumUnits = 0;
       const labels = [], values = [];
-      sorted.forEach(p => {
-        if (p.result === 'Win') wins++;
-        else if (p.result === 'Loss') losses++;
-        const total = wins + losses;
+      sorted.forEach((p, i) => {
+        cumUnits += (p.units || 0);
         labels.push(p.date);
-        values.push(total > 0 ? parseFloat(((wins / total) * 100).toFixed(1)) : 50);
+        values.push(parseFloat(((cumUnits / (i + 1)) * 100).toFixed(2)));
       });
-      const finalVal = values[values.length-1] ?? 50;
-      const color = finalVal >= 50 ? '#10B981' : '#EF4444';
-      const segColor = (ctx, posColor, negColor) => ((ctx.p0.parsed.y + ctx.p1.parsed.y) / 2 >= 50 ? posColor : negColor);
+      const finalVal = values[values.length-1] || 0;
+      const color = finalVal >= 0 ? '#10B981' : '#EF4444';
+      const segColor = (ctx, posColor, negColor) => ((ctx.p0.parsed.y + ctx.p1.parsed.y) / 2 >= 0 ? posColor : negColor);
       if (equityChart) equityChart.destroy();
       equityChart = new Chart(document.getElementById('equity-chart'), {
         type: 'line',
@@ -921,26 +933,40 @@
               borderColor: ctx => segColor(ctx, '#10B981', '#EF4444'),
               backgroundColor: ctx => segColor(ctx, 'rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)'),
             },
-            fill: { target: { value: 50 } },
+            fill: { target: { value: 0 } },
             tension: 0.3, pointRadius: 0, borderWidth: 2,
           },
-          { data: values.map(() => 50), borderColor: '#EF4444', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false }
+          { data: values.map(() => 0), borderColor: '#EF4444', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false }
         ] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
           scales: { x: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { maxTicksLimit: 8, color: '#6B7280' } },
-                    y: { min: 0, max: 100, grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { color: '#6B7280', callback: v => `${v}%` } } } }
+                    y: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { color: '#6B7280', callback: v => `${v>0?'+':''}${v}%` } } } }
       });
     }
 
+    function getChartData() {
+      if (chartDateFilter === 'all' || !historyData.length) return historyData;
+      const days = parseInt(chartDateFilter, 10);
+      const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
+      const cutoff = maxDate - days * 24 * 60 * 60 * 1000;
+      return historyData.filter(p => new Date(p.date).getTime() >= cutoff);
+    }
+
     function renderChart() {
-      if (chartMode === 'winrate') renderWinRateCurve(historyData);
-      else renderEquityCurve(historyData);
+      const picks = getChartData();
+      if (chartMode === 'roi') renderROICurve(picks);
+      else renderEquityCurve(picks);
     }
 
     function setChartMode(mode) {
       chartMode = mode;
       document.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-      document.getElementById('chart-title').textContent = mode === 'winrate' ? 'Cumulative Win Rate' : 'Cumulative Units (Equity Curve)';
+      document.getElementById('chart-title').textContent = mode === 'roi' ? 'Cumulative ROI %' : 'Cumulative Units (Equity Curve)';
+      renderChart();
+    }
+
+    function setChartDateFilter(value) {
+      chartDateFilter = value;
       renderChart();
     }
 
