@@ -244,8 +244,14 @@
       overflow: hidden;
     }
     .pick-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
+    .pick-card.is-live { border-color: rgba(239,68,68,0.3); }
 
     .pick-card-header { display: flex; align-items: center; justify-content: space-between; }
+
+    .live-status-bar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.5rem 0.7rem; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .live-score { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; color: var(--text); }
+    .live-winprob { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); margin-left: auto; }
+    .live-winprob b { color: var(--text); }
     .pick-matchup { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text); }
     .pick-matchup .vs { color: var(--gray-600); font-weight: 400; font-size: 0.82rem; }
 
@@ -644,6 +650,11 @@
       SEA:'sea', SF:'sf', STL:'stl', TB:'tb', TEX:'tex', TOR:'tor', WSH:'wsh', WAS:'wsh'
     };
 
+    // Map ESPN abbrs → model abbrs where they differ (and back)
+    const ESPN_TO_MODEL = { 'ATH': 'OAK', 'WAS': 'WSH', 'CWS': 'CHW' };
+    const MODEL_TO_ESPN = Object.fromEntries(Object.entries(ESPN_TO_MODEL).map(([e, m]) => [m, e]));
+    const toEspnAbbr = a => (MODEL_TO_ESPN[a] || a || '').toUpperCase();
+
     function teamLogoURL(abbr) {
       const espn = TEAM_ESPN[abbr];
       return espn ? `https://a.espncdn.com/i/teamlogos/mlb/500/${espn}.png` : null;
@@ -728,12 +739,80 @@
       } catch { return null; }
     }
 
+    // ── Live game matching ──────────────────────────────────────────
+    async function fetchMLBScoreboard() {
+      try {
+        const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard');
+        const data = await r.json();
+        return data.events || [];
+      } catch { return []; }
+    }
+
+    function matchEspnEvent(events, pick) {
+      const wantAway = toEspnAbbr(pick.away_team);
+      const wantHome = toEspnAbbr(pick.home_team);
+      return events.find(ev => {
+        const comp = ev.competitions?.[0];
+        const away = comp?.competitors?.find(c => c.homeAway === 'away');
+        const home = comp?.competitors?.find(c => c.homeAway === 'home');
+        return away?.team?.abbreviation?.toUpperCase() === wantAway && home?.team?.abbreviation?.toUpperCase() === wantHome;
+      }) || null;
+    }
+
+    // For each pick, find its live ESPN game (if any) and pull status, score,
+    // and (for in-progress games only) the picked team's live win probability.
+    async function buildLiveInfo(picks, events) {
+      return Promise.all(picks.map(async pick => {
+        const ev = matchEspnEvent(events, pick);
+        if (!ev) return null;
+        const comp    = ev.competitions?.[0];
+        const status  = ev.status;
+        const isLive  = status?.type?.state === 'in';
+        const isFinal = status?.type?.state === 'post';
+        if (!isLive && !isFinal) return null;
+
+        const isPickHome = pick.pick === pick.home_team;
+        const home = comp?.competitors?.find(c => c.homeAway === 'home');
+        const away = comp?.competitors?.find(c => c.homeAway === 'away');
+        const awayScore  = parseInt(away?.score ?? 0);
+        const homeScore  = parseInt(home?.score ?? 0);
+        const pickScore  = isPickHome ? homeScore : awayScore;
+        const oppScore   = isPickHome ? awayScore : homeScore;
+
+        const info = {
+          isLive, isFinal,
+          awayScore, homeScore,
+          isCorrect: pickScore === oppScore ? null : pickScore > oppScore,
+          statusText: status?.type?.detail || status?.type?.shortDetail || (isFinal ? 'Final' : ''),
+          winPct: null,
+        };
+
+        if (isLive) {
+          try {
+            const r    = await fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=${ev.id}`);
+            const data = await r.json();
+            const wp   = data.winprobability || [];
+            if (wp.length) {
+              const last    = wp[wp.length - 1];
+              const homePct = (last.homeWinPercentage ?? 0.5) * 100;
+              info.winPct = isPickHome ? homePct : (100 - homePct);
+            }
+          } catch {}
+        }
+        return info;
+      }));
+    }
+
+    let todayRefreshTimer = null;
+
     // ── Load today ────────────────────────────────────────────────
     async function loadToday() {
+      if (todayRefreshTimer) { clearTimeout(todayRefreshTimer); todayRefreshTimer = null; }
       try {
-        const [picksData, pitcherMap] = await Promise.all([
+        const [picksData, pitcherMap, scoreboardEvents] = await Promise.all([
           fetch(PREDICTIONS_URL).then(r => r.json()),
-          fetchProbablePitchers()
+          fetchProbablePitchers(),
+          fetchMLBScoreboard()
         ]);
 
         if (picksData.generated_at) {
@@ -751,18 +830,25 @@
             return { name: pitcher.fullName, era };
           })
         );
+        const liveInfo = await buildLiveInfo(picks, scoreboardEvents);
 
-        renderTodayPicks(picks, pitcherDetails);
+        renderTodayPicks(picks, pitcherDetails, liveInfo);
+
+        // Keep live status/score/win-prob fresh while any pick is in progress
+        if (liveInfo.some(info => info?.isLive)) {
+          todayRefreshTimer = setTimeout(loadToday, 30000);
+        }
       } catch(e) {
         document.getElementById('picks-container').innerHTML =
           `<div class="empty-state" style="grid-column:1/-1"><p>Could not load predictions. Try again later.</p></div>`;
       }
     }
 
-    function renderTodayPicks(picks, pitcherDetails = []) {
+    function renderTodayPicks(picks, pitcherDetails = [], liveInfoAll = []) {
       const container = document.getElementById('picks-container');
       const filteredPicks   = picks.filter(p => p.has_pick === true);
       const filteredDetails = pitcherDetails.filter((_, i) => picks[i]?.has_pick === true);
+      const filteredLive    = liveInfoAll.filter((_, i) => picks[i]?.has_pick === true);
 
       if (!filteredPicks.length) {
         container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
@@ -798,12 +884,22 @@
             </div>
           </div>` : '';
 
-        return `<div class="pick-card" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb'" style="cursor:pointer">
+        const li = filteredLive[i];
+        const liveBarHTML = li ? `
+          <div class="live-status-bar">
+            <span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>
+            <span class="live-score">${pick.away_team} ${li.awayScore} – ${pick.home_team} ${li.homeScore}</span>
+            ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'On Track' : 'Trailing')}</span>`}
+            ${li.isLive && li.winPct != null ? `<span class="live-winprob">${pick.pick} Win Prob: <b>${li.winPct.toFixed(0)}%</b></span>` : ''}
+          </div>` : '';
+
+        return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb'" style="cursor:pointer">
           <div class="pick-card-header">
             <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--gray-500)">⚾ MLB · XGBoost</span>
             ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
           </div>
           <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
+          ${liveBarHTML}
           <div class="pick-team-hero">
             <div style="display:flex;align-items:center;gap:0.85rem">
               ${teamLogoHTML(pick.pick, 48)}
