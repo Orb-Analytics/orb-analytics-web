@@ -310,6 +310,7 @@
         const data = await res.json();
         const map  = {};
         for (const pick of data.picks || []) {
+          if (!pick.has_pick) continue;
           const key = `${pick.away_team}|${pick.home_team}`;
           map[key] = {
             awayLine: pick.away_odds || null,
@@ -574,8 +575,15 @@
         <div class="games-grid">${picks.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
       }
 
-      if (live.length) {
+      if (rest.length) {
         html += `<div class="section-divider" style="margin-top:${picks.length ? '1.5rem' : '1.25rem'}">
+          <span class="sdl">Other Games</span>
+          <div class="sdl-line"></div>
+        </div>`;
+      }
+
+      if (live.length) {
+        html += `<div class="section-divider">
           <span class="sdl live"><span class="live-dot"></span>Live Now</span>
           <div class="sdl-line"></div>
         </div>
@@ -583,7 +591,7 @@
       }
 
       if (upcoming.length) {
-        html += `<div class="games-grid" style="margin-top:${(live.length || picks.length) ? '1.5rem' : '0'}">
+        html += `<div class="games-grid" style="margin-top:${live.length ? '1.5rem' : '0'}">
           ${upcoming.map(e => buildCard(e, leagueId, pitcherMap)).join('')}
         </div>`;
       }
