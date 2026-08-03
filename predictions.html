@@ -818,7 +818,7 @@
         if (picksData.generated_at) {
           const d = new Date(picksData.generated_at);
           document.getElementById('last-updated').textContent =
-            `Updated ${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
+            `Updated ${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'})}`;
         }
 
         const picks = picksData.picks || [];
@@ -895,7 +895,7 @@
 
         return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb'" style="cursor:pointer">
           <div class="pick-card-header">
-            <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--gray-500)">⚾ MLB · XGBoost</span>
+            <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--gray-500)">⚾ MLB</span>
             ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
           </div>
           <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
