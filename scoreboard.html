@@ -55,7 +55,15 @@
     .sdl { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
     .sdl.live { color: var(--red); display: flex; align-items: center; gap: 0.35rem; }
     .sdl.final { color: var(--gray-600); }
+    .sdl.pick { color: var(--purple-400); display: flex; align-items: center; gap: 0.35rem; }
     .sdl-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Golf leaderboard rows ─────────────────────────────────── */
+    .leaderboard-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.2rem 0; }
+    .leaderboard-rank { font-family: var(--font-mono); font-size: 0.72rem; color: var(--gray-500); flex-shrink: 0; min-width: 1.5rem; }
+    .leaderboard-name { font-size: 0.85rem; font-weight: 600; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .leaderboard-score { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+    .tournament-name { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; }
 
     /* ── Games grid ────────────────────────────────────────────── */
     .games-grid {
@@ -275,10 +283,12 @@
     buildNav('scoreboard.html');
 
     const LEAGUES = [
-      { id:'mlb', label:'MLB', emoji:'⚾', sport:'baseball',   slug:'mlb' },
-      { id:'nfl', label:'NFL', emoji:'🏈', sport:'football',   slug:'nfl' },
-      { id:'nba', label:'NBA', emoji:'🏀', sport:'basketball', slug:'nba' },
-      { id:'nhl', label:'NHL', emoji:'🏒', sport:'hockey',     slug:'nhl' },
+      { id:'mlb', label:'MLB', emoji:'⚾', sport:'baseball',   slug:'mlb',  type:'team' },
+      { id:'nfl', label:'NFL', emoji:'🏈', sport:'football',   slug:'nfl',  type:'team' },
+      { id:'nba', label:'NBA', emoji:'🏀', sport:'basketball', slug:'nba',  type:'team' },
+      { id:'nhl', label:'NHL', emoji:'🏒', sport:'hockey',     slug:'nhl',  type:'team' },
+      { id:'atp', label:'ATP', emoji:'🎾', sport:'tennis',     slug:'atp',  type:'tennis' },
+      { id:'pga', label:'PGA', emoji:'⛳', sport:'golf',       slug:'pga',  type:'golf' },
     ];
 
     let activeLeague = 'mlb';
@@ -504,6 +514,20 @@
         </div>`;
     }
 
+    // ── Live count badge (shared across all sport types) ─────────
+    function updateLiveBadge(leagueId, liveCount) {
+      const tab = document.querySelector(`[data-league="${leagueId}"]`);
+      if (!tab) return;
+      const existing = tab.querySelector('.tab-live-count');
+      if (existing) existing.remove();
+      if (liveCount > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'tab-live-count';
+        badge.textContent = liveCount;
+        tab.appendChild(badge);
+      }
+    }
+
     // ── Render output ─────────────────────────────────────────────
     function renderOutput(events, leagueId, pitcherMap) {
       const output = document.getElementById('scoreboard-output');
@@ -521,14 +545,37 @@
       }
 
       const sorted   = [...events].sort((a, b) => sortOrd(a.status) - sortOrd(b.status));
-      const live     = sorted.filter(e => isLive(e.status));
-      const upcoming = sorted.filter(e => isPre(e.status));
-      const finals   = sorted.filter(e => isFinal(e.status));
+
+      // Pull out games we've made a prediction on (pinned to the top)
+      function isPredicted(event) {
+        if (leagueId !== 'mlb') return false; // odds map is only populated for MLB currently
+        const comp = event.competitions?.[0];
+        if (!comp) return false;
+        const home = comp.competitors?.find(c => c.homeAway === 'home');
+        const away = comp.competitors?.find(c => c.homeAway === 'away');
+        if (!home || !away) return false;
+        const key = `${toModelAbbr(away.team?.abbreviation?.toUpperCase())}|${toModelAbbr(home.team?.abbreviation?.toUpperCase())}`;
+        return !!oddsMap[key];
+      }
+      const picks    = sorted.filter(isPredicted);
+      const rest     = sorted.filter(e => !isPredicted(e));
+
+      const live     = rest.filter(e => isLive(e.status));
+      const upcoming = rest.filter(e => isPre(e.status));
+      const finals   = rest.filter(e => isFinal(e.status));
 
       let html = '';
 
-      if (live.length) {
+      if (picks.length) {
         html += `<div class="section-divider">
+          <span class="sdl pick">⭐ Our Picks</span>
+          <div class="sdl-line"></div>
+        </div>
+        <div class="games-grid">${picks.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
+      }
+
+      if (live.length) {
+        html += `<div class="section-divider" style="margin-top:${picks.length ? '1.5rem' : '1.25rem'}">
           <span class="sdl live"><span class="live-dot"></span>Live Now</span>
           <div class="sdl-line"></div>
         </div>
@@ -536,7 +583,7 @@
       }
 
       if (upcoming.length) {
-        html += `<div class="games-grid" style="margin-top:${live.length ? '1.5rem' : '0'}">
+        html += `<div class="games-grid" style="margin-top:${(live.length || picks.length) ? '1.5rem' : '0'}">
           ${upcoming.map(e => buildCard(e, leagueId, pitcherMap)).join('')}
         </div>`;
       }
@@ -551,19 +598,173 @@
 
       output.innerHTML = html;
 
-      // Update live count badge
-      const liveCount = live.length;
-      const tab = document.querySelector(`[data-league="${leagueId}"]`);
-      if (tab) {
-        const existing = tab.querySelector('.tab-live-count');
-        if (existing) existing.remove();
-        if (liveCount > 0) {
-          const badge = document.createElement('span');
-          badge.className = 'tab-live-count';
-          badge.textContent = liveCount;
-          tab.appendChild(badge);
+      // Update live count badge (all live games, including pinned picks)
+      updateLiveBadge(leagueId, picks.filter(e => isLive(e.status)).length + live.length);
+    }
+
+    // ── Tennis (ATP) rendering ─────────────────────────────────────
+    function isSameLocalDay(dateStr, ref) {
+      const d = new Date(dateStr);
+      return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
+    }
+
+    function flattenTennisMatches(events) {
+      const matches = [];
+      for (const ev of events) {
+        for (const g of ev.groupings || []) {
+          for (const c of g.competitions || []) {
+            matches.push({ tournament: ev.name, round: g.grouping?.displayName, comp: c });
+          }
         }
       }
+      return matches;
+    }
+
+    function buildTennisCard(m) {
+      const c      = m.comp;
+      const status = c.status?.type;
+      const live   = status?.name === 'STATUS_IN_PROGRESS';
+      const final  = status?.state === 'post';
+      const away   = c.competitors?.find(x => x.homeAway === 'away');
+      const home   = c.competitors?.find(x => x.homeAway === 'home');
+      if (!away || !home) return '';
+
+      function playerCol(p) {
+        const name  = p.athlete?.shortName || p.athlete?.displayName || '???';
+        const flag  = p.athlete?.flag?.href;
+        const sets  = (p.linescores || []).map(s => s.value != null ? Math.round(s.value) : '-').join('  ');
+        const won   = final && p.winner;
+        const lost  = final && !p.winner;
+        return `<div class="team-col">
+          ${flag ? `<img class="team-logo" src="${flag}" alt="" style="border-radius:2px">` : ''}
+          <div class="team-abbr ${won ? 'winning' : lost ? 'losing' : ''}" style="font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${name}</div>
+          ${sets ? `<div class="team-score ${won ? 'winning' : lost ? 'losing' : ''}" style="font-size:1.1rem">${sets}</div>` : ''}
+        </div>`;
+      }
+
+      let statusHTML;
+      if (live) statusHTML = `<span class="card-status live-text"><span class="live-dot"></span>${c.status?.type?.detail || 'Live'}</span>`;
+      else if (final) statusHTML = `<span class="card-status">Final</span>`;
+      else statusHTML = `<span class="card-status">${new Date(c.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true })}</span>`;
+
+      const footerBits = [m.round, c.venue?.court].filter(Boolean).join(' · ');
+
+      return `
+        <div class="game-card ${live ? 'live' : ''}">
+          <div class="card-header">
+            <span class="card-league">ATP · ${m.tournament}</span>
+            ${statusHTML}
+          </div>
+          <div class="teams-block">
+            ${playerCol(away)}
+            <div class="vs-col"><span class="vs-at">vs</span></div>
+            ${playerCol(home)}
+          </div>
+          <div class="card-footer">
+            <span class="card-venue">${footerBits}</span>
+            <span class="card-time">${new Date(c.date).toLocaleDateString('en-US', { month:'short', day:'numeric' })}</span>
+          </div>
+        </div>`;
+    }
+
+    function renderTennisOutput(events, leagueId) {
+      const output = document.getElementById('scoreboard-output');
+      const now     = new Date();
+      const matches = flattenTennisMatches(events).filter(m => {
+        const st = m.comp.status?.type;
+        return st?.name === 'STATUS_IN_PROGRESS' || isSameLocalDay(m.comp.date, now);
+      });
+
+      if (!matches.length) {
+        output.innerHTML = `<div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <p>No ATP matches today.</p>
+        </div>`;
+        updateLiveBadge(leagueId, 0);
+        return;
+      }
+
+      const live = matches.filter(m => m.comp.status?.type?.name === 'STATUS_IN_PROGRESS');
+      const rest = matches.filter(m => m.comp.status?.type?.name !== 'STATUS_IN_PROGRESS')
+                          .sort((a, b) => new Date(a.comp.date) - new Date(b.comp.date));
+
+      let html = '';
+      if (live.length) {
+        html += `<div class="section-divider">
+          <span class="sdl live"><span class="live-dot"></span>Live Now</span>
+          <div class="sdl-line"></div>
+        </div>
+        <div class="games-grid">${live.map(buildTennisCard).join('')}</div>`;
+      }
+      if (rest.length) {
+        html += `<div class="games-grid" style="margin-top:${live.length ? '1.5rem' : '0'}">${rest.map(buildTennisCard).join('')}</div>`;
+      }
+      output.innerHTML = html;
+      updateLiveBadge(leagueId, live.length);
+    }
+
+    // ── Golf (PGA) rendering ───────────────────────────────────────
+    function golfScoreStr(v) {
+      if (v == null) return 'E';
+      if (v === 0) return 'E';
+      return v > 0 ? `+${v}` : `${v}`;
+    }
+
+    function buildGolfCard(ev) {
+      const comp   = ev.competitions?.[0];
+      if (!comp) return '';
+      const status = comp.status?.type || ev.status?.type;
+      const live   = status?.state === 'in';
+      const final  = status?.name === 'STATUS_FINAL';
+      const top    = (comp.competitors || []).slice(0, 10);
+
+      const rows = top.map((c, i) => `
+        <div class="leaderboard-row">
+          <span class="leaderboard-rank">${c.order ?? i + 1}</span>
+          <span class="leaderboard-name">${c.athlete?.displayName || '???'}</span>
+          <span class="leaderboard-score" style="color:${c.score < 0 ? 'var(--green)' : c.score > 0 ? '#FCA5A5' : 'var(--text)'}">${golfScoreStr(c.score)}</span>
+        </div>`).join('');
+
+      let statusHTML;
+      if (live) statusHTML = `<span class="card-status live-text"><span class="live-dot"></span>${status?.detail || 'In Progress'}</span>`;
+      else if (final) statusHTML = `<span class="card-status">Final</span>`;
+      else statusHTML = `<span class="card-status">${new Date(ev.date).toLocaleDateString('en-US', { month:'short', day:'numeric' })}</span>`;
+
+      return `
+        <div class="game-card ${live ? 'live' : ''}">
+          <div class="card-header">
+            <span class="card-league">PGA</span>
+            ${statusHTML}
+          </div>
+          <div class="tournament-name">${ev.name}</div>
+          <div class="pitcher-matchup" style="gap:0.1rem">
+            <div class="pitcher-matchup-label">Leaderboard</div>
+            ${rows}
+          </div>
+        </div>`;
+    }
+
+    function renderGolfOutput(events, leagueId) {
+      const output = document.getElementById('scoreboard-output');
+      if (!events.length) {
+        output.innerHTML = `<div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <p>No PGA tournament this week.</p>
+        </div>`;
+        updateLiveBadge(leagueId, 0);
+        return;
+      }
+      const liveCount = events.filter(ev => (ev.competitions?.[0]?.status?.type || ev.status?.type)?.state === 'in').length;
+      output.innerHTML = `<div class="games-grid">${events.map(buildGolfCard).join('')}</div>`;
+      updateLiveBadge(leagueId, liveCount);
     }
 
     // ── Load a league ─────────────────────────────────────────────
@@ -584,6 +785,10 @@
         }
 
         const events = data.events || [];
+
+        if (leagueObj.type === 'tennis') { renderTennisOutput(events, leagueId); return; }
+        if (leagueObj.type === 'golf')   { renderGolfOutput(events, leagueId); return; }
+
         let pitcherMap = {};
 
         if (leagueId === 'mlb') {
