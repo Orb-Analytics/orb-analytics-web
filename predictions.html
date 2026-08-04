@@ -117,10 +117,38 @@
 
       .summary-grid {
         grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+      }
+
+      .summary-grid .stat-card {
+        padding: 0.75rem !important;
+        min-width: 0;
+      }
+
+      .summary-grid .stat-card .stat-value {
+        font-size: 1.35rem !important;
       }
 
       .splits-grid {
         grid-template-columns: 1fr !important;
+      }
+
+      .history-controls {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.4rem !important;
+      }
+
+      .history-controls .filter-select {
+        width: 100%;
+        font-size: 0.72rem;
+        padding: 0.35rem 1.4rem 0.35rem 0.5rem;
+      }
+
+      #filter-count {
+        grid-column: 1 / -1;
+        margin-left: 0 !important;
+        text-align: left;
       }
 
       .t-form-grid {
@@ -298,6 +326,8 @@
 
     /* ── Model History ────────────────────────────────────────── */
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .summary-grid .stat-card { min-width: 0; }
+    .summary-grid .stat-card .stat-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
 
     .splits-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.25rem; }
@@ -328,6 +358,7 @@
     .chart-wrap { position: relative; height: 190px; }
 
     .history-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.85rem; }
+    .split-select { width: 100%; }
     .filter-select {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text);
       font-size: 0.8rem; padding: 0.35rem 1.75rem 0.35rem 0.65rem; font-family: var(--font-body); outline: none; cursor: pointer;
@@ -1121,35 +1152,21 @@
 
       function setActiveTab(name) {
         activeSplit = name;
-        document.querySelectorAll('.split-tab').forEach(t => {
-          const isActive = t.dataset.tab === name;
-          t.style.background = isActive ? 'var(--purple-600)' : 'transparent';
-          t.style.color = isActive ? 'white' : 'var(--muted)';
-          t.style.borderColor = isActive ? 'var(--purple-600)' : 'var(--border)';
-        });
         renderSplitTable(name);
       }
 
       document.getElementById('splits-grid').innerHTML = `
         <div class="split-card" style="grid-column:1/-1">
-          <div style="display:flex;gap:0.25rem;padding:0.75rem 1rem;border-bottom:1px solid var(--border);flex-wrap:wrap">
-            ${tabNames.map(name => `
-              <button class="split-tab" data-tab="${name}"
-                style="padding:0.35rem 0.85rem;border:1px solid var(--border);border-radius:6px;
-                       background:${name===activeSplit?'var(--purple-600)':'transparent'};
-                       color:${name===activeSplit?'white':'var(--muted)'};
-                       font-family:var(--font-body);font-size:0.78rem;font-weight:600;
-                       cursor:pointer;transition:all 0.2s;white-space:nowrap"
-              >${name}</button>
-            `).join('')}
+          <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border)">
+            <select class="filter-select split-select" id="split-select">
+              ${tabNames.map(name => `<option value="${name}" ${name===activeSplit?'selected':''}>${name}</option>`).join('')}
+            </select>
           </div>
           <div id="split-table-body"></div>
         </div>`;
 
-      // Attach click handlers after DOM insertion
-      document.querySelectorAll('.split-tab').forEach(t => {
-        t.addEventListener('click', () => setActiveTab(t.dataset.tab));
-      });
+      // Attach change handler after DOM insertion
+      document.getElementById('split-select').addEventListener('change', e => setActiveTab(e.target.value));
 
       renderSplitTable(activeSplit);
     }
