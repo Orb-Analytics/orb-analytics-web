@@ -1221,12 +1221,12 @@
       }).join('');
     }
 
-    // ── Bet Tracker ───────────────────────────────────────────────
+    // ── Bet Tracker (Firebase-backed, localStorage fallback) ──────
     const T_KEY = 'orb_bets_v1';
-    let tBets = JSON.parse(localStorage.getItem(T_KEY) || '[]');
+    let tBets = [];
+    let currentUser = null;
 
     document.getElementById('t-date').value = new Date().toISOString().split('T')[0];
-    function saveTBets() { localStorage.setItem(T_KEY, JSON.stringify(tBets)); }
 
     function updateOddsHint() {
       const odds = parseInt(document.getElementById('t-odds').value);
@@ -1244,21 +1244,35 @@
       return o > 0 ? (o/100)*stake : (100/Math.abs(o))*stake;
     }
 
-    function tAddBet() {
-      const pick  = document.getElementById('t-pick').value.trim();
-      const sport = document.getElementById('t-sport').value;
-      const type  = document.getElementById('t-type').value;
-      const odds  = document.getElementById('t-odds').value;
-      const stake = parseFloat(document.getElementById('t-stake').value);
-      const date  = document.getElementById('t-date').value;
-      const result= document.getElementById('t-result').value;
-      const notes = document.getElementById('t-notes').value.trim();
+    async function saveTBets() {
+      if (currentUser && window.orbSaveBet) {
+        // Saved individually on add/delete — no bulk save needed
+      } else {
+        localStorage.setItem(T_KEY, JSON.stringify(tBets));
+      }
+    }
+
+    async function tAddBet() {
+      const pick   = document.getElementById('t-pick').value.trim();
+      const sport  = document.getElementById('t-sport').value;
+      const type   = document.getElementById('t-type').value;
+      const odds   = document.getElementById('t-odds').value;
+      const stake  = parseFloat(document.getElementById('t-stake').value);
+      const date   = document.getElementById('t-date').value;
+      const result = document.getElementById('t-result').value;
+      const notes  = document.getElementById('t-notes').value.trim();
       if (!pick)  { alert('Enter a pick description.'); return; }
       if (!odds)  { alert('Enter odds.'); return; }
       if (!stake || stake <= 0) { alert('Enter a valid stake.'); return; }
       if (!date)  { alert('Select a date.'); return; }
-      tBets.unshift({ id: Date.now(), pick, sport, type, odds: parseInt(odds), stake, date, result, notes, pl: tCalcPL(odds, stake, result) });
-      saveTBets(); tRefresh();
+      const bet = { id: Date.now(), pick, sport, type, odds: parseInt(odds), stake, date, result, notes, pl: tCalcPL(odds, stake, result) };
+      tBets.unshift(bet);
+      if (currentUser && window.orbSaveBet) {
+        await window.orbSaveBet(bet);
+      } else {
+        localStorage.setItem(T_KEY, JSON.stringify(tBets));
+      }
+      tRefresh();
       document.getElementById('t-pick').value = '';
       document.getElementById('t-odds').value = '';
       document.getElementById('t-stake').value = '';
@@ -1322,12 +1336,45 @@
       document.getElementById('t-pick').focus();
     }
 
-    function tDeleteBet(id) { tBets=tBets.filter(b=>b.id!==id); saveTBets(); tRefresh(); }
-    function tClearAll() {
-      if (!tBets.length) return;
-      if (confirm(`Delete all ${tBets.length} bets?`)) { tBets=[]; saveTBets(); tRefresh(); }
+    async function tDeleteBet(id) {
+      tBets = tBets.filter(b => b.id !== id);
+      if (currentUser && window.orbDeleteBet) {
+        await window.orbDeleteBet(id);
+      } else {
+        localStorage.setItem(T_KEY, JSON.stringify(tBets));
+      }
+      tRefresh();
     }
+
+    async function tClearAll() {
+      if (!tBets.length) return;
+      if (confirm(`Delete all ${tBets.length} bets?`)) {
+        tBets = [];
+        if (currentUser && window.orbDeleteAllBets) {
+          await window.orbDeleteAllBets();
+        } else {
+          localStorage.setItem(T_KEY, JSON.stringify(tBets));
+        }
+        tRefresh();
+      }
+    }
+
     function tRefresh() { tRenderStats(); tRenderTable(); }
+
+    // Load bets based on auth state
+    async function loadTBets() {
+      if (currentUser && window.orbLoadBets) {
+        const cloudBets = await window.orbLoadBets();
+        if (cloudBets !== null) {
+          tBets = cloudBets;
+          tRefresh();
+          return;
+        }
+      }
+      // Fallback to localStorage
+      tBets = JSON.parse(localStorage.getItem(T_KEY) || '[]');
+      tRefresh();
+    }
 
     // ── Mobile tab switching ──────────────────────────────────────
     function switchMobileTab(tab) {
@@ -1345,9 +1392,29 @@
       }
     }
 
-    tRefresh();
+    loadTBets();
     loadToday();
     loadHistory();
+  </script>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { signUp, signIn, logOut, onAuthChange, saveBet, loadBets, deleteBet, deleteAllBets } from './js/firebase.js';
+    window.orbSignUp   = signUp;
+    window.orbSignIn   = signIn;
+    window.orbSignOut  = logOut;
+    window.orbSaveBet  = saveBet;
+    window.orbLoadBets = loadBets;
+    window.orbDeleteBet = deleteBet;
+    window.orbDeleteAllBets = deleteAllBets;
+
+    onAuthChange(async user => {
+      window.currentUser = user;
+      // Update sidebar auth UI
+      if (window.updateAuthUI) window.updateAuthUI(user);
+      // Reload bets from correct source
+      if (typeof loadTBets === 'function') await loadTBets();
+    });
   </script>
 </body>
 </html>

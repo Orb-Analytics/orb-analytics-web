@@ -15,13 +15,188 @@ const SOCIAL_LINKS = [
   { href: 'https://x.com/OrbPicks', label: 'X', svg: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>` },
 ];
 
+// ── Auth modal ────────────────────────────────────────────────────
+function injectAuthModal() {
+  if (document.getElementById('auth-modal')) return;
+  const modal = document.createElement('div');
+  modal.id = 'auth-modal';
+  modal.style.cssText = `
+    display:none;position:fixed;inset:0;z-index:1000;
+    background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);
+    align-items:center;justify-content:center;padding:1rem;
+  `;
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;
+                padding:2rem;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.15);
+                position:relative;">
+      <button onclick="closeAuthModal()" style="position:absolute;top:1rem;right:1rem;
+              background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray-500)">✕</button>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:0;margin-bottom:1.5rem;border-bottom:2px solid var(--border)">
+        <button id="auth-tab-signin" onclick="switchAuthTab('signin')"
+          style="flex:1;padding:0.6rem;border:none;background:none;font-family:var(--font-body);
+                 font-size:0.9rem;font-weight:600;cursor:pointer;color:var(--purple-600);
+                 border-bottom:2px solid var(--purple-600);margin-bottom:-2px;transition:all 0.2s">
+          Sign In
+        </button>
+        <button id="auth-tab-signup" onclick="switchAuthTab('signup')"
+          style="flex:1;padding:0.6rem;border:none;background:none;font-family:var(--font-body);
+                 font-size:0.9rem;font-weight:600;cursor:pointer;color:var(--gray-500);
+                 border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Sign In Form -->
+      <div id="auth-form-signin">
+        <div style="margin-bottom:1rem">
+          <label style="font-size:0.78rem;font-weight:600;color:var(--gray-600);
+                        text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.35rem">Email</label>
+          <input id="signin-email" type="email" placeholder="you@example.com"
+            style="width:100%;padding:0.65rem 0.9rem;border:1px solid var(--border);border-radius:8px;
+                   font-family:var(--font-body);font-size:0.9rem;background:var(--gray-50);
+                   color:var(--text);outline:none;transition:border-color 0.2s"
+            onfocus="this.style.borderColor='var(--purple-500)'"
+            onblur="this.style.borderColor='var(--border)'" />
+        </div>
+        <div style="margin-bottom:1.25rem">
+          <label style="font-size:0.78rem;font-weight:600;color:var(--gray-600);
+                        text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.35rem">Password</label>
+          <input id="signin-password" type="password" placeholder="••••••••"
+            style="width:100%;padding:0.65rem 0.9rem;border:1px solid var(--border);border-radius:8px;
+                   font-family:var(--font-body);font-size:0.9rem;background:var(--gray-50);
+                   color:var(--text);outline:none;transition:border-color 0.2s"
+            onfocus="this.style.borderColor='var(--purple-500)'"
+            onblur="this.style.borderColor='var(--border)'"
+            onkeydown="if(event.key==='Enter')handleSignIn()" />
+        </div>
+        <div id="signin-error" style="color:var(--red);font-size:0.82rem;margin-bottom:0.75rem;display:none"></div>
+        <button onclick="handleSignIn()"
+          style="width:100%;padding:0.7rem;background:var(--purple-600);color:white;border:none;
+                 border-radius:8px;font-family:var(--font-body);font-size:0.9rem;font-weight:600;
+                 cursor:pointer;transition:background 0.2s"
+          onmouseover="this.style.background='var(--purple-500)'"
+          onmouseout="this.style.background='var(--purple-600)'">
+          Sign In
+        </button>
+      </div>
+
+      <!-- Sign Up Form -->
+      <div id="auth-form-signup" style="display:none">
+        <div style="margin-bottom:1rem">
+          <label style="font-size:0.78rem;font-weight:600;color:var(--gray-600);
+                        text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.35rem">Email</label>
+          <input id="signup-email" type="email" placeholder="you@example.com"
+            style="width:100%;padding:0.65rem 0.9rem;border:1px solid var(--border);border-radius:8px;
+                   font-family:var(--font-body);font-size:0.9rem;background:var(--gray-50);
+                   color:var(--text);outline:none;transition:border-color 0.2s"
+            onfocus="this.style.borderColor='var(--purple-500)'"
+            onblur="this.style.borderColor='var(--border)'" />
+        </div>
+        <div style="margin-bottom:1rem">
+          <label style="font-size:0.78rem;font-weight:600;color:var(--gray-600);
+                        text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.35rem">Password</label>
+          <input id="signup-password" type="password" placeholder="Min. 6 characters"
+            style="width:100%;padding:0.65rem 0.9rem;border:1px solid var(--border);border-radius:8px;
+                   font-family:var(--font-body);font-size:0.9rem;background:var(--gray-50);
+                   color:var(--text);outline:none;transition:border-color 0.2s"
+            onfocus="this.style.borderColor='var(--purple-500)'"
+            onblur="this.style.borderColor='var(--border)'" />
+        </div>
+        <div style="margin-bottom:1.25rem">
+          <label style="font-size:0.78rem;font-weight:600;color:var(--gray-600);
+                        text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.35rem">Confirm Password</label>
+          <input id="signup-confirm" type="password" placeholder="••••••••"
+            style="width:100%;padding:0.65rem 0.9rem;border:1px solid var(--border);border-radius:8px;
+                   font-family:var(--font-body);font-size:0.9rem;background:var(--gray-50);
+                   color:var(--text);outline:none;transition:border-color 0.2s"
+            onfocus="this.style.borderColor='var(--purple-500)'"
+            onblur="this.style.borderColor='var(--border)'"
+            onkeydown="if(event.key==='Enter')handleSignUp()" />
+        </div>
+        <div id="signup-error" style="color:var(--red);font-size:0.82rem;margin-bottom:0.75rem;display:none"></div>
+        <button onclick="handleSignUp()"
+          style="width:100%;padding:0.7rem;background:var(--purple-600);color:white;border:none;
+                 border-radius:8px;font-family:var(--font-body);font-size:0.9rem;font-weight:600;
+                 cursor:pointer;transition:background 0.2s"
+          onmouseover="this.style.background='var(--purple-500)'"
+          onmouseout="this.style.background='var(--purple-600)'">
+          Create Account
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeAuthModal(); });
+}
+
+function switchAuthTab(tab) {
+  const isSignin = tab === 'signin';
+  document.getElementById('auth-form-signin').style.display = isSignin ? 'block' : 'none';
+  document.getElementById('auth-form-signup').style.display = isSignin ? 'none' : 'block';
+  document.getElementById('auth-tab-signin').style.color = isSignin ? 'var(--purple-600)' : 'var(--gray-500)';
+  document.getElementById('auth-tab-signup').style.color = isSignin ? 'var(--gray-500)' : 'var(--purple-600)';
+  document.getElementById('auth-tab-signin').style.borderBottomColor = isSignin ? 'var(--purple-600)' : 'transparent';
+  document.getElementById('auth-tab-signup').style.borderBottomColor = isSignin ? 'transparent' : 'var(--purple-600)';
+}
+
+window.openAuthModal  = function(tab = 'signin') { injectAuthModal(); switchAuthTab(tab); document.getElementById('auth-modal').style.display = 'flex'; };
+window.closeAuthModal = function() { document.getElementById('auth-modal').style.display = 'none'; };
+window.switchAuthTab  = switchAuthTab;
+
+window.handleSignIn = async function() {
+  const email    = document.getElementById('signin-email').value.trim();
+  const password = document.getElementById('signin-password').value;
+  const errEl    = document.getElementById('signin-error');
+  errEl.style.display = 'none';
+  if (!email || !password) { errEl.textContent = 'Please fill in all fields.'; errEl.style.display = 'block'; return; }
+  try {
+    await window.orbSignIn(email, password);
+    closeAuthModal();
+  } catch(e) {
+    errEl.textContent = friendlyError(e.code);
+    errEl.style.display = 'block';
+  }
+};
+
+window.handleSignUp = async function() {
+  const email    = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirm  = document.getElementById('signup-confirm').value;
+  const errEl    = document.getElementById('signup-error');
+  errEl.style.display = 'none';
+  if (!email || !password) { errEl.textContent = 'Please fill in all fields.'; errEl.style.display = 'block'; return; }
+  if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
+  if (password.length < 6)  { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+  try {
+    await window.orbSignUp(email, password);
+    closeAuthModal();
+  } catch(e) {
+    errEl.textContent = friendlyError(e.code);
+    errEl.style.display = 'block';
+  }
+};
+
+function friendlyError(code) {
+  const map = {
+    'auth/email-already-in-use': 'An account with this email already exists.',
+    'auth/invalid-email': 'Please enter a valid email address.',
+    'auth/weak-password': 'Password must be at least 6 characters.',
+    'auth/user-not-found': 'No account found with this email.',
+    'auth/wrong-password': 'Incorrect password. Please try again.',
+    'auth/invalid-credential': 'Incorrect email or password.',
+    'auth/too-many-requests': 'Too many attempts. Please try again later.',
+  };
+  return map[code] || 'Something went wrong. Please try again.';
+}
+
+// ── Build nav ─────────────────────────────────────────────────────
 function buildNav(activePage = '') {
-  // Apply saved theme
   if (localStorage.getItem('orb-theme') === 'dark') {
     document.body.classList.add('dark');
   }
 
-  // ── Top nav (logo + social only) ──────────────────────────────
   const topNav = document.getElementById('main-nav');
   if (topNav) {
     topNav.innerHTML = `
@@ -42,7 +217,6 @@ function buildNav(activePage = '') {
     `;
   }
 
-  // ── Left sidebar ───────────────────────────────────────────────
   const sidebar = document.getElementById('sidebar');
   if (sidebar) {
     sidebar.innerHTML = `
@@ -58,7 +232,36 @@ function buildNav(activePage = '') {
           `).join('')}
         </nav>
         <div class="sidebar-footer">
-          <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" style="width:100%;justify-content:center;gap:0.5rem;font-size:0.85rem;font-family:var(--font-body)">
+          <!-- Auth section -->
+          <div id="sidebar-auth" style="margin-bottom:0.75rem">
+            <div id="sidebar-signed-out" style="display:none">
+              <button onclick="openAuthModal('signin')"
+                style="width:100%;padding:0.55rem;background:var(--purple-600);color:white;border:none;
+                       border-radius:8px;font-family:var(--font-body);font-size:0.82rem;font-weight:600;
+                       cursor:pointer;margin-bottom:0.35rem;transition:background 0.2s"
+                onmouseover="this.style.background='var(--purple-500)'"
+                onmouseout="this.style.background='var(--purple-600)'">Sign In</button>
+              <button onclick="openAuthModal('signup')"
+                style="width:100%;padding:0.55rem;background:transparent;color:var(--purple-600);
+                       border:1px solid var(--purple-600);border-radius:8px;font-family:var(--font-body);
+                       font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s"
+                onmouseover="this.style.background='var(--purple-100)'"
+                onmouseout="this.style.background='transparent'">Create Account</button>
+            </div>
+            <div id="sidebar-signed-in" style="display:none">
+              <div id="sidebar-user-email"
+                style="font-size:0.75rem;color:var(--gray-600);margin-bottom:0.5rem;
+                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-mono)"></div>
+              <button onclick="handleSignOut()"
+                style="width:100%;padding:0.5rem;background:transparent;color:var(--gray-600);
+                       border:1px solid var(--border);border-radius:8px;font-family:var(--font-body);
+                       font-size:0.8rem;cursor:pointer;transition:all 0.2s"
+                onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+                onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--gray-600)'">Sign Out</button>
+            </div>
+          </div>
+          <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme"
+            style="width:100%;justify-content:center;gap:0.5rem;font-size:0.85rem;font-family:var(--font-body)">
             ${document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>
         </div>
@@ -66,7 +269,6 @@ function buildNav(activePage = '') {
     `;
   }
 
-  // ── Mobile sidebar toggle ──────────────────────────────────────
   const toggle = document.getElementById('sidebar-toggle');
   if (toggle) {
     toggle.addEventListener('click', () => {
@@ -85,6 +287,27 @@ function buildNav(activePage = '') {
 
 window.buildNav = buildNav;
 
+// ── Update sidebar auth state ─────────────────────────────────────
+window.updateAuthUI = function(user) {
+  const signedOut = document.getElementById('sidebar-signed-out');
+  const signedIn  = document.getElementById('sidebar-signed-in');
+  const emailEl   = document.getElementById('sidebar-user-email');
+  if (!signedOut || !signedIn) return;
+  if (user) {
+    signedOut.style.display = 'none';
+    signedIn.style.display  = 'block';
+    if (emailEl) emailEl.textContent = user.email;
+  } else {
+    signedOut.style.display = 'block';
+    signedIn.style.display  = 'none';
+  }
+};
+
+window.handleSignOut = async function() {
+  await window.orbSignOut();
+};
+
+// ── Theme ─────────────────────────────────────────────────────────
 function toggleTheme() {
   const isDark = document.body.classList.toggle('dark');
   localStorage.setItem('orb-theme', isDark ? 'dark' : 'light');
@@ -93,3 +316,5 @@ function toggleTheme() {
   const mBtn = document.getElementById('theme-toggle-mobile');
   if (mBtn) mBtn.textContent = isDark ? '☀️' : '🌙';
 }
+
+window.toggleTheme = toggleTheme;
