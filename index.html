@@ -1265,6 +1265,11 @@
     }
 
     async function tAddBet() {
+      // Require sign in to log bets
+      if (!currentUser) {
+        openAuthModal('signin');
+        return;
+      }
       const pick   = document.getElementById('t-pick').value.trim();
       const sport  = document.getElementById('t-sport').value;
       const type   = document.getElementById('t-type').value;
