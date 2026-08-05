@@ -276,10 +276,14 @@
 
     .pick-card-header { display: flex; align-items: center; justify-content: space-between; }
 
-    .live-status-bar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.5rem 0.7rem; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); }
-    .live-score { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; color: var(--text); }
-    .live-winprob { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); margin-left: auto; }
-    .live-winprob b { color: var(--text); }
+    .live-status-bar { display: flex; flex-direction: column; gap: 0.45rem; padding: 0.6rem 0.75rem; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .live-status-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .live-score { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .live-winprob-row { display: flex; align-items: center; gap: 0.5rem; }
+    .live-winprob-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gray-600); white-space: nowrap; }
+    .live-winprob-label b { color: var(--text); }
+    .live-winprob-bar { flex: 1; height: 5px; border-radius: var(--radius-pill); background: var(--gray-200); overflow: hidden; }
+    .live-winprob-fill { height: 100%; background: var(--purple-600); border-radius: var(--radius-pill); }
     .pick-matchup { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text); }
     .pick-matchup .vs { color: var(--gray-600); font-weight: 400; font-size: 0.82rem; }
 
@@ -918,10 +922,18 @@
         const li = filteredLive[i];
         const liveBarHTML = li ? `
           <div class="live-status-bar">
-            <span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>
-            <span class="live-score">${pick.away_team} ${li.awayScore} – ${pick.home_team} ${li.homeScore}</span>
-            ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'On Track' : 'Trailing')}</span>`}
-            ${li.isLive && li.winPct != null ? `<span class="live-winprob">${pick.pick} Win Prob: <b>${li.winPct.toFixed(0)}%</b></span>` : ''}
+            <div class="live-status-row">
+              <span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>
+              ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'On Track' : 'Trailing')}</span>`}
+            </div>
+            <div class="live-status-row">
+              <span class="live-score">${pick.away_team} ${li.awayScore} – ${pick.home_team} ${li.homeScore}</span>
+            </div>
+            ${li.isLive && li.winPct != null ? `
+            <div class="live-winprob-row">
+              <span class="live-winprob-label">${pick.pick} <b>${li.winPct.toFixed(0)}%</b></span>
+              <div class="live-winprob-bar"><div class="live-winprob-fill" style="width:${li.winPct.toFixed(0)}%"></div></div>
+            </div>` : ''}
           </div>` : '';
 
         return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb'" style="cursor:pointer">
