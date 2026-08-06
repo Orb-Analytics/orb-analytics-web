@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260722" />
+  <link rel="stylesheet" href="css/style.css?v=20260805" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -255,7 +255,7 @@
     .picks-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
+      gap: 0.85rem;
       padding-bottom: 1rem;
     }
 
@@ -263,10 +263,10 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 1.1rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.8rem;
+      gap: 0.65rem;
       transition: border-color var(--transition), box-shadow var(--transition);
       position: relative;
       overflow: hidden;
@@ -276,7 +276,7 @@
 
     .pick-card-header { display: flex; align-items: center; justify-content: space-between; }
 
-    .live-status-bar { display: flex; flex-direction: column; gap: 0.45rem; padding: 0.6rem 0.75rem; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .live-status-bar { display: flex; flex-direction: column; gap: 0.6rem; padding: 0.75rem 1rem; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); }
     .live-status-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
     .live-score { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: var(--text); }
     .live-winprob-row { display: flex; align-items: center; gap: 0.5rem; }
@@ -287,7 +287,7 @@
     .pick-matchup { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text); }
     .pick-matchup .vs { color: var(--gray-600); font-weight: 400; font-size: 0.82rem; }
 
-    .pick-team-hero { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0 0.15rem; }
+    .pick-team-hero { display: flex; align-items: center; padding: 0.2rem 0 0; }
     .pick-team-logo { width: 48px; height: 48px; object-fit: contain; }
     .pick-team-logo-fallback {
       width: 48px; height: 48px; border-radius: var(--radius);
@@ -299,8 +299,8 @@
     .pick-team-side { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-600); letter-spacing: 0.06em; }
 
     .log-pick-btn {
-      background: rgba(5,150,105,0.12); border: 1px solid rgba(5,150,105,0.35); color: #065F46;
-      font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; padding: 0.5rem 1rem;
+      background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #065F46;
+      font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.85rem;
       border-radius: 7px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s;
     }
     .log-pick-btn:hover { background: rgba(16,185,129,0.28); }
@@ -342,7 +342,7 @@
     .split-label { color: var(--gray-600); }
     .split-record { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text); }
     .split-winrate { font-family: var(--font-mono); font-size: 0.75rem; padding: 0.12rem 0.45rem; border-radius: var(--radius-pill); }
-    .split-winrate.good { background: #F0FDF4; color: #065F46; }
+    .split-winrate.good { background: rgba(16,185,129,0.12); color: #065F46; border-color: rgba(16,185,129,0.35); }
     .split-winrate.ok   { background: var(--gray-100); color: var(--purple-600); }
     .split-winrate.bad  { background: #FEF2F2; color: #B91C1C; }
 
@@ -441,7 +441,7 @@
           </div>
 
           <!-- Tabs row -->
-          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
+          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;justify-content:space-between">
             <div class="main-tabs">
               <button class="main-tab active" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
               <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>
@@ -531,13 +531,19 @@
 
           <!-- Email Signup -->
           <div class="email-signup" style="margin:1.5rem 0 2rem">
-            <div class="email-signup-title">Stay Ahead of the Lines</div>
-            <div class="email-signup-sub">Get Orb Analytics picks delivered to your inbox every morning before first pitch.</div>
-            <div class="email-signup-form">
-              <input class="email-signup-input" type="email" placeholder="Your email address" />
-              <a href="https://orbanalytics.substack.com" target="_blank" class="email-signup-btn">Subscribe</a>
+            <div class="email-signup-sponsor">
+              <img src="assets/novig-promo.png" alt="Novig — Spend $5 Get $50 with code ORB" />
             </div>
-            <div class="email-signup-disclaimer">21+ · Please gamble responsibly</div>
+            <div class="email-signup-cta">
+              <div class="email-signup-eyebrow">Free Daily Picks</div>
+              <div class="email-signup-title">Stay Ahead of the Lines</div>
+              <div class="email-signup-sub">Get Orb Analytics picks delivered to your inbox every morning before first pitch.</div>
+              <div class="email-signup-form">
+                <input class="email-signup-input" type="email" placeholder="Your email address" />
+                <a href="https://orbanalytics.substack.com" target="_blank" class="email-signup-btn">Subscribe</a>
+              </div>
+              <div class="email-signup-disclaimer">21+ · Please gamble responsibly</div>
+            </div>
           </div>
 
         </div><!-- end predictions-col -->
@@ -923,11 +929,8 @@
         const liveBarHTML = li ? `
           <div class="live-status-bar">
             <div class="live-status-row">
-              <span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>
-              ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'On Track' : 'Trailing')}</span>`}
-            </div>
-            <div class="live-status-row">
               <span class="live-score">${pick.away_team} ${li.awayScore} – ${pick.home_team} ${li.homeScore}</span>
+              ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'Covering' : 'Trailing')}</span>`}
             </div>
             ${li.isLive && li.winPct != null ? `
             <div class="live-winprob-row">
@@ -938,11 +941,13 @@
 
         return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb'" style="cursor:pointer">
           <div class="pick-card-header">
-            <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--gray-500)">⚾ MLB</span>
-            ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
+            <div style="display:flex;align-items:center;gap:0.45rem">
+              ${li ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
+              ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
+            </div>
+            <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
           </div>
           <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
-          ${liveBarHTML}
           <div class="pick-team-hero">
             <div style="display:flex;align-items:center;gap:0.85rem">
               ${teamLogoHTML(pick.pick, 48)}
@@ -950,8 +955,8 @@
                 <div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--text)">${pick.pick} <span style="font-weight:600">${fmtOdds(line)}</span></div>
               </div>
             </div>
-            <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
           </div>
+          ${liveBarHTML}
           ${pitcherHTML}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem">
             <div class="pick-main" style="padding:0.6rem 0.8rem">
@@ -963,17 +968,19 @@
               <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--gray-600)">${impliedPct}%</div>
             </div>
           </div>
-          <div class="pick-meta-row">
-            <div class="meta-chip">Edge: <span>+${pick.edge}%</span></div>
-            <div class="meta-chip">Line: <span>${fmtOdds(line)}</span></div>
-            <div class="meta-chip">${side}</div>
-          </div>
-          <div class="confidence-row">
-            <div class="confidence-header">
-              <span class="confidence-label">Model vs Market Edge</span>
-              <span class="confidence-pct" style="color:var(--gray-600)">+${pick.edge}%</span>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.6rem">
+            <div class="pick-meta-row">
+              <div class="meta-chip">Edge: <span>+${pick.edge}%</span></div>
+              <div class="meta-chip">Line: <span>${fmtOdds(line)}</span></div>
+              <div class="meta-chip">${side}</div>
             </div>
-            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pick.edge*10,100)}%;background:var(--gray-600)"></div></div>
+            <div class="confidence-row">
+              <div class="confidence-header">
+                <span class="confidence-label">Model vs Market Edge</span>
+                <span class="confidence-pct" style="color:var(--purple-600)">+${pick.edge}%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pick.edge*10,100)}%;background:var(--purple-600)"></div></div>
+            </div>
           </div>
         </div>`;
       }).join('');
