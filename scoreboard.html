@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Scoreboard · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260722" />
+  <link rel="stylesheet" href="css/style.css?v=20260805" />
   <style>
     .scoreboard-header {
-      padding: 2rem 0 1.5rem;
+      padding: 1.25rem 0 1rem;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -28,7 +28,7 @@
       gap: 0.35rem;
       flex-wrap: nowrap;
       overflow-x: auto;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
       padding-bottom: 4px;
@@ -51,7 +51,7 @@
     }
 
     /* ── Section dividers ──────────────────────────────────────── */
-    .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0 0.75rem; }
+    .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0 0.65rem; }
     .sdl { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
     .sdl.live { color: var(--red); display: flex; align-items: center; gap: 0.35rem; }
     .sdl.final { color: var(--gray-600); }
@@ -261,13 +261,19 @@
   <!-- Email Signup -->
   <div class="container">
     <div class="email-signup">
-      <div class="email-signup-title">Stay Ahead of the Lines</div>
-      <div class="email-signup-sub">Get Orb Analytics picks delivered to your inbox every morning before first pitch.</div>
-      <div class="email-signup-form">
-        <input class="email-signup-input" type="email" placeholder="Your email address" />
-        <a href="https://orbanalytics.substack.com" target="_blank" class="email-signup-btn">Subscribe</a>
+      <div class="email-signup-sponsor">
+        <img src="assets/novig-promo.png" alt="Novig — Spend $5 Get $50 with code ORB" />
       </div>
-      <div class="email-signup-disclaimer">21+ · Please gamble responsibly</div>
+      <div class="email-signup-cta">
+        <div class="email-signup-eyebrow">Free Daily Picks</div>
+        <div class="email-signup-title">Stay Ahead of the Lines</div>
+        <div class="email-signup-sub">Get Orb Analytics picks delivered to your inbox every morning before first pitch.</div>
+        <div class="email-signup-form">
+          <input class="email-signup-input" type="email" placeholder="Your email address" />
+          <a href="https://orbanalytics.substack.com" target="_blank" class="email-signup-btn">Subscribe</a>
+        </div>
+        <div class="email-signup-disclaimer">21+ · Please gamble responsibly</div>
+      </div>
     </div>
   </div>
 
@@ -402,15 +408,19 @@
       const homeWin = homeScore > awayScore;
       const awayWin = awayScore > homeScore;
 
+      // Broadcast network (top-left value)
+      const broadcast = comp.broadcasts?.[0]?.names?.join('/') || comp.geoBroadcasts?.[0]?.media?.shortName || '';
+      const gameDate  = event.date ? new Date(event.date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+      const gameTime  = event.date ? new Date(event.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
+
       // Status badge
       let statusHTML;
       if (live) {
-        statusHTML = `<span class="card-status live-text"><span class="live-dot"></span>${status.type?.detail || 'Live'}</span>`;
+        statusHTML = `<span class="badge badge-live"><span class="live-dot"></span>${status.type?.detail || 'Live'}</span>`;
       } else if (final) {
-        statusHTML = `<span class="card-status">Final</span>`;
+        statusHTML = `<span class="badge badge-final">Final</span>`;
       } else {
-        const broadcast = comp.broadcasts?.[0]?.names?.join('/') || comp.geoBroadcasts?.[0]?.media?.shortName || '';
-        statusHTML = broadcast ? `<span class="card-status" style="color:var(--purple-300)">${broadcast}</span>` : '';
+        statusHTML = `<span class="card-status">${gameTime}</span>`;
       }
 
       // Team column
@@ -488,16 +498,14 @@
       }
 
       const venue    = comp.venue?.fullName || '';
-      const gameDate = event.date ? new Date(event.date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
-      const gameTime = event.date ? new Date(event.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
       const leagueObj = LEAGUES.find(l => l.id === leagueId);
       const gameUrl  = `game.html?event=${event.id}&sport=${leagueObj.sport}&slug=${leagueObj.slug}&league=${leagueId}`;
 
       return `
         <div class="game-card ${live ? 'live' : ''}" onclick="location.href='${gameUrl}'" style="cursor:pointer">
           <div class="card-header">
-            <span class="card-league">${leagueId.toUpperCase()}</span>
             ${statusHTML}
+            ${broadcast ? `<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--purple-300);font-weight:700">${broadcast}</span>` : '<span></span>'}
           </div>
           <div class="teams-block">
             ${teamCol(away, awayWin, homeWin, 'away', gameOdds?.awayLine, gameOdds?.pick === awayAbbr)}
@@ -637,41 +645,70 @@
       const home   = c.competitors?.find(x => x.homeAway === 'home');
       if (!away || !home) return '';
 
-      function playerCol(p) {
-        const name  = p.athlete?.shortName || p.athlete?.displayName || '???';
-        const flag  = p.athlete?.flag?.href;
-        const sets  = (p.linescores || []).map(s => s.value != null ? Math.round(s.value) : '-').join('  ');
-        const won   = final && p.winner;
-        const lost  = final && !p.winner;
-        return `<div class="team-col">
-          ${flag ? `<img class="team-logo" src="${flag}" alt="" style="border-radius:2px">` : ''}
-          <div class="team-abbr ${won ? 'winning' : lost ? 'losing' : ''}" style="font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${name}</div>
-          ${sets ? `<div class="team-score ${won ? 'winning' : lost ? 'losing' : ''}" style="font-size:1.1rem">${sets}</div>` : ''}
-        </div>`;
+      const awayScores = (away.linescores || []).map(s => s.value != null ? Math.round(s.value) : null);
+      const homeScores = (home.linescores || []).map(s => s.value != null ? Math.round(s.value) : null);
+      const numSets    = Math.max(awayScores.length, homeScores.length, 1);
+
+      const setHeaders = Array.from({length: numSets}, (_, i) =>
+        `<th style="font-family:var(--font-mono);font-size:0.65rem;color:var(--gray-500);letter-spacing:0.08em;text-align:center;padding:0 0.6rem 0.4rem;font-weight:600">S${i+1}</th>`
+      ).join('');
+
+      function playerRow(p, myScores, oppScores, isLast) {
+        const name = p.athlete?.shortName || p.athlete?.displayName || '???';
+        const flag = p.athlete?.flag?.href;
+        const won  = final && p.winner;
+        const lost = final && !p.winner;
+
+        const setCells = Array.from({length: numSets}, (_, i) => {
+          const my  = myScores[i];
+          const opp = oppScores[i];
+          const wonSet = my != null && opp != null && my > opp;
+          return `<td style="text-align:center;padding:0.55rem 0.6rem;font-family:var(--font-mono);font-size:0.95rem;font-weight:${wonSet ? '800' : '500'};color:${wonSet ? 'var(--purple-600)' : 'var(--gray-500)'}">
+            ${my != null ? my : '—'}
+          </td>`;
+        }).join('');
+
+        return `<tr style="${isLast ? '' : 'border-bottom:1px solid var(--border)'}">
+          <td style="padding:0.55rem 0">
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              ${flag ? `<img src="${flag}" alt="" style="width:20px;height:14px;border-radius:2px;object-fit:cover;flex-shrink:0">` : ''}
+              <span style="font-size:0.88rem;font-weight:${won ? '700' : '500'};color:${lost ? 'var(--gray-500)' : 'var(--text)'};">${name}</span>
+            </div>
+          </td>
+          ${setCells}
+        </tr>`;
       }
 
-      let statusHTML;
-      if (live) statusHTML = `<span class="card-status live-text"><span class="live-dot"></span>${c.status?.type?.detail || 'Live'}</span>`;
-      else if (final) statusHTML = `<span class="card-status">Final</span>`;
-      else statusHTML = `<span class="card-status">${new Date(c.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true })}</span>`;
+      let statusBadge;
+      if (live)       statusBadge = `<span class="badge badge-live"><span class="live-dot"></span>${status?.detail || 'Live'}</span>`;
+      else if (final) statusBadge = `<span class="badge badge-final">Final Score</span>`;
+      else            statusBadge = `<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--gray-500)">${new Date(c.date).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}</span>`;
 
+      const dateStr    = new Date(c.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      const tennisBroadcast = c.broadcasts?.[0]?.names?.join('/') || c.geoBroadcasts?.[0]?.media?.shortName || '';
       const footerBits = [m.round, c.venue?.court].filter(Boolean).join(' · ');
 
       return `
-        <div class="game-card ${live ? 'live' : ''}">
-          <div class="card-header">
-            <span class="card-league">ATP · ${m.tournament}</span>
-            ${statusHTML}
+        <div class="game-card ${live ? 'live' : ''}" style="padding:0;overflow:hidden">
+          <div class="card-header" style="padding:0.75rem 1rem 0.6rem">
+            ${statusBadge}
+            ${tennisBroadcast
+              ? `<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--purple-300);font-weight:700">${tennisBroadcast}</span>`
+              : `<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--gray-500)">${dateStr}</span>`}
           </div>
-          <div class="teams-block">
-            ${playerCol(away)}
-            <div class="vs-col"><span class="vs-at">vs</span></div>
-            ${playerCol(home)}
+          <div style="padding:0 1rem 0.75rem">
+            <table style="width:100%;border-collapse:collapse">
+              <thead><tr>
+                <th style="width:100%"></th>
+                ${setHeaders}
+              </tr></thead>
+              <tbody>
+                ${playerRow(away, awayScores, homeScores, false)}
+                ${playerRow(home, homeScores, awayScores, true)}
+              </tbody>
+            </table>
           </div>
-          <div class="card-footer">
-            <span class="card-venue">${footerBits}</span>
-            <span class="card-time">${new Date(c.date).toLocaleDateString('en-US', { month:'short', day:'numeric' })}</span>
-          </div>
+          ${m.tournament ? `<div style="padding:0.5rem 1rem 0.7rem;border-top:1px solid var(--border)"><span style="font-size:0.75rem;color:var(--gray-500)">${m.tournament}</span></div>` : ''}
         </div>`;
     }
 
@@ -717,41 +754,82 @@
 
     // ── Golf (PGA) rendering ───────────────────────────────────────
     function golfScoreStr(v) {
-      if (v == null) return 'E';
+      if (v == null || isNaN(v)) return 'E';
       if (v === 0) return 'E';
       return v > 0 ? `+${v}` : `${v}`;
     }
 
     function buildGolfCard(ev) {
-      const comp   = ev.competitions?.[0];
+      const comp        = ev.competitions?.[0];
       if (!comp) return '';
-      const status = comp.status?.type || ev.status?.type;
-      const live   = status?.state === 'in';
-      const final  = status?.name === 'STATUS_FINAL';
-      const top    = (comp.competitors || []).slice(0, 10);
-
-      const rows = top.map((c, i) => `
-        <div class="leaderboard-row">
-          <span class="leaderboard-rank">${c.order ?? i + 1}</span>
-          <span class="leaderboard-name">${c.athlete?.displayName || '???'}</span>
-          <span class="leaderboard-score" style="color:${c.score < 0 ? 'var(--green)' : c.score > 0 ? '#FCA5A5' : 'var(--text)'}">${golfScoreStr(c.score)}</span>
-        </div>`).join('');
+      const status      = comp.status?.type || ev.status?.type;
+      const live        = status?.state === 'in';
+      const final       = status?.name === 'STATUS_FINAL';
+      const allPlayers  = comp.competitors || [];
+      const top         = allPlayers.slice(0, 10);
+      const total       = allPlayers.length;
 
       let statusHTML;
-      if (live) statusHTML = `<span class="card-status live-text"><span class="live-dot"></span>${status?.detail || 'In Progress'}</span>`;
-      else if (final) statusHTML = `<span class="card-status">Final</span>`;
-      else statusHTML = `<span class="card-status">${new Date(ev.date).toLocaleDateString('en-US', { month:'short', day:'numeric' })}</span>`;
+      if (live)       statusHTML = `<span class="badge badge-live"><span class="live-dot"></span>${status?.detail || 'In Progress'}</span>`;
+      else if (final) statusHTML = `<span class="badge badge-final">Final</span>`;
+      else            statusHTML = `<span class="badge badge-final">${new Date(ev.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`;
+
+      const thC  = `style="font-family:var(--font-mono);font-size:0.65rem;color:var(--gray-500);letter-spacing:0.07em;text-transform:uppercase;padding:0.5rem 1rem;text-align:center;font-weight:600;border-bottom:1px solid var(--border);background:var(--gray-50);white-space:nowrap"`;
+      const thL  = `style="font-family:var(--font-mono);font-size:0.65rem;color:var(--gray-500);letter-spacing:0.07em;text-transform:uppercase;padding:0.5rem 1rem;text-align:left;font-weight:600;border-bottom:1px solid var(--border);background:var(--gray-50)"`;
+
+      const rows = top.map((c, i) => {
+        const pos        = c.order ?? (i + 1);
+        const name       = c.athlete?.displayName || '???';
+        const flag       = c.athlete?.flag?.href;
+        const scoreNum   = parseFloat(c.score ?? 'E');
+        const scoreColor = !isNaN(scoreNum) && scoreNum < 0 ? 'var(--green)' : !isNaN(scoreNum) && scoreNum > 0 ? '#FCA5A5' : 'var(--text)';
+        const thru       = c.status?.displayValue || '—';
+        const rounds     = (c.linescores || []).map(ls => ls.value != null ? ls.value : null);
+
+        const roundCells = [0,1,2,3].map(r => {
+          const v = rounds[r];
+          return `<td style="font-family:var(--font-mono);font-size:0.82rem;color:${v == null ? 'var(--gray-400)' : 'var(--text)'};text-align:center;padding:0.5rem 1rem">${v != null ? v : '—'}</td>`;
+        }).join('');
+
+        return `<tr style="border-bottom:1px solid var(--border)">
+          <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--gray-500);padding:0.55rem 1rem;text-align:center;width:3.5rem">${pos}</td>
+          <td style="padding:0.55rem 1rem">
+            <div style="display:flex;align-items:center;gap:0.6rem">
+              ${flag ? `<img src="${flag}" alt="" style="width:20px;height:14px;border-radius:2px;object-fit:cover;flex-shrink:0">` : '<span style="width:20px;display:inline-block"></span>'}
+              <span style="font-size:0.88rem;font-weight:600;color:var(--text)">${name}</span>
+            </div>
+          </td>
+          <td style="font-family:var(--font-mono);font-size:0.9rem;font-weight:800;color:${scoreColor};text-align:center;padding:0.55rem 1rem;width:5rem">${golfScoreStr(scoreNum)}</td>
+          ${roundCells}
+          <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--gray-500);text-align:center;padding:0.55rem 1rem;width:4rem">${thru}</td>
+        </tr>`;
+      }).join('');
+
+      const dateStr = new Date(ev.date).toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});
 
       return `
-        <div class="game-card ${live ? 'live' : ''}">
-          <div class="card-header">
-            <span class="card-league">PGA</span>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:0.2rem">${ev.name || ev.shortName || 'PGA Tour'}</div>
+              <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-500)">${dateStr}</div>
+            </div>
             ${statusHTML}
           </div>
-          <div class="tournament-name">${ev.name}</div>
-          <div class="pitcher-matchup" style="gap:0.1rem">
-            <div class="pitcher-matchup-label">Leaderboard</div>
-            ${rows}
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:480px">
+              <thead><tr>
+                <th ${thC} style="${thC.slice(7,-1)};width:3.5rem">POS</th>
+                <th ${thL}>PLAYER</th>
+                <th ${thC} style="${thC.slice(7,-1)};width:5rem">TOTAL</th>
+                <th ${thC}>R1</th><th ${thC}>R2</th><th ${thC}>R3</th><th ${thC}>R4</th>
+                <th ${thC} style="${thC.slice(7,-1)};width:4rem">THRU</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div style="padding:0.6rem 1rem;border-top:1px solid var(--border);text-align:center">
+            <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-500)">Showing 10 of ${total} players</span>
           </div>
         </div>`;
     }
@@ -771,7 +849,7 @@
         return;
       }
       const liveCount = events.filter(ev => (ev.competitions?.[0]?.status?.type || ev.status?.type)?.state === 'in').length;
-      output.innerHTML = `<div class="games-grid">${events.map(buildGolfCard).join('')}</div>`;
+      output.innerHTML = `<div style="display:flex;flex-direction:column;gap:1.25rem">${events.map(buildGolfCard).join('')}</div>`;
       updateLiveBadge(leagueId, liveCount);
     }
 
