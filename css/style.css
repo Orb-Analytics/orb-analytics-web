@@ -377,8 +377,8 @@ body.dark .sidebar-toggle { color: var(--text); }
 .badge-live    { background: rgba(239,68,68,0.12);   color: #B91C1C; border: 1px solid rgba(239,68,68,0.35); }
 .badge-final   { background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--border); }
 .badge-pre     { background: var(--gray-100); color: var(--purple-600); border: 1px solid var(--border); }
-.badge-win     { background: rgba(16,185,129,0.12);  color: #065F46; border: 1px solid rgba(16,185,129,0.35); }
-.badge-loss    { background: rgba(239,68,68,0.12);   color: #B91C1C; border: 1px solid rgba(239,68,68,0.35); }
+.badge-win     { background: rgba(16,185,129,0.12);  color: #065F46; border: 1px solid rgba(16,185,129,0.35); min-width: 3.25rem; justify-content: center; }
+.badge-loss    { background: rgba(239,68,68,0.12);   color: #B91C1C; border: 1px solid rgba(239,68,68,0.35); min-width: 3.25rem; justify-content: center; }
 .badge-push    { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
 .badge-pending { background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--border); }
 
@@ -399,7 +399,7 @@ body.dark .badge-live { background: rgba(239,68,68,0.18);  color: #FCA5A5; borde
 .form-label { font-size: 0.75rem; font-weight: 600; color: var(--gray-600); letter-spacing: 0.04em; text-transform: uppercase; }
 
 .form-input, .form-select {
-  background: var(--gray-50);
+  background-color: var(--gray-50);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -410,7 +410,7 @@ body.dark .badge-live { background: rgba(239,68,68,0.18);  color: #FCA5A5; borde
   width: 100%;
   outline: none;
 }
-.form-input:focus, .form-select:focus { border-color: var(--purple-500); box-shadow: 0 0 0 3px rgba(109,40,217,0.08); background: var(--surface); }
+.form-input:focus, .form-select:focus { border-color: var(--purple-500); box-shadow: 0 0 0 3px rgba(109,40,217,0.08); background-color: var(--surface); }
 .form-select option { background: var(--surface); color: var(--text); }
 
 .form-select {
