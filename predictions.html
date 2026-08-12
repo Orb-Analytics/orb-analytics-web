@@ -299,13 +299,13 @@
     .pick-team-side { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-600); letter-spacing: 0.06em; }
 
     .log-pick-btn {
-      background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #065F46;
+      background: var(--gray-100); border: 1px solid var(--border); color: var(--gray-600);
       font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.85rem;
       border-radius: 7px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s;
     }
-    .log-pick-btn:hover { background: rgba(16,185,129,0.28); }
-    body.dark .log-pick-btn { background: rgba(16,185,129,0.18); border-color: rgba(52,211,153,0.45); color: #6EE7B7; }
-    body.dark .log-pick-btn:hover { background: rgba(16,185,129,0.32); }
+    .log-pick-btn:hover { background: var(--gray-200); border-color: var(--gray-300); }
+    body.dark .log-pick-btn { background: var(--gray-100); border-color: var(--border); color: var(--gray-600); }
+    body.dark .log-pick-btn:hover { background: var(--gray-200); border-color: var(--gray-300); }
 
     .pick-main {
       background: var(--gray-50); border: 1px solid var(--border);
@@ -426,8 +426,8 @@
       <button class="sidebar-toggle" id="sidebar-toggle" style="margin:0.5rem">
         <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <button class="mobile-page-tab active" onclick="switchMobileTab('picks')">📊 Picks</button>
-      <button class="mobile-page-tab" onclick="switchMobileTab('tracker')">📈 Tracker</button>
+      <button class="mobile-page-tab active" onclick="switchMobileTab('picks')">Picks</button>
+      <button class="mobile-page-tab" onclick="switchMobileTab('tracker')">Tracker</button>
     </div>
     <div class="container" id="main-container" style="height:calc(100vh - 60px);padding-top:0;padding-bottom:0">
       <div class="page-split">
@@ -447,9 +447,9 @@
               <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>
             </div>
             <div class="main-tabs">
-              <button class="main-tab active" onclick="switchSport('mlb')" id="sport-tab-mlb">⚾ MLB</button>
-              <button class="main-tab" onclick="switchSport('nfl')" id="sport-tab-nfl">🏈 NFL</button>
-              <button class="main-tab" onclick="switchSport('nba')" id="sport-tab-nba">🏀 NBA</button>
+              <button class="main-tab active" onclick="switchSport('mlb')" id="sport-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
+              <button class="main-tab" onclick="switchSport('nfl')" id="sport-tab-nfl" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" height="16" style="border-radius:2px"> NFL</button>
+              <button class="main-tab" onclick="switchSport('nba')" id="sport-tab-nba" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" height="16" style="border-radius:2px"> NBA</button>
             </div>
           </div>
 
@@ -550,7 +550,7 @@
 
         <!-- ══ RIGHT: BET TRACKER ════════════════════════════════ -->
         <div class="tracker-col">
-          <div class="tracker-title">📈 Bet Tracker</div>
+          <div class="tracker-title">Bet Tracker</div>
 
           <!-- Stats -->
           <div class="t-stat-grid">
@@ -583,11 +583,11 @@
               <div class="form-group">
                 <label class="form-label">Sport</label>
                 <select class="form-select" id="t-sport">
-                  <option value="MLB">⚾ MLB</option>
-                  <option value="NFL">🏈 NFL</option>
-                  <option value="NBA">🏀 NBA</option>
-                  <option value="NHL">🏒 NHL</option>
-                  <option value="Other">⚡ Other</option>
+                  <option value="MLB">MLB</option>
+                  <option value="NFL">NFL</option>
+                  <option value="NBA">NBA</option>
+                  <option value="NHL">NHL</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div class="form-group">
@@ -617,10 +617,10 @@
               <div class="form-group t-full">
                 <label class="form-label">Result</label>
                 <select class="form-select" id="t-result">
-                  <option value="Pending">⏳ Pending</option>
-                  <option value="Win">✅ Win</option>
-                  <option value="Loss">❌ Loss</option>
-                  <option value="Push">↩️ Push</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Win">Win</option>
+                  <option value="Loss">Loss</option>
+                  <option value="Push">Push</option>
                 </select>
               </div>
               <div class="form-group t-full">
@@ -930,7 +930,7 @@
           <div class="live-status-bar">
             <div class="live-status-row">
               <span class="live-score">${pick.away_team} ${li.awayScore} – ${pick.home_team} ${li.homeScore}</span>
-              ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'Covering' : 'Trailing')}</span>`}
+              ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'Covering' : 'Not Covering')}</span>`}
             </div>
             ${li.isLive && li.winPct != null ? `
             <div class="live-winprob-row">

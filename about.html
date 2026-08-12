@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>About Us · Orb Analytics</title>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="stylesheet" href="css/style.css?v=20260812" />
+  <style>
+    /* ── Page layout ─────────────────────────────────────────────── */
+    .about-page {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 2.5rem 1rem 4rem;
+    }
+
+    /* ── Hero ───────────────────────────────────────────────────── */
+    .about-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--purple-600);
+      margin-bottom: 0.6rem;
+    }
+    .about-headline {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+    .about-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+
+    /* ── Section labels ─────────────────────────────────────────── */
+    .about-section-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      margin-bottom: 0.75rem;
+    }
+    .about-body {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--text);
+      max-width: 680px;
+    }
+    .about-body + .about-body { margin-top: 1rem; }
+
+    /* ── Mission callout card ────────────────────────────────────── */
+    .mission-card {
+      background: var(--purple-100);
+      border: 1px solid rgba(107,33,168,0.15);
+      border-left: 4px solid var(--purple-600);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.75rem;
+      margin: 2rem 0;
+    }
+    body.dark .mission-card {
+      background: rgba(107,33,168,0.12);
+      border-color: rgba(168,85,247,0.25);
+      border-left-color: var(--purple-600);
+    }
+    .mission-card p { font-size: 1rem; line-height: 1.7; color: var(--text); margin: 0; }
+    .mission-card strong { color: var(--purple-600); }
+
+    /* ── Stats row ───────────────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: var(--purple-600);
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Team grid ───────────────────────────────────────────────── */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    @media (max-width: 760px) { .team-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px) { .team-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; } }
+
+    .member-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.5rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .member-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
+
+    .member-photo-wrap {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+    }
+    .member-photo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+      display: block;
+    }
+    .member-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-600), var(--purple-400));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: white;
+    }
+
+    /* Substack orange dot on photo */
+    .member-photo-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 14px;
+      height: 14px;
+      background: #FF6719;
+      border-radius: 50%;
+      border: 2px solid var(--surface);
+    }
+
+    .member-name {
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-top: 0.15rem;
+    }
+    .member-handle {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--purple-600);
+      font-weight: 600;
+    }
+    .member-bio {
+      font-size: 0.77rem;
+      color: var(--gray-600);
+      line-height: 1.45;
+      flex: 1;
+    }
+    .member-role-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--gray-100);
+      color: var(--gray-600);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 0.15rem 0.55rem;
+    }
+
+    /* Substack follow button */
+    .substack-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.85rem;
+      background: #FF6719;
+      color: white;
+      border: none;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity var(--transition), transform var(--transition);
+      margin-top: 0.25rem;
+    }
+    .substack-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .substack-btn svg { width: 12px; height: 12px; fill: white; flex-shrink: 0; }
+
+    /* ── Newsletter section ──────────────────────────────────────── */
+    .about-section { margin-top: 2.5rem; }
+
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.85rem;
+      margin-top: 1.25rem;
+    }
+    @media (max-width: 580px) { .posts-grid { grid-template-columns: 1fr; } }
+
+    .post-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.1rem 1.2rem;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .post-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
+
+    .post-type {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .post-type.podcast { color: #FF6719; }
+    .post-type.analysis { color: var(--purple-600); }
+    .post-type svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+    .post-title {
+      font-family: var(--font-display);
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .post-date {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--gray-500);
+      margin-top: auto;
+    }
+
+    /* ── Subscribe CTA ───────────────────────────────────────────── */
+    .subscribe-banner {
+      background: linear-gradient(135deg, var(--purple-600) 0%, #FF6719 100%);
+      border-radius: var(--radius-lg);
+      padding: 2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .subscribe-banner-text h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: white;
+      margin-bottom: 0.3rem;
+    }
+    .subscribe-banner-text p {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.82);
+      margin: 0;
+    }
+    .subscribe-banner-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.5rem;
+      background: white;
+      color: var(--purple-600);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity var(--transition), transform var(--transition);
+      flex-shrink: 0;
+    }
+    .subscribe-banner-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+    .subscribe-banner-btn svg { width: 15px; height: 15px; fill: #FF6719; }
+
+    /* ── Sign-off & disclaimer ───────────────────────────────────── */
+    .sign-off { margin-top: 2rem; font-size: 0.92rem; color: var(--gray-600); font-style: italic; }
+
+    .disclaimer-block {
+      background: var(--gray-50);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.75rem;
+      margin-top: 3rem;
+    }
+    body.dark .disclaimer-block { background: var(--gray-100); }
+    .disclaimer-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      margin-bottom: 0.75rem;
+    }
+    .disclaimer-text { font-size: 0.82rem; line-height: 1.65; color: var(--gray-600); }
+    .disclaimer-text p + p { margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-content">
+  <main class="page">
+    <div class="container">
+      <div class="about-page">
+
+        <!-- ── Hero ─────────────────────────────────────────────── -->
+        <div class="about-eyebrow">Orb Analytics Limited</div>
+        <h1 class="about-headline">Clarity in the Chaos</h1>
+        <div class="about-divider"></div>
+
+        <!-- ── Value proposition ─────────────────────────────────── -->
+        <div class="about-section-label">Our Value Proposition</div>
+        <p class="about-body">
+          The sports gambling market is fragmented by design — scores on ESPN, headlines on Reddit,
+          lines and line movement scattered across third-party apps. Staying informed means
+          constant context-switching between a dozen sources before you can form an educated opinion on a single bet.
+        </p>
+        <p class="about-body">
+          Orb Analytics was built to eliminate that friction. We distill the macro professional sports
+          landscape — live scores, model-driven spread picks, injury reports, editorial analysis,
+          and podcast commentary — into a single, vertically integrated platform. Everything that
+          informs a bet, in one place.
+        </p>
+
+        <div class="mission-card">
+          <p>
+            Our mission is to bring <strong>transparency to the sports gambling market</strong>.
+            Using Python-powered predictive models, Orb delivers data-driven betting insights
+            across the NFL, NBA, and MLB, paired with accessible content through our newsletter,
+            podcast, and analysis on Substack. <strong>Every pick, win, loss, and unit is tracked publicly.</strong>
+          </p>
+        </div>
+
+        <!-- ── Stats ─────────────────────────────────────────────── -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Major Leagues</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">951</div>
+            <div class="stat-label">Subscribers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">Public Tracking</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">8</div>
+            <div class="stat-label">Team Members</div>
+          </div>
+        </div>
+
+        <!-- ── Team ──────────────────────────────────────────────── -->
+        <div class="about-section">
+          <div class="about-section-label">The Team</div>
+
+          <div class="team-grid">
+
+            <div class="member-card">
+              <div class="member-photo-wrap">
+                <img class="member-photo"
+                  src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F5b4aaffa-89c5-4f25-a2cc-9dcf4fb182a5_1688x950.jpeg"
+                  alt="Orb Wizard"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="member-avatar" style="display:none">OW</div>
+              </div>
+              <div class="member-name">Orb Wizard</div>
+              <div class="member-handle">@orbwizard522575</div>
+              <div class="member-role-badge">CEO · CTO</div>
+              <div class="member-bio">Founder &amp; Orb Scryer. The mind behind the model.</div>
+              <a class="substack-btn" href="https://substack.com/@orbwizard522575" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                Follow
+              </a>
+            </div>
+
+            <div class="member-card">
+              <div class="member-photo-wrap">
+                <img class="member-photo"
+                  src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4881feb5-2756-45cc-b442-8c1888fd298c_1080x1080.png"
+                  alt="Andres Benites"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="member-avatar" style="display:none">AB</div>
+              </div>
+              <div class="member-name">Andres Benites</div>
+              <div class="member-handle">@orbanalytics</div>
+              <div class="member-role-badge">COO</div>
+              <div class="member-bio">Chief Operating Officer. Building the Orb brand from the ground up.</div>
+              <a class="substack-btn" href="https://substack.com/@orbanalytics" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                Follow
+              </a>
+            </div>
+
+            <div class="member-card">
+              <div class="member-photo-wrap">
+                <img class="member-photo"
+                  src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F3b5d87c0-46f2-41f3-bec8-163c5f3c310d_1170x1170.png"
+                  alt="Orb Apprentice"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="member-avatar" style="display:none">OA</div>
+              </div>
+              <div class="member-name">Orb Apprentice</div>
+              <div class="member-handle">@lpchaitin</div>
+              <div class="member-role-badge">Analytics</div>
+              <div class="member-bio">Data Analyst &amp; Seattle Sports Advocate.</div>
+              <a class="substack-btn" href="https://substack.com/@lpchaitin" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                Follow
+              </a>
+            </div>
+
+            <div class="member-card">
+              <div class="member-photo-wrap">
+                <img class="member-photo"
+                  src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdadaf71d-b14e-46f3-9e85-befe83d3507f_983x983.png"
+                  alt="Dev Dart"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="member-avatar" style="display:none">DD</div>
+              </div>
+              <div class="member-name">Dev Dart</div>
+              <div class="member-handle">@devdarts</div>
+              <div class="member-role-badge">Engineering</div>
+              <div class="member-bio">Platform engineering. Do you believe in miracles?</div>
+              <a class="substack-btn" href="https://substack.com/@devdarts" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                Follow
+              </a>
+            </div>
+
+            <div class="member-card">
+              <div class="member-photo-wrap">
+                <img class="member-photo"
+                  src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdffa70c3-7203-4ca4-b824-0f2abf3266c6_1101x821.png"
+                  alt="Mickey Swish"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="member-avatar" style="display:none">MS</div>
+              </div>
+              <div class="member-name">Mickey Swish</div>
+              <div class="member-handle">@mickeyswish</div>
+              <div class="member-role-badge">Editorial</div>
+              <div class="member-bio">NBA Writer for Orb Analytics.</div>
+              <a class="substack-btn" href="https://substack.com/@mickeyswish" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                Follow
+              </a>
+            </div>
+
+            <div class="member-card">
+              <div class="member-photo-wrap">
+                <img class="member-photo"
+                  src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F578c2d60-de01-4836-b899-990db2df3753_260x262.png"
+                  alt="Vibe Navigator"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="member-avatar" style="display:none">VN</div>
+              </div>
+              <div class="member-name">Vibe Navigator</div>
+              <div class="member-handle">@thevibenavigator</div>
+              <div class="member-role-badge">Editorial</div>
+              <div class="member-bio">NBA Writer for Orb Analytics.</div>
+              <a class="substack-btn" href="https://substack.com/@thevibenavigator" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                Follow
+              </a>
+            </div>
+
+            <div class="member-card">
+              <div class="member-photo-wrap">
+                <img class="member-photo"
+                  src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1fd3b571-dc89-4585-813e-f78a97254048_643x629.jpeg"
+                  alt="Fairway Phantom"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="member-avatar" style="display:none">FP</div>
+              </div>
+              <div class="member-name">Fairway Phantom</div>
+              <div class="member-handle">@fairwayphantom</div>
+              <div class="member-role-badge">Editorial</div>
+              <div class="member-bio">Golf contributor &amp; course-side analyst.</div>
+              <a class="substack-btn" href="https://substack.com/@fairwayphantom" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                Follow
+              </a>
+            </div>
+
+            <div class="member-card">
+              <div class="member-photo-wrap">
+                <img class="member-photo"
+                  src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fcdb0ac35-fb75-4447-bf0a-6d5ec5711846_729x729.jpeg"
+                  alt="Ari Podcasts"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="member-avatar" style="display:none">AP</div>
+              </div>
+              <div class="member-name">Ari Podcasts</div>
+              <div class="member-handle">@aripodcasts</div>
+              <div class="member-role-badge">Media</div>
+              <div class="member-bio">Podcast host. Bringing the audio layer to Orb.</div>
+              <a class="substack-btn" href="https://substack.com/@aripodcasts" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                Follow
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        <p class="sign-off">— Team Orb Analytics</p>
+
+        <!-- ── From the Newsletter ────────────────────────────────── -->
+        <div class="about-section">
+          <div class="about-section-label">From the Newsletter</div>
+
+          <div class="posts-grid">
+
+            <a class="post-card" href="https://orbanalytics.substack.com/p/ep65-someone-has-to-defend-him" target="_blank" rel="noopener">
+              <div class="post-type podcast">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 3a1 1 0 0 1 2 0v8a1 1 0 0 1-2 0V4zm6 8a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2zm-5 5v3h2v-3h-2z"/></svg>
+                Podcast
+              </div>
+              <div class="post-title">EP65 — Someone has to defend him</div>
+              <div class="post-date">July 31, 2026</div>
+            </a>
+
+            <a class="post-card" href="https://orbanalytics.substack.com/p/orb-mlb-model-all-star-break-update" target="_blank" rel="noopener">
+              <div class="post-type analysis">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Model Update
+              </div>
+              <div class="post-title">Orb MLB Model — All-Star Break Update</div>
+              <div class="post-date">July 15, 2026</div>
+            </a>
+
+            <a class="post-card" href="https://orbanalytics.substack.com/p/orb-mlb-model-moneyline-machine" target="_blank" rel="noopener">
+              <div class="post-type analysis">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Model Analysis
+              </div>
+              <div class="post-title">Orb MLB Model — Moneyline Machine</div>
+              <div class="post-date">July 1, 2026</div>
+            </a>
+
+            <a class="post-card" href="https://orbanalytics.substack.com/p/ep64-the-greek-freak-joins-the-heat" target="_blank" rel="noopener">
+              <div class="post-type podcast">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 3a1 1 0 0 1 2 0v8a1 1 0 0 1-2 0V4zm6 8a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2zm-5 5v3h2v-3h-2z"/></svg>
+                Podcast
+              </div>
+              <div class="post-title">EP64 — The Greek Freak Joins the Heat</div>
+              <div class="post-date">June 24, 2026</div>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- ── Subscribe CTA ──────────────────────────────────────── -->
+        <div class="subscribe-banner">
+          <div class="subscribe-banner-text">
+            <h3>Join 951 subscribers</h3>
+            <p>Picks, model updates, and podcast drops straight to your inbox. Free to subscribe.</p>
+          </div>
+          <a class="subscribe-banner-btn" href="https://orbanalytics.substack.com" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+            Subscribe on Substack
+          </a>
+        </div>
+
+        <!-- ── Disclaimer ─────────────────────────────────────────── -->
+        <div class="disclaimer-block">
+          <div class="disclaimer-label">Disclaimer</div>
+          <div class="disclaimer-text">
+            <p>The information provided on this website is for informational purposes only. It is not intended to be gambling or financial advice, and should not be relied upon as such. We are not responsible for any actions or decisions taken by readers based on the information provided on this website.</p>
+            <p>The picks and predictions provided on this website are based on our own research and analysis, and are intended to be used for entertainment and informational purposes only. We do not guarantee the accuracy or completeness of the information provided, and we are not responsible for any losses or damages incurred as a result of using this information for gambling or other purposes.</p>
+            <p>By accessing and using this website, you acknowledge and agree to the terms of this disclaimer, and you assume all risks and liabilities associated with your use of the information provided on this website.</p>
+          </div>
+        </div>
+
+      </div><!-- end about-page -->
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 Orb Analytics Limited · 21+ · Please gamble responsibly</p>
+  </footer>
+
+    </div><!-- end sidebar-content -->
+  </div><!-- end app-layout -->
+
+  <script src="js/nav.js?v=20260812"></script>
+  <script>buildNav('about.html');</script>
+</body>
+</html>

@@ -289,12 +289,12 @@
     buildNav('scoreboard.html');
 
     const LEAGUES = [
-      { id:'mlb', label:'MLB', emoji:'⚾', sport:'baseball',   slug:'mlb',  type:'team' },
-      { id:'nfl', label:'NFL', emoji:'🏈', sport:'football',   slug:'nfl',  type:'team' },
-      { id:'nba', label:'NBA', emoji:'🏀', sport:'basketball', slug:'nba',  type:'team' },
-      { id:'nhl', label:'NHL', emoji:'🏒', sport:'hockey',     slug:'nhl',  type:'team' },
-      { id:'atp', label:'ATP', emoji:'🎾', sport:'tennis',     slug:'atp',  type:'tennis' },
-      { id:'pga', label:'PGA', emoji:'⛳', sport:'golf',       slug:'pga',  type:'golf' },
+      { id:'mlb', label:'MLB', logo:'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png',     sport:'baseball',   slug:'mlb',  type:'team' },
+      { id:'nfl', label:'NFL', logo:'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png',     sport:'football',   slug:'nfl',  type:'team' },
+      { id:'nba', label:'NBA', logo:'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png',     sport:'basketball', slug:'nba',  type:'team' },
+      { id:'nhl', label:'NHL', logo:'https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png',     sport:'hockey',     slug:'nhl',  type:'team' },
+      { id:'atp', label:'ATP', logo:'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-tennis.png', sport:'tennis', slug:'atp', type:'tennis' },
+      { id:'pga', label:'PGA', logo:'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/pgatour.png', sport:'golf', slug:'pga', type:'golf' },
     ];
 
     let activeLeague = 'mlb';
@@ -577,7 +577,7 @@
 
       if (picks.length) {
         html += `<div class="section-divider">
-          <span class="sdl pick">⭐ Our Picks</span>
+          <span class="sdl pick">Orb Model Picks</span>
           <div class="sdl-line"></div>
         </div>
         <div class="games-grid">${picks.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
@@ -626,9 +626,12 @@
 
     function flattenTennisMatches(events) {
       const matches = [];
+      const seen = new Set();
       for (const ev of events) {
         for (const g of ev.groupings || []) {
           for (const c of g.competitions || []) {
+            if (!c.id || seen.has(c.id)) continue;
+            seen.add(c.id);
             matches.push({ tournament: ev.name, round: g.grouping?.displayName, comp: c });
           }
         }
@@ -650,29 +653,33 @@
       const numSets    = Math.max(awayScores.length, homeScores.length, 1);
 
       const setHeaders = Array.from({length: numSets}, (_, i) =>
-        `<th style="font-family:var(--font-mono);font-size:0.65rem;color:var(--gray-500);letter-spacing:0.08em;text-align:center;padding:0 0.6rem 0.4rem;font-weight:600">S${i+1}</th>`
+        `<th style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-500);letter-spacing:0.08em;text-align:center;padding:0 0.75rem 0.5rem;font-weight:600">S${i+1}</th>`
       ).join('');
 
       function playerRow(p, myScores, oppScores, isLast) {
-        const name = p.athlete?.shortName || p.athlete?.displayName || '???';
+        const name = p.athlete?.shortName || p.athlete?.displayName || '';
         const flag = p.athlete?.flag?.href;
         const won  = final && p.winner;
         const lost = final && !p.winner;
+        const seed = p.seed > 0 ? p.seed : null;
+        const rank = p.rank;
 
         const setCells = Array.from({length: numSets}, (_, i) => {
           const my  = myScores[i];
           const opp = oppScores[i];
           const wonSet = my != null && opp != null && my > opp;
-          return `<td style="text-align:center;padding:0.55rem 0.6rem;font-family:var(--font-mono);font-size:0.95rem;font-weight:${wonSet ? '800' : '500'};color:${wonSet ? 'var(--purple-600)' : 'var(--gray-500)'}">
+          return `<td style="text-align:center;padding:0.75rem 0.75rem;font-family:var(--font-mono);font-size:1.15rem;font-weight:${wonSet ? '800' : '500'};color:${wonSet ? 'var(--purple-600)' : 'var(--gray-400)'}">
             ${my != null ? my : '—'}
           </td>`;
         }).join('');
 
         return `<tr style="${isLast ? '' : 'border-bottom:1px solid var(--border)'}">
-          <td style="padding:0.55rem 0">
-            <div style="display:flex;align-items:center;gap:0.5rem">
-              ${flag ? `<img src="${flag}" alt="" style="width:20px;height:14px;border-radius:2px;object-fit:cover;flex-shrink:0">` : ''}
-              <span style="font-size:0.88rem;font-weight:${won ? '700' : '500'};color:${lost ? 'var(--gray-500)' : 'var(--text)'};">${name}</span>
+          <td style="padding:0.75rem 0">
+            <div style="display:flex;align-items:center;gap:0.55rem">
+              ${flag ? `<img src="${flag}" alt="" style="width:24px;height:16px;border-radius:2px;object-fit:cover;flex-shrink:0">` : ''}
+              ${seed ? `<span style="font-family:var(--font-mono);font-size:0.68rem;font-weight:700;color:var(--purple-600);flex-shrink:0;background:var(--purple-100);border-radius:3px;padding:0.05rem 0.3rem">${seed}</span>` : ''}
+              <span style="font-size:1rem;font-weight:${won ? '700' : seed ? '600' : '500'};color:${lost ? 'var(--gray-400)' : 'var(--text)'}">${name}</span>
+              ${!seed && rank ? `<span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--gray-500);flex-shrink:0">#${rank}</span>` : ''}
             </div>
           </td>
           ${setCells}
@@ -690,13 +697,13 @@
 
       return `
         <div class="game-card ${live ? 'live' : ''}" style="padding:0;overflow:hidden">
-          <div class="card-header" style="padding:0.75rem 1rem 0.6rem">
+          <div class="card-header" style="padding:0.85rem 1.1rem 0.7rem">
             ${statusBadge}
             ${tennisBroadcast
               ? `<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--purple-300);font-weight:700">${tennisBroadcast}</span>`
               : `<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--gray-500)">${dateStr}</span>`}
           </div>
-          <div style="padding:0 1rem 0.75rem">
+          <div style="padding:0 1.1rem 0.85rem">
             <table style="width:100%;border-collapse:collapse">
               <thead><tr>
                 <th style="width:100%"></th>
@@ -708,16 +715,35 @@
               </tbody>
             </table>
           </div>
-          ${m.tournament ? `<div style="padding:0.5rem 1rem 0.7rem;border-top:1px solid var(--border)"><span style="font-size:0.75rem;color:var(--gray-500)">${m.tournament}</span></div>` : ''}
+          ${m.tournament ? `<div style="padding:0.55rem 1.1rem 0.75rem;border-top:1px solid var(--border)"><span style="font-size:0.8rem;color:var(--gray-500)">${m.tournament}</span></div>` : ''}
         </div>`;
     }
 
     function renderTennisOutput(events, leagueId) {
       const output = document.getElementById('scoreboard-output');
       const now     = new Date();
+
+      function matchMinSeed(m) {
+        const seeds = (m.comp.competitors || []).map(c => c.seed).filter(s => s > 0);
+        return seeds.length ? Math.min(...seeds) : 999;
+      }
+      function isSeeded(m) {
+        return (m.comp.competitors || []).some(c => c.seed > 0);
+      }
+      const seedSort = (a, b) => {
+        const diff = matchMinSeed(a) - matchMinSeed(b);
+        return diff !== 0 ? diff : new Date(a.comp.date) - new Date(b.comp.date);
+      };
+
       const matches = flattenTennisMatches(events).filter(m => {
         const st = m.comp.status?.type;
-        return st?.name === 'STATUS_IN_PROGRESS' || isSameLocalDay(m.comp.date, now);
+        if (st?.name !== 'STATUS_IN_PROGRESS' && !isSameLocalDay(m.comp.date, now)) return false;
+        const away = m.comp.competitors?.find(x => x.homeAway === 'away');
+        const home = m.comp.competitors?.find(x => x.homeAway === 'home');
+        if (!away || !home) return false;
+        const awayName = away.athlete?.shortName || away.athlete?.displayName;
+        const homeName = home.athlete?.shortName || home.athlete?.displayName;
+        return !!(awayName && homeName);
       });
 
       if (!matches.length) {
@@ -727,17 +753,33 @@
             <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
             <line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
-          <p>No ATP matches today.</p>
+          <p>No ATP/WTA matches today.</p>
         </div>`;
         updateLiveBadge(leagueId, 0);
         return;
       }
 
-      const live = matches.filter(m => m.comp.status?.type?.name === 'STATUS_IN_PROGRESS');
-      const rest = matches.filter(m => m.comp.status?.type?.name !== 'STATUS_IN_PROGRESS')
-                          .sort((a, b) => new Date(a.comp.date) - new Date(b.comp.date));
+      const live = matches.filter(m => m.comp.status?.type?.name === 'STATUS_IN_PROGRESS')
+                          .sort(seedSort);
+      const rest = matches.filter(m => m.comp.status?.type?.name !== 'STATUS_IN_PROGRESS');
+
+      // Group by tournament, within each: seeded matches first (all shown), unseeded capped at 4
+      const byTournament = new Map();
+      for (const m of rest) {
+        const key = m.tournament || 'Other';
+        if (!byTournament.has(key)) byTournament.set(key, []);
+        byTournament.get(key).push(m);
+      }
+
+      // Sort tournaments so those with the highest-seeded matchups (lowest min seed) appear first
+      const sortedTournaments = [...byTournament.entries()].sort((a, b) => {
+        const aMin = Math.min(...a[1].map(matchMinSeed));
+        const bMin = Math.min(...b[1].map(matchMinSeed));
+        return aMin - bMin;
+      });
 
       let html = '';
+
       if (live.length) {
         html += `<div class="section-divider">
           <span class="sdl live"><span class="live-dot"></span>Live Now</span>
@@ -745,9 +787,21 @@
         </div>
         <div class="games-grid">${live.map(buildTennisCard).join('')}</div>`;
       }
-      if (rest.length) {
-        html += `<div class="games-grid" style="margin-top:${live.length ? '1.5rem' : '0'}">${rest.map(buildTennisCard).join('')}</div>`;
+
+      for (const [tournament, tMatches] of sortedTournaments) {
+        const seeded   = tMatches.filter(isSeeded).sort(seedSort);
+        const unseeded = tMatches.filter(m => !isSeeded(m))
+                                 .sort((a, b) => new Date(a.comp.date) - new Date(b.comp.date))
+                                 .slice(0, 4);
+        const toShow = [...seeded, ...unseeded];
+        if (!toShow.length) continue;
+        html += `<div class="section-divider" style="margin-top:1.5rem">
+          <span class="sdl" style="color:var(--text);font-weight:600">${tournament}</span>
+          <div class="sdl-line"></div>
+        </div>
+        <div class="games-grid">${toShow.map(buildTennisCard).join('')}</div>`;
       }
+
       output.innerHTML = html;
       updateLiveBadge(leagueId, live.length);
     }
@@ -861,6 +915,24 @@
       output.innerHTML = `<div class="loading-state"><div class="spinner"></div> Loading ${leagueObj.label} games...</div>`;
 
       try {
+        // Tennis: merge ATP + WTA so all major tournament draws are covered
+        if (leagueObj.type === 'tennis') {
+          const cacheKey = leagueId + '_combined';
+          let events;
+          if (!force && cache[cacheKey]) {
+            events = cache[cacheKey];
+          } else {
+            const [atpData, wtaData] = await Promise.all([
+              fetch('https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard').then(r => r.json()).catch(() => ({ events: [] })),
+              fetch('https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard').then(r => r.json()).catch(() => ({ events: [] })),
+            ]);
+            events = [...(atpData.events || []), ...(wtaData.events || [])];
+            cache[cacheKey] = events;
+          }
+          renderTennisOutput(events, leagueId);
+          return;
+        }
+
         let data;
         if (!force && cache[leagueId]) {
           data = cache[leagueId];
@@ -872,7 +944,6 @@
 
         const events = data.events || [];
 
-        if (leagueObj.type === 'tennis') { renderTennisOutput(events, leagueId); return; }
         if (leagueObj.type === 'golf')   { renderGolfOutput(events, leagueId); return; }
 
         let pitcherMap = {};
@@ -906,7 +977,7 @@
       document.getElementById('league-tabs').innerHTML = LEAGUES.map(l => `
         <button class="league-tab ${l.id === activeLeague ? 'active' : ''}" data-league="${l.id}"
                 onclick="switchLeague('${l.id}')">
-          ${l.emoji} ${l.label}
+          <img src="${l.logo}" height="18" style="border-radius:2px;flex-shrink:0"> ${l.label}
         </button>`).join('');
     }
 
@@ -922,12 +993,17 @@
       const btn = document.getElementById('refresh-btn');
       btn.classList.add('spinning'); btn.disabled = true;
       delete cache[activeLeague];
+      delete cache[activeLeague + '_combined'];
       await loadLeague(activeLeague, true);
       btn.classList.remove('spinning'); btn.disabled = false;
     }
 
     // Auto-refresh every 45s
-    setInterval(() => { delete cache[activeLeague]; loadLeague(activeLeague, true); }, 45000);
+    setInterval(() => {
+      delete cache[activeLeague];
+      delete cache[activeLeague + '_combined'];
+      loadLeague(activeLeague, true);
+    }, 45000);
 
     // ── Init ──────────────────────────────────────────────────────
     buildTabs();
