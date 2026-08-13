@@ -257,6 +257,8 @@ function buildNav(activePage = '') {
     `;
   }
 
+  buildDisclaimer();
+
   const toggle = document.getElementById('sidebar-toggle');
   if (toggle) {
     toggle.addEventListener('click', () => {
@@ -271,6 +273,22 @@ function buildNav(activePage = '') {
       overlay.classList.remove('open');
     });
   }
+}
+
+// ── Build site-wide disclaimer ──────────────────────────────────────
+function buildDisclaimer() {
+  const el = document.getElementById('site-disclaimer');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="disclaimer-block">
+      <div class="disclaimer-label">Disclaimer</div>
+      <div class="disclaimer-text">
+        <p>The information provided on this website is for informational purposes only. It is not intended to be gambling or financial advice, and should not be relied upon as such. We are not responsible for any actions or decisions taken by readers based on the information provided on this website.</p>
+        <p>The picks and predictions provided on this website are based on our own research and analysis, and are intended to be used for entertainment and informational purposes only. We do not guarantee the accuracy or completeness of the information provided, and we are not responsible for any losses or damages incurred as a result of using this information for gambling or other purposes.</p>
+        <p>By accessing and using this website, you acknowledge and agree to the terms of this disclaimer, and you assume all risks and liabilities associated with your use of the information provided on this website.</p>
+      </div>
+    </div>
+  `;
 }
 
 window.buildNav = buildNav;
