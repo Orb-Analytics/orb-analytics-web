@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260813c" />
+  <link rel="stylesheet" href="css/style.css?v=20260813d" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -60,7 +60,7 @@
       padding: 0.75rem 0.5rem;
       border: none;
       background: transparent;
-      color: var(--gray-500);
+      color: var(--gray-600);
       font-family: var(--font-body);
       font-size: 0.875rem;
       font-weight: 600;
@@ -196,7 +196,7 @@
         font-family: var(--font-mono);
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--gray-500);
+        color: var(--gray-600);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         text-align: left;
@@ -409,7 +409,7 @@
     .t-profit-pos { color: var(--green); font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; }
     .t-profit-neg { color: var(--red);   font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; }
     .t-odds { font-family: var(--font-mono); font-size: 0.8125rem; }
-    .t-odds-hint { font-size: 0.8125rem; color: var(--gray-500); margin-top: 0.18rem; font-family: var(--font-mono); }
+    .t-odds-hint { font-size: 0.8125rem; color: var(--gray-600); margin-top: 0.18rem; font-family: var(--font-mono); }
   </style>
 </head>
 <body>
@@ -471,13 +471,13 @@
             <div id="picks-nfl" style="display:none">
               <div class="empty-state" style="padding:3rem 1rem">
                 <p style="font-size:0.875rem;font-weight:600;color:var(--text);margin-bottom:0.3rem">NFL Model Coming Soon</p>
-                <p style="color:var(--gray-500);font-size:0.875rem">Predictions will appear once the season begins.</p>
+                <p style="color:var(--gray-600);font-size:0.875rem">Predictions will appear once the season begins.</p>
               </div>
             </div>
             <div id="picks-nba" style="display:none">
               <div class="empty-state" style="padding:3rem 1rem">
                 <p style="font-size:0.875rem;font-weight:600;color:var(--text);margin-bottom:0.3rem">NBA Model Coming Soon</p>
-                <p style="color:var(--gray-500);font-size:0.875rem">Predictions will appear once the season begins.</p>
+                <p style="color:var(--gray-600);font-size:0.875rem">Predictions will appear once the season begins.</p>
               </div>
             </div>
           </div>
@@ -522,7 +522,7 @@
                 <option value="fav">Favorites</option>
                 <option value="dog">Underdogs</option>
               </select>
-              <span id="filter-count" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-500);margin-left:auto"></span>
+              <span id="filter-count" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);margin-left:auto"></span>
             </div>
             <div class="history-table-wrap">
               <div style="overflow-x:auto">
@@ -1002,7 +1002,7 @@
       const url = HISTORY_URLS[activeSport];
       if (!url) {
         document.getElementById('summary-grid').innerHTML =
-          `<div style="grid-column:1/-1;text-align:center;color:var(--gray-500);padding:2rem">No history available for ${activeSport.toUpperCase()} yet.</div>`;
+          `<div style="grid-column:1/-1;text-align:center;color:var(--gray-600);padding:2rem">No history available for ${activeSport.toUpperCase()} yet.</div>`;
         document.getElementById('splits-grid').innerHTML = '';
         document.getElementById('history-tbody').innerHTML = '';
         if (equityChart) { equityChart.destroy(); equityChart = null; }
@@ -1222,7 +1222,7 @@
       document.getElementById('filter-count').textContent = `${filtered.length} picks · ${wins}W-${losses}L · ${units>=0?'+':''}${units.toFixed(2)}u`;
       const tbody = document.getElementById('history-tbody');
       const colCount = 7 + (showLine ? 1 : 0) + (showConf ? 1 : 0);
-      if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--gray-500);padding:2rem">No picks match filters.</td></tr>`; return; }
+      if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--gray-600);padding:2rem">No picks match filters.</td></tr>`; return; }
       tbody.innerHTML = filtered.map(p => {
         const badgeClass = p.result==='Win'?'badge-win':'badge-loss';
         const uCls = p.units>=0?'units-positive':'units-negative';
@@ -1238,9 +1238,9 @@
         const side = p.pick===p.home_team?'(H)':'(A)';
         const spread = p.spread != null ? (p.spread > 0 ? `+${p.spread}` : `${p.spread}`) : '—';
         return `<tr>
-          <td data-label="Date" style="font-family:var(--font-mono);font-size:0.875rem;white-space:nowrap;color:var(--gray-500)">${p.date}</td>
+          <td data-label="Date" style="font-family:var(--font-mono);font-size:0.875rem;white-space:nowrap;color:var(--gray-600)">${p.date}</td>
           <td data-label="Matchup" style="font-size:0.875rem;white-space:nowrap">${p.away_team} @ ${p.home_team}</td>
-          <td data-label="Pick" style="font-weight:600;font-size:0.875rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-500);font-size:0.8125rem">${side}</span></td>
+          <td data-label="Pick" style="font-weight:600;font-size:0.875rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-600);font-size:0.8125rem">${side}</span></td>
           ${showLine ? `<td data-label="Line" style="font-family:var(--font-mono);font-size:0.875rem">${spread}</td>` : ''}
           <td data-label="Odds" style="font-family:var(--font-mono);font-size:0.875rem">${fmtOdds(p.line)}</td>
           <td data-label="Edge" style="font-family:var(--font-mono);font-size:0.875rem;color:var(--purple-300)">+${p.edge}%</td>
@@ -1350,7 +1350,7 @@
         const badge = {Win:'badge-win',Loss:'badge-loss',Push:'badge-push',Pending:'badge-pending'}[bet.result]||'badge-pending';
         const odds = bet.odds>0?`+${bet.odds}`:`${bet.odds}`;
         return `<tr>
-          <td data-label="Date" style="font-family:var(--font-mono);font-size:0.875rem;white-space:nowrap;color:var(--gray-500)">${bet.date}</td>
+          <td data-label="Date" style="font-family:var(--font-mono);font-size:0.875rem;white-space:nowrap;color:var(--gray-600)">${bet.date}</td>
           <td data-label="Pick" style="font-weight:600;font-size:0.875rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${bet.pick}</td>
           <td class="t-odds" data-label="Odds">${odds}</td>
           <td data-label="Stake" style="font-family:var(--font-mono);font-size:0.875rem">$${bet.stake.toFixed(0)}</td>
