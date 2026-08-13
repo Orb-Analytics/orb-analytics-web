@@ -135,7 +135,7 @@
 
       .history-controls {
         display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.4rem !important;
       }
 
@@ -212,9 +212,7 @@
       }
 
       .chart-card-header { flex-direction: column; align-items: stretch; gap: 0.6rem; }
-      .chart-controls { width: 100%; }
-      .chart-date-filter { flex: 1; }
-      .chart-toggle { flex: 1; }
+      .chart-toggle { width: 100%; }
       .chart-toggle-btn { flex: 1; text-align: center; }
     }
 
@@ -363,8 +361,6 @@
     }
     .chart-toggle-btn.active { background: var(--purple-600); color: white; }
     .chart-toggle-btn:hover:not(.active) { background: var(--hover-tint); }
-    .chart-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-    .chart-date-filter { font-size: 0.75rem; padding: 0.3rem 1.5rem 0.3rem 0.55rem; }
     .chart-wrap { position: relative; height: 190px; }
 
     .history-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.85rem; }
@@ -484,46 +480,44 @@
 
           <!-- MODEL HISTORY -->
           <div class="tab-panel" id="panel-history">
-            <div class="summary-grid" id="summary-grid">
-              <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading history...</div>
-            </div>
-            <div class="chart-card">
-              <div class="chart-card-header">
-                <div class="chart-card-title" id="chart-title">Cumulative Units (Equity Curve)</div>
-                <div class="chart-controls">
-                  <select class="filter-select chart-date-filter" id="chart-date-filter" onchange="setChartDateFilter(this.value)">
-                    <option value="all">All Time</option>
-                    <option value="7">Last 7 Days</option>
-                    <option value="14">Last 14 Days</option>
-                    <option value="30">Last 30 Days</option>
-                  </select>
-                  <div class="chart-toggle">
-                    <button class="chart-toggle-btn active" data-mode="units" onclick="setChartMode('units')">Units</button>
-                    <button class="chart-toggle-btn" data-mode="roi" onclick="setChartMode('roi')">ROI</button>
-                  </div>
-                </div>
-              </div>
-              <div class="chart-wrap"><canvas id="equity-chart"></canvas></div>
-            </div>
-            <div class="splits-grid" id="splits-grid"></div>
             <div class="history-controls">
-              <select class="filter-select" id="filter-result" onchange="renderHistoryTable()">
+              <select class="filter-select" id="filter-date" onchange="applyHistoryFilters()">
+                <option value="all">All Time</option>
+                <option value="7">Last 7 Days</option>
+                <option value="14">Last 14 Days</option>
+                <option value="30">Last 30 Days</option>
+              </select>
+              <select class="filter-select" id="filter-result" onchange="applyHistoryFilters()">
                 <option value="all">All Results</option>
                 <option value="Win">Wins Only</option>
                 <option value="Loss">Losses Only</option>
               </select>
-              <select class="filter-select" id="filter-side" onchange="renderHistoryTable()">
+              <select class="filter-select" id="filter-side" onchange="applyHistoryFilters()">
                 <option value="all">Home & Away</option>
                 <option value="home">Home Picks</option>
                 <option value="away">Away Picks</option>
               </select>
-              <select class="filter-select" id="filter-odds" onchange="renderHistoryTable()">
+              <select class="filter-select" id="filter-odds" onchange="applyHistoryFilters()">
                 <option value="all">All Odds</option>
                 <option value="fav">Favorites</option>
                 <option value="dog">Underdogs</option>
               </select>
               <span id="filter-count" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);margin-left:auto"></span>
             </div>
+            <div class="summary-grid" id="summary-grid">
+              <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading history...</div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <div class="chart-card-title" id="chart-title">Cumulative Units (Equity Curve)</div>
+                <div class="chart-toggle">
+                  <button class="chart-toggle-btn active" data-mode="units" onclick="setChartMode('units')">Units</button>
+                  <button class="chart-toggle-btn" data-mode="roi" onclick="setChartMode('roi')">ROI</button>
+                </div>
+              </div>
+              <div class="chart-wrap"><canvas id="equity-chart"></canvas></div>
+            </div>
+            <div class="splits-grid" id="splits-grid"></div>
             <div class="history-table-wrap">
               <div style="overflow-x:auto">
                 <table class="data-table" id="history-table">
@@ -721,9 +715,9 @@
     }
 
     let historyData = [];
+    let filteredHistory = [];
     let equityChart = null;
     let chartMode = 'units';
-    let chartDateFilter = 'all';
     let activeSport = 'mlb';
     let activeView  = 'today';
 
@@ -1016,14 +1010,49 @@
         if (activeSport === 'nba') {
           historyData = historyData.map(p => ({ ...p, edge: parseFloat((p.edge * 100).toFixed(4)) }));
         }
-        renderSummaryStats(data.summary);
-        renderChart();
-        renderSplits(historyData);
-        renderHistoryTable();
+        applyHistoryFilters();
       } catch(e) {
         document.getElementById('summary-grid').innerHTML =
           `<div style="grid-column:1/-1;color:var(--red);font-size:0.875rem">Could not load history.</div>`;
       }
+    }
+
+    // Single set of filters (date range, result, side, odds) drives stats, chart, splits and table together
+    function getFilteredHistory() {
+      const dateVal   = document.getElementById('filter-date').value;
+      const resultVal = document.getElementById('filter-result').value;
+      const sideVal   = document.getElementById('filter-side').value;
+      const oddsVal   = document.getElementById('filter-odds').value;
+      let filtered = historyData;
+      if (dateVal !== 'all' && filtered.length) {
+        const days = parseInt(dateVal, 10);
+        const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
+        const cutoff = maxDate - days * 24 * 60 * 60 * 1000;
+        filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
+      }
+      if (resultVal !== 'all') filtered = filtered.filter(p => p.result === resultVal);
+      if (sideVal === 'home') filtered = filtered.filter(p => p.pick === p.home_team);
+      if (sideVal === 'away') filtered = filtered.filter(p => p.pick === p.away_team);
+      if (oddsVal === 'fav')  filtered = filtered.filter(p => p.line < 0);
+      if (oddsVal === 'dog')  filtered = filtered.filter(p => p.line > 0);
+      return filtered;
+    }
+
+    function computeSummary(picks) {
+      const wins = picks.filter(p=>p.result==='Win').length;
+      const losses = picks.filter(p=>p.result==='Loss').length;
+      const total_picks = wins + losses;
+      const win_rate = total_picks ? ((wins/total_picks)*100).toFixed(1) : '0.0';
+      const total_units = parseFloat(picks.reduce((a,b)=>a+(b.units||0),0).toFixed(2));
+      return { wins, losses, win_rate, total_units, total_picks };
+    }
+
+    function applyHistoryFilters() {
+      filteredHistory = getFilteredHistory();
+      renderSummaryStats(computeSummary(filteredHistory));
+      renderChart();
+      renderSplits(filteredHistory);
+      renderHistoryTable(filteredHistory);
     }
 
     function renderSummaryStats(s) {
@@ -1101,16 +1130,8 @@
       });
     }
 
-    function getChartData() {
-      if (chartDateFilter === 'all' || !historyData.length) return historyData;
-      const days = parseInt(chartDateFilter, 10);
-      const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
-      const cutoff = maxDate - days * 24 * 60 * 60 * 1000;
-      return historyData.filter(p => new Date(p.date).getTime() >= cutoff);
-    }
-
     function renderChart() {
-      const picks = getChartData();
+      const picks = filteredHistory;
       if (chartMode === 'roi') renderROICurve(picks);
       else renderEquityCurve(picks);
     }
@@ -1119,11 +1140,6 @@
       chartMode = mode;
       document.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
       document.getElementById('chart-title').textContent = mode === 'roi' ? 'Cumulative ROI %' : 'Cumulative Units (Equity Curve)';
-      renderChart();
-    }
-
-    function setChartDateFilter(value) {
-      chartDateFilter = value;
       renderChart();
     }
 
@@ -1201,21 +1217,12 @@
       renderSplitTable(activeSplit);
     }
 
-    function renderHistoryTable() {
-      const rf = document.getElementById('filter-result').value;
-      const sf = document.getElementById('filter-side').value;
-      const of = document.getElementById('filter-odds').value;
+    function renderHistoryTable(picks) {
       const showLine = activeSport !== 'mlb';
       const showConf = activeSport !== 'nba';
       document.getElementById('th-line').style.display = showLine ? '' : 'none';
       document.getElementById('th-conf').style.display = showConf ? '' : 'none';
-      let filtered = historyData;
-      if (rf !== 'all') filtered = filtered.filter(p=>p.result===rf);
-      if (sf === 'home') filtered = filtered.filter(p=>p.pick===p.home_team);
-      if (sf === 'away') filtered = filtered.filter(p=>p.pick===p.away_team);
-      if (of === 'fav')  filtered = filtered.filter(p=>p.line<0);
-      if (of === 'dog')  filtered = filtered.filter(p=>p.line>0);
-      filtered = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const filtered = [...picks].sort((a, b) => new Date(b.date) - new Date(a.date));
       const wins = filtered.filter(p=>p.result==='Win').length;
       const losses = filtered.filter(p=>p.result==='Loss').length;
       const units = filtered.reduce((a,b)=>a+(b.units||0),0);
