@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Game · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260813c" />
+  <link rel="stylesheet" href="css/style.css?v=20260813d" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     .back-link {
@@ -47,9 +47,9 @@
     }
     .section-card h2 {
       font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--gray-500); margin: 0 0 1rem;
+      text-transform: uppercase; color: var(--gray-600); margin: 0 0 1rem;
     }
-    .muted-note { color: var(--gray-500); font-size: 0.8125rem; text-align: center; padding: 1rem 0; margin: 0; }
+    .muted-note { color: var(--gray-600); font-size: 0.8125rem; text-align: center; padding: 1rem 0; margin: 0; }
 
     /* ── Live panel (bases + count) ────────────────────────────── */
     .live-panel { display: flex; align-items: center; justify-content: center; gap: 2.5rem; flex-wrap: wrap; }
@@ -68,13 +68,13 @@
     }
     .count-row { display: flex; gap: 1.5rem; }
     .count-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
-    .count-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; }
+    .count-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); letter-spacing: 0.06em; text-transform: uppercase; }
     .count-value { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; }
 
     /* ── Linescore table ───────────────────────────────────────── */
     .linescore-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
     .linescore-table th, .linescore-table td { padding: 0.4rem 0.5rem; text-align: center; }
-    .linescore-table th { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); border-bottom: 1px solid var(--border); }
+    .linescore-table th { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); border-bottom: 1px solid var(--border); }
     .linescore-table td.ls-team { text-align: left; font-weight: 700; }
     .linescore-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
 
@@ -94,16 +94,16 @@
     /* ── Starting pitchers ─────────────────────────────────────── */
     .pitchers-row { display: flex; gap: 1rem; flex-wrap: wrap; }
     .pitcher-card { flex: 1; min-width: 220px; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.9rem 1rem; }
-    .pc-team { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .pc-team { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.25rem; }
     .pc-name { font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .pc-stats { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; font-size: 0.8125rem; color: var(--gray-700); }
-    .pc-stats b { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--gray-500); margin-right: 0.25rem; }
+    .pc-stats { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; font-size: 0.8125rem; color: var(--gray-600); }
+    .pc-stats b { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--gray-600); margin-right: 0.25rem; }
 
     /* ── Win probability ───────────────────────────────────────── */
     .wp-current { display: flex; align-items: center; justify-content: space-around; margin-bottom: 1rem; }
     .wp-team { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
     .wp-dot { width: 9px; height: 9px; border-radius: 50%; }
-    .wp-abbr { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; display: flex; align-items: center; gap: 0.3rem; }
+    .wp-abbr { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); letter-spacing: 0.06em; text-transform: uppercase; display: flex; align-items: center; gap: 0.3rem; }
     .wp-arrow { font-size: 0.8125rem; line-height: 1; }
     .wp-pct { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; }
     .wp-chart-wrap { position: relative; height: 180px; }
