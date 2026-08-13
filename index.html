@@ -338,7 +338,7 @@
     .summary-grid .stat-card .stat-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
 
-    .splits-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+    .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
     .split-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
     .split-card-title { padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 1.125rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); background: var(--gray-50); }
     .split-row { display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
@@ -1186,11 +1186,9 @@
         ];
       }
 
-      const tabNames = Object.keys(splits);
-      let activeSplit = tabNames[0];
-
-      function renderSplitTable(tabName) {
-        const rows = splits[tabName].map(([label, arr]) => {
+      // All breakdowns are always shown together, driven solely by the filters up top (no separate tab/filter here)
+      const cards = Object.entries(splits).map(([tabName, rows]) => {
+        const rowsHtml = rows.map(([label, arr]) => {
           const s = calcSplit(arr);
           const wr = parseFloat(s.wr);
           const cls = isNaN(wr) ? '' : wrClass(wr);
@@ -1204,28 +1202,13 @@
             <span class="split-winrate ${cls}">${s.wr}%</span>
           </div>`;
         }).join('');
-        document.getElementById('split-table-body').innerHTML = rows;
-      }
-
-      function setActiveTab(name) {
-        activeSplit = name;
-        renderSplitTable(name);
-      }
-
-      document.getElementById('splits-grid').innerHTML = `
-        <div class="split-card" style="grid-column:1/-1">
-          <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border)">
-            <select class="filter-select split-select" id="split-select">
-              ${tabNames.map(name => `<option value="${name}" ${name===activeSplit?'selected':''}>${name}</option>`).join('')}
-            </select>
-          </div>
-          <div id="split-table-body"></div>
+        return `<div class="split-card">
+          <div class="split-card-title">${tabName}</div>
+          ${rowsHtml}
         </div>`;
+      }).join('');
 
-      // Attach change handler after DOM insertion
-      document.getElementById('split-select').addEventListener('change', e => setActiveTab(e.target.value));
-
-      renderSplitTable(activeSplit);
+      document.getElementById('splits-grid').innerHTML = cards;
     }
 
     function renderHistoryTable(picks) {
