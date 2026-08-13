@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Game · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260805" />
+  <link rel="stylesheet" href="css/style.css?v=20260813c" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     .back-link {
       display: inline-flex; align-items: center; gap: 0.35rem;
-      font-family: var(--font-mono); font-size: 0.8rem; color: var(--gray-600);
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600);
       text-decoration: none; margin: 1.5rem 0 1rem; transition: var(--transition);
     }
     .back-link:hover { color: var(--text); }
@@ -27,18 +27,18 @@
     .gh-logo-fallback {
       width: 56px; height: 56px; border-radius: var(--radius); background: var(--gray-100);
       align-items: center; justify-content: center; font-family: var(--font-mono);
-      font-size: 0.8rem; font-weight: 700; color: var(--gray-600);
+      font-size: 0.75rem; font-weight: 700; color: var(--gray-600);
     }
-    .gh-abbr { font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; }
-    .gh-name { font-size: 0.72rem; color: var(--gray-600); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+    .gh-abbr { font-family: var(--font-display); font-size: 1.125rem; font-weight: 800; }
+    .gh-name { font-size: 0.8125rem; color: var(--gray-600); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
     .gh-center { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0 0.75rem; }
-    .gh-score { font-family: var(--font-display); font-size: 2.1rem; font-weight: 800; line-height: 1; }
+    .gh-score { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; line-height: 1; }
     .gh-time { font-family: var(--font-mono); font-size: 1rem; color: var(--gray-600); }
     .gh-status { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); white-space: nowrap; }
     .gh-status.live { color: #FCA5A5; display: flex; align-items: center; gap: 0.3rem; }
     .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #FCA5A5; animation: pulse-dot 1.4s infinite; }
     @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .gh-meta { text-align: center; font-size: 0.78rem; color: var(--gray-600); margin-bottom: 1.5rem; }
+    .gh-meta { text-align: center; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 1.5rem; }
 
     /* ── Section card ──────────────────────────────────────────── */
     .section-card {
@@ -46,10 +46,10 @@
       padding: 1.25rem 1.25rem 1.5rem; margin-bottom: 1.25rem;
     }
     .section-card h2 {
-      font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
       text-transform: uppercase; color: var(--gray-500); margin: 0 0 1rem;
     }
-    .muted-note { color: var(--gray-500); font-size: 0.85rem; text-align: center; padding: 1rem 0; margin: 0; }
+    .muted-note { color: var(--gray-500); font-size: 0.8125rem; text-align: center; padding: 1rem 0; margin: 0; }
 
     /* ── Live panel (bases + count) ────────────────────────────── */
     .live-panel { display: flex; align-items: center; justify-content: center; gap: 2.5rem; flex-wrap: wrap; }
@@ -68,55 +68,55 @@
     }
     .count-row { display: flex; gap: 1.5rem; }
     .count-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
-    .count-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; }
-    .count-value { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; }
+    .count-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; }
+    .count-value { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; }
 
     /* ── Linescore table ───────────────────────────────────────── */
-    .linescore-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .linescore-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
     .linescore-table th, .linescore-table td { padding: 0.4rem 0.5rem; text-align: center; }
-    .linescore-table th { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); border-bottom: 1px solid var(--border); }
+    .linescore-table th { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); border-bottom: 1px solid var(--border); }
     .linescore-table td.ls-team { text-align: left; font-weight: 700; }
     .linescore-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
 
     /* ── Team stat comparison ──────────────────────────────────── */
     .stat-cat-title {
-      font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em;
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
       text-transform: uppercase; color: var(--purple-600); margin: 1.1rem 0 0.5rem;
     }
     .stat-cat-title:first-child { margin-top: 0; }
     .stat-compare-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border); }
     .stat-compare-row:last-child { border-bottom: none; }
-    .sc-val { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; width: 3.5rem; flex-shrink: 0; }
+    .sc-val { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 700; width: 3.5rem; flex-shrink: 0; }
     .sc-val.away { text-align: left; }
     .sc-val.home { text-align: right; }
-    .sc-label { flex: 1; text-align: center; font-size: 0.78rem; color: var(--gray-600); }
+    .sc-label { flex: 1; text-align: center; font-size: 0.75rem; color: var(--gray-600); }
 
     /* ── Starting pitchers ─────────────────────────────────────── */
     .pitchers-row { display: flex; gap: 1rem; flex-wrap: wrap; }
     .pitcher-card { flex: 1; min-width: 220px; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.9rem 1rem; }
-    .pc-team { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.25rem; }
-    .pc-name { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .pc-stats { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; font-size: 0.8rem; color: var(--gray-700); }
-    .pc-stats b { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gray-500); margin-right: 0.25rem; }
+    .pc-team { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .pc-name { font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .pc-stats { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; font-size: 0.8125rem; color: var(--gray-700); }
+    .pc-stats b { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--gray-500); margin-right: 0.25rem; }
 
     /* ── Win probability ───────────────────────────────────────── */
     .wp-current { display: flex; align-items: center; justify-content: space-around; margin-bottom: 1rem; }
     .wp-team { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
     .wp-dot { width: 9px; height: 9px; border-radius: 50%; }
-    .wp-abbr { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; display: flex; align-items: center; gap: 0.3rem; }
-    .wp-arrow { font-size: 0.6rem; line-height: 1; }
-    .wp-pct { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; }
+    .wp-abbr { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-500); letter-spacing: 0.06em; text-transform: uppercase; display: flex; align-items: center; gap: 0.3rem; }
+    .wp-arrow { font-size: 0.8125rem; line-height: 1; }
+    .wp-pct { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; }
     .wp-chart-wrap { position: relative; height: 180px; }
 
     @media (max-width: 580px) {
       .game-header { padding: 1.1rem 0.75rem; }
       .gh-logo, .gh-logo-fallback { width: 42px; height: 42px; }
-      .gh-score { font-size: 1.6rem; }
+      .gh-score { font-size: 1.75rem; }
       .gh-name { max-width: 90px; }
       .live-panel { gap: 1.5rem; }
       .wp-current { gap: 0.5rem; }
-      .wp-abbr { font-size: 0.6rem; gap: 0.22rem; }
-      .wp-pct { font-size: 1.2rem; }
+      .wp-abbr { font-size: 0.75rem; gap: 0.22rem; }
+      .wp-pct { font-size: 1.75rem; }
       .wp-chart-wrap { height: 150px; }
     }
   </style>
@@ -132,12 +132,13 @@
     <aside class="sidebar" id="sidebar"></aside>
     <div class="sidebar-content">
   <main class="page">
-    <div class="container" style="max-width: 760px;">
+    <div class="container" style="max-width: 900px;">
       <a class="back-link" href="scoreboard.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         Back to Scoreboard
       </a>
       <div id="game-root"><div class="loading-state"><div class="spinner"></div> Loading game...</div></div>
+      <div id="site-disclaimer"></div>
     </div>
   </main>
 
@@ -148,7 +149,7 @@
     </div><!-- end sidebar-content -->
   </div><!-- end app-layout -->
 
-  <script src="js/nav.js?v=20260812"></script>
+  <script src="js/nav.js?v=20260813"></script>
   <script>
     buildNav('scoreboard.html');
 

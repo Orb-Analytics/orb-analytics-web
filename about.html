@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>About Us · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260812" />
+  <link rel="stylesheet" href="css/style.css?v=20260813c" />
   <style>
     /* ── Page layout ─────────────────────────────────────────────── */
     .about-page {
-      max-width: 880px;
+      max-width: 1080px;
       margin: 0 auto;
       padding: 2.5rem 1rem 4rem;
     }
@@ -17,7 +17,7 @@
     /* ── Hero ───────────────────────────────────────────────────── */
     .about-eyebrow {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -41,7 +41,7 @@
     /* ── Section labels ─────────────────────────────────────────── */
     .about-section-label {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -58,20 +58,40 @@
 
     /* ── Mission callout card ────────────────────────────────────── */
     .mission-card {
-      background: var(--purple-100);
+      background: var(--surface);
       border: 1px solid rgba(107,33,168,0.15);
       border-left: 4px solid var(--purple-600);
       border-radius: var(--radius-lg);
-      padding: 1.5rem 1.75rem;
+      padding: 2.25rem 1.75rem;
       margin: 2rem 0;
     }
     body.dark .mission-card {
-      background: rgba(107,33,168,0.12);
       border-color: rgba(168,85,247,0.25);
       border-left-color: var(--purple-600);
     }
     .mission-card p { font-size: 1rem; line-height: 1.7; color: var(--text); margin: 0; }
     .mission-card strong { color: var(--purple-600); }
+
+    /* ── Value proposition / Mission grid ──────────────────────────── */
+    .about-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    .about-col { display: flex; flex-direction: column; }
+    .about-two-col .mission-card,
+    .about-two-col .value-card { flex: 1; margin: 0; }
+    @media (max-width: 700px) {
+      .about-two-col { grid-template-columns: 1fr; }
+    }
+    .value-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem 1.75rem;
+    }
+    .value-card p { font-size: 1rem; line-height: 1.7; color: var(--text); margin: 0; }
 
     /* ── Stats row ───────────────────────────────────────────────── */
     .stats-row {
@@ -85,12 +105,12 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 1.25rem 1rem;
+      padding: 2rem 1rem;
       text-align: center;
     }
     .stat-value {
       font-family: var(--font-display);
-      font-size: 1.7rem;
+      font-size: 1.75rem;
       font-weight: 900;
       color: var(--purple-600);
       line-height: 1;
@@ -151,7 +171,7 @@
       align-items: center;
       justify-content: center;
       font-family: var(--font-display);
-      font-size: 1.2rem;
+      font-size: 1.375rem;
       font-weight: 900;
       color: white;
     }
@@ -171,7 +191,7 @@
 
     .member-name {
       font-family: var(--font-display);
-      font-size: 0.88rem;
+      font-size: 1.125rem;
       font-weight: 800;
       color: var(--text);
       line-height: 1.2;
@@ -179,18 +199,18 @@
     }
     .member-handle {
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.8125rem;
       color: var(--purple-600);
       font-weight: 600;
     }
     .member-bio {
-      font-size: 0.77rem;
+      font-size: 0.8125rem;
       color: var(--gray-600);
       line-height: 1.45;
       flex: 1;
     }
     .member-role-badge {
-      font-size: 0.62rem;
+      font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -212,7 +232,7 @@
       border: none;
       border-radius: var(--radius-pill);
       font-family: var(--font-body);
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
       text-decoration: none;
       transition: opacity var(--transition), transform var(--transition);
@@ -247,7 +267,7 @@
 
     .post-type {
       font-family: var(--font-mono);
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -261,14 +281,14 @@
 
     .post-title {
       font-family: var(--font-display);
-      font-size: 0.92rem;
+      font-size: 1.125rem;
       font-weight: 800;
       color: var(--text);
       line-height: 1.3;
     }
     .post-date {
       font-family: var(--font-mono);
-      font-size: 0.68rem;
+      font-size: 0.75rem;
       color: var(--gray-500);
       margin-top: auto;
     }
@@ -287,13 +307,13 @@
     }
     .subscribe-banner-text h3 {
       font-family: var(--font-display);
-      font-size: 1.2rem;
+      font-size: 1.375rem;
       font-weight: 900;
       color: white;
       margin-bottom: 0.3rem;
     }
     .subscribe-banner-text p {
-      font-size: 0.88rem;
+      font-size: 0.875rem;
       color: rgba(255,255,255,0.82);
       margin: 0;
     }
@@ -306,7 +326,7 @@
       color: var(--purple-600);
       border-radius: var(--radius-pill);
       font-family: var(--font-body);
-      font-size: 0.88rem;
+      font-size: 0.875rem;
       font-weight: 700;
       text-decoration: none;
       transition: opacity var(--transition), transform var(--transition);
@@ -315,28 +335,8 @@
     .subscribe-banner-btn:hover { opacity: 0.92; transform: translateY(-1px); }
     .subscribe-banner-btn svg { width: 15px; height: 15px; fill: #FF6719; }
 
-    /* ── Sign-off & disclaimer ───────────────────────────────────── */
-    .sign-off { margin-top: 2rem; font-size: 0.92rem; color: var(--gray-600); font-style: italic; }
-
-    .disclaimer-block {
-      background: var(--gray-50);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem 1.75rem;
-      margin-top: 3rem;
-    }
-    body.dark .disclaimer-block { background: var(--gray-100); }
-    .disclaimer-label {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gray-600);
-      margin-bottom: 0.75rem;
-    }
-    .disclaimer-text { font-size: 0.82rem; line-height: 1.65; color: var(--gray-600); }
-    .disclaimer-text p + p { margin-top: 0.75rem; }
+    /* ── Sign-off ───────────────────────────────────────────────── */
+    .sign-off { margin-top: 2rem; font-size: 0.8125rem; color: var(--gray-600); font-style: italic; }
   </style>
 </head>
 <body>
@@ -355,27 +355,31 @@
         <h1 class="about-headline">Clarity in the Chaos</h1>
         <div class="about-divider"></div>
 
-        <!-- ── Value proposition ─────────────────────────────────── -->
-        <div class="about-section-label">Our Value Proposition</div>
-        <p class="about-body">
-          The sports gambling market is fragmented by design — scores on ESPN, headlines on Reddit,
-          lines and line movement scattered across third-party apps. Staying informed means
-          constant context-switching between a dozen sources before you can form an educated opinion on a single bet.
-        </p>
-        <p class="about-body">
-          Orb Analytics was built to eliminate that friction. We distill the macro professional sports
-          landscape — live scores, model-driven spread picks, injury reports, editorial analysis,
-          and podcast commentary — into a single, vertically integrated platform. Everything that
-          informs a bet, in one place.
-        </p>
+        <!-- ── Mission & Value proposition ─────────────────────────── -->
+        <div class="about-two-col">
+          <div class="about-col">
+            <div class="about-section-label">Our Mission Statement</div>
+            <div class="mission-card">
+              <p>
+                Our mission is to bring <strong>transparency to the sports gambling market</strong>.
+                Using Python-powered predictive models, Orb delivers data-driven betting insights
+                across the NFL, NBA, and MLB, paired with accessible content through our newsletter,
+                podcast, and analysis on Substack. <strong>Every pick, win, loss, and unit is tracked publicly.</strong>
+              </p>
+            </div>
+          </div>
 
-        <div class="mission-card">
-          <p>
-            Our mission is to bring <strong>transparency to the sports gambling market</strong>.
-            Using Python-powered predictive models, Orb delivers data-driven betting insights
-            across the NFL, NBA, and MLB, paired with accessible content through our newsletter,
-            podcast, and analysis on Substack. <strong>Every pick, win, loss, and unit is tracked publicly.</strong>
-          </p>
+          <div class="about-col">
+            <div class="about-section-label">Our Value Proposition</div>
+            <div class="value-card">
+              <p>
+                The sports gambling market is fragmented by design — scores on ESPN, headlines on Reddit,
+                lines and line movement scattered across third-party apps. Staying informed means constant
+                context-switching between a dozen sources. Orb Analytics was built to eliminate that friction.
+                We distill the macro professional sports landscape into a single, vertically integrated platform.
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- ── Stats ─────────────────────────────────────────────── -->
@@ -611,14 +615,7 @@
         </div>
 
         <!-- ── Disclaimer ─────────────────────────────────────────── -->
-        <div class="disclaimer-block">
-          <div class="disclaimer-label">Disclaimer</div>
-          <div class="disclaimer-text">
-            <p>The information provided on this website is for informational purposes only. It is not intended to be gambling or financial advice, and should not be relied upon as such. We are not responsible for any actions or decisions taken by readers based on the information provided on this website.</p>
-            <p>The picks and predictions provided on this website are based on our own research and analysis, and are intended to be used for entertainment and informational purposes only. We do not guarantee the accuracy or completeness of the information provided, and we are not responsible for any losses or damages incurred as a result of using this information for gambling or other purposes.</p>
-            <p>By accessing and using this website, you acknowledge and agree to the terms of this disclaimer, and you assume all risks and liabilities associated with your use of the information provided on this website.</p>
-          </div>
-        </div>
+        <div id="site-disclaimer"></div>
 
       </div><!-- end about-page -->
     </div>
@@ -631,7 +628,7 @@
     </div><!-- end sidebar-content -->
   </div><!-- end app-layout -->
 
-  <script src="js/nav.js?v=20260812"></script>
+  <script src="js/nav.js?v=20260813"></script>
   <script>buildNav('about.html');</script>
 </body>
 </html>
