@@ -481,26 +481,28 @@
           <!-- MODEL HISTORY -->
           <div class="tab-panel" id="panel-history">
             <div class="history-controls">
+              <select class="filter-select" id="filter-category" onchange="applyHistoryFilters()">
+                <option value="all">All Picks</option>
+                <optgroup label="Home vs Away">
+                  <option value="home">Home Picks</option>
+                  <option value="away">Away Picks</option>
+                </optgroup>
+                <optgroup label="Favorite vs Underdog">
+                  <option value="fav">Favorites</option>
+                  <option value="dog">Underdogs</option>
+                </optgroup>
+                <optgroup label="Edge Tiers">
+                  <option value="edge-high">High Edge (≥3%)</option>
+                  <option value="edge-mid">Mid Edge (1–3%)</option>
+                  <option value="edge-low">Low Edge (&lt;1%)</option>
+                </optgroup>
+              </select>
               <select class="filter-select" id="filter-date" onchange="applyHistoryFilters()">
                 <option value="all">All Time</option>
+                <option value="1">Last 1 Day</option>
                 <option value="7">Last 7 Days</option>
-                <option value="14">Last 14 Days</option>
-                <option value="30">Last 30 Days</option>
-              </select>
-              <select class="filter-select" id="filter-result" onchange="applyHistoryFilters()">
-                <option value="all">All Results</option>
-                <option value="Win">Wins Only</option>
-                <option value="Loss">Losses Only</option>
-              </select>
-              <select class="filter-select" id="filter-side" onchange="applyHistoryFilters()">
-                <option value="all">Home & Away</option>
-                <option value="home">Home Picks</option>
-                <option value="away">Away Picks</option>
-              </select>
-              <select class="filter-select" id="filter-odds" onchange="applyHistoryFilters()">
-                <option value="all">All Odds</option>
-                <option value="fav">Favorites</option>
-                <option value="dog">Underdogs</option>
+                <option value="31">Last 31 Days</option>
+                <option value="season">Season to Date</option>
               </select>
               <span id="filter-count" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);margin-left:auto"></span>
             </div>
@@ -1017,24 +1019,39 @@
       }
     }
 
-    // Single set of filters (date range, result, side, odds) drives stats, chart, splits and table together
+    // Season start heuristic per sport (used by the "Season to Date" date-range option)
+    const SEASON_START_MONTH = { mlb: 2, nfl: 8, nba: 9 }; // Mar, Sep, Oct (0-indexed)
+    function getSeasonStartDate() {
+      const now = new Date();
+      const month = SEASON_START_MONTH[activeSport] ?? 0;
+      let year = now.getFullYear();
+      if (now.getMonth() < month) year -= 1;
+      return new Date(year, month, 1);
+    }
+
+    // Single set of filters (category + date range) drives stats, chart, splits and table together
     function getFilteredHistory() {
-      const dateVal   = document.getElementById('filter-date').value;
-      const resultVal = document.getElementById('filter-result').value;
-      const sideVal   = document.getElementById('filter-side').value;
-      const oddsVal   = document.getElementById('filter-odds').value;
+      const categoryVal = document.getElementById('filter-category').value;
+      const dateVal     = document.getElementById('filter-date').value;
       let filtered = historyData;
       if (dateVal !== 'all' && filtered.length) {
-        const days = parseInt(dateVal, 10);
-        const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
-        const cutoff = maxDate - days * 24 * 60 * 60 * 1000;
+        let cutoff;
+        if (dateVal === 'season') {
+          cutoff = getSeasonStartDate().getTime();
+        } else {
+          const days = parseInt(dateVal, 10);
+          const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
+          cutoff = maxDate - days * 24 * 60 * 60 * 1000;
+        }
         filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
       }
-      if (resultVal !== 'all') filtered = filtered.filter(p => p.result === resultVal);
-      if (sideVal === 'home') filtered = filtered.filter(p => p.pick === p.home_team);
-      if (sideVal === 'away') filtered = filtered.filter(p => p.pick === p.away_team);
-      if (oddsVal === 'fav')  filtered = filtered.filter(p => p.line < 0);
-      if (oddsVal === 'dog')  filtered = filtered.filter(p => p.line > 0);
+      if (categoryVal === 'home')      filtered = filtered.filter(p => p.pick === p.home_team);
+      else if (categoryVal === 'away') filtered = filtered.filter(p => p.pick === p.away_team);
+      else if (categoryVal === 'fav')  filtered = filtered.filter(p => p.line < 0);
+      else if (categoryVal === 'dog')  filtered = filtered.filter(p => p.line > 0);
+      else if (categoryVal === 'edge-high') filtered = filtered.filter(p => p.edge >= 3);
+      else if (categoryVal === 'edge-mid')  filtered = filtered.filter(p => p.edge >= 1 && p.edge < 3);
+      else if (categoryVal === 'edge-low')  filtered = filtered.filter(p => p.edge < 1);
       return filtered;
     }
 
