@@ -309,9 +309,10 @@
     const eraCache  = {};
 
     let oddsMap = {}; // "AWAY|HOME" → { awayLine, homeLine, pick }
-    // Map ESPN abbrs → model abbrs where they differ
+    // Map ESPN abbrs → model abbrs where they differ. ESPN now uses WSH/CHW directly
+    // (matching the model), so only the Athletics OAK/ATH rename still needs this.
     const ESPN_TO_MODEL = {
-      'ATH': 'OAK', 'WAS': 'WSH', 'CWS': 'CHW'
+      'ATH': 'OAK'
     };
     function toModelAbbr(abbr) {
       return ESPN_TO_MODEL[abbr] || abbr;

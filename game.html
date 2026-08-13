@@ -162,8 +162,9 @@
     const awayParam  = params.get('away');
     const homeParam  = params.get('home');
 
-    // Map ESPN abbrs → model abbrs where they differ (and back)
-    const ESPN_TO_MODEL = { 'ATH': 'OAK', 'WAS': 'WSH', 'CWS': 'CHW' };
+    // Map ESPN abbrs → model abbrs where they differ (and back). ESPN now uses WSH/CHW
+    // directly (matching the model), so only the Athletics OAK/ATH rename still needs this.
+    const ESPN_TO_MODEL = { 'ATH': 'OAK' };
     const MODEL_TO_ESPN = Object.fromEntries(Object.entries(ESPN_TO_MODEL).map(([e, m]) => [m, e]));
     const toEspnAbbr = a => (MODEL_TO_ESPN[a] || a || '').toUpperCase();
 
