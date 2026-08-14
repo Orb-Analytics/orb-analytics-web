@@ -518,7 +518,7 @@
                 <table class="data-table" id="history-table">
                   <thead><tr>
                     <th>Date</th><th>Matchup</th><th>Pick</th><th id="th-line">Line</th>
-                    <th>Odds</th><th>Edge</th><th id="th-conf">Conf</th><th>Result</th><th>Units</th>
+                    <th>Odds</th><th id="th-edge">Edge</th><th id="th-conf">Conf</th><th>Result</th><th>Units</th>
                   </tr></thead>
                   <tbody id="history-tbody"></tbody>
                 </table>
@@ -681,7 +681,7 @@
     const HISTORY_URLS = {
       mlb: 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions_history.json',
       nba: 'https://raw.githubusercontent.com/Orb-Analytics/NBA-Model/main/nba_predictions_history.json',
-      nfl: null
+      nfl: 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Model/main/predictions_history.json'
     };
 
     const TEAM_ESPN = {
@@ -1411,7 +1411,10 @@
         ],
       };
 
-      if (activeSport !== 'nba') {
+      // NFL history has no edge/confidence data yet (see renderHistoryTable) --
+      // skip these tiers rather than showing every NFL pick lumped into a
+      // single misleading bucket (was already skipped for nba).
+      if (activeSport !== 'nba' && activeSport !== 'nfl') {
         splits['Confidence Tiers'] = [
           ['High (≥60%)',  picks.filter(p=>p.confidence>=0.60)],
           ['Mid (52–60%)', picks.filter(p=>p.confidence>=0.52&&p.confidence<0.60)],
@@ -1451,8 +1454,14 @@
 
     function renderHistoryTable(picks) {
       const showLine = activeSport !== 'mlb';
-      const showConf = activeSport !== 'nba';
+      // NFL's historical picks CSV has no edge or confidence data yet (only
+      // season/week/pick/odds/result) -- hide those columns rather than show
+      // misleading "+null%"/50% placeholders. Revisit once real edge/confidence
+      // is tracked for NFL history the way it already is for live picks.
+      const showConf = activeSport !== 'nba' && activeSport !== 'nfl';
+      const showEdge = activeSport !== 'nfl';
       document.getElementById('th-line').style.display = showLine ? '' : 'none';
+      document.getElementById('th-edge').style.display = showEdge ? '' : 'none';
       document.getElementById('th-conf').style.display = showConf ? '' : 'none';
       const filtered = [...picks].sort((a, b) => new Date(b.date) - new Date(a.date));
       const wins = filtered.filter(p=>p.result==='Win').length;
@@ -1460,7 +1469,7 @@
       const units = filtered.reduce((a,b)=>a+(b.units||0),0);
       document.getElementById('filter-count').textContent = `${filtered.length} picks · ${wins}W-${losses}L · ${units>=0?'+':''}${units.toFixed(2)}u`;
       const tbody = document.getElementById('history-tbody');
-      const colCount = 7 + (showLine ? 1 : 0) + (showConf ? 1 : 0);
+      const colCount = 6 + (showLine ? 1 : 0) + (showEdge ? 1 : 0) + (showConf ? 1 : 0);
       if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--gray-600);padding:2rem">No picks match filters.</td></tr>`; return; }
       tbody.innerHTML = filtered.map(p => {
         const badgeClass = p.result==='Win'?'badge-win':'badge-loss';
@@ -1482,7 +1491,7 @@
           <td data-label="Pick" style="font-weight:600;font-size:0.875rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-600);font-size:0.8125rem">${side}</span></td>
           ${showLine ? `<td data-label="Line" style="font-family:var(--font-mono);font-size:0.875rem">${spread}</td>` : ''}
           <td data-label="Odds" style="font-family:var(--font-mono);font-size:0.875rem">${fmtOdds(p.line)}</td>
-          <td data-label="Edge" style="font-family:var(--font-mono);font-size:0.875rem;color:var(--purple-300)">+${p.edge}%</td>
+          ${showEdge ? `<td data-label="Edge" style="font-family:var(--font-mono);font-size:0.875rem;color:var(--purple-300)">${p.edge!=null?`+${p.edge}%`:'—'}</td>` : ''}
           ${showConf ? `<td data-label="Conf" style="font-family:var(--font-mono);font-size:0.875rem;color:var(--muted)">${confPct}%</td>` : ''}
           <td data-label="Result"><span class="badge ${badgeClass}">${p.result}</span></td>
           <td data-label="Units" class="${uCls}">${uDisp}</td>
