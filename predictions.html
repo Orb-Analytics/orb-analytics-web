@@ -993,6 +993,21 @@
       return line > 0 ? `+${line}` : `${line}`;
     }
 
+    // Favorite/underdog status. For a MONEYLINE sport (MLB), the sign of the
+    // odds itself tells you: negative = favorite, positive = underdog. For a
+    // SPREAD sport (NFL), that's wrong -- both sides of a spread are usually
+    // priced around -110 regardless of which team is actually favored, so
+    // odds sign reflects the book's vig, not favorite/underdog status. NFL
+    // history/live picks carry an explicit `is_favorite` boolean (derived
+    // from the actual spread, not the odds) for exactly this reason; fall
+    // back to the odds-sign heuristic only when that field isn't present.
+    function isFavoritePick(p) {
+      return p.is_favorite != null ? p.is_favorite : p.line < 0;
+    }
+    function isUnderdogPick(p) {
+      return p.is_favorite != null ? !p.is_favorite : p.line > 0;
+    }
+
     // ── Pitcher fetch ─────────────────────────────────────────────
     async function fetchProbablePitchers() {
       try {
@@ -1279,8 +1294,8 @@
       }
       if (categoryVal === 'home')      filtered = filtered.filter(p => p.pick === p.home_team);
       else if (categoryVal === 'away') filtered = filtered.filter(p => p.pick === p.away_team);
-      else if (categoryVal === 'fav')  filtered = filtered.filter(p => p.line < 0);
-      else if (categoryVal === 'dog')  filtered = filtered.filter(p => p.line > 0);
+      else if (categoryVal === 'fav')  filtered = filtered.filter(isFavoritePick);
+      else if (categoryVal === 'dog')  filtered = filtered.filter(isUnderdogPick);
       else if (categoryVal === 'edge-high') filtered = filtered.filter(p => p.edge >= 3);
       else if (categoryVal === 'edge-mid')  filtered = filtered.filter(p => p.edge >= 1 && p.edge < 3);
       else if (categoryVal === 'edge-low')  filtered = filtered.filter(p => p.edge < 1);
@@ -1406,8 +1421,8 @@
           ['Away Picks', picks.filter(p=>p.pick===p.away_team)],
         ],
         'Favorites vs Underdogs': [
-          ['Favorites', picks.filter(p=>p.line<0)],
-          ['Underdogs', picks.filter(p=>p.line>0)],
+          ['Favorites', picks.filter(isFavoritePick)],
+          ['Underdogs', picks.filter(isUnderdogPick)],
         ],
       };
 
