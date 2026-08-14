@@ -465,9 +465,8 @@
               </div>
             </div>
             <div id="picks-nfl" style="display:none">
-              <div class="empty-state" style="padding:3rem 1rem">
-                <p style="font-size:0.875rem;font-weight:600;color:var(--text);margin-bottom:0.3rem">NFL Model Coming Soon</p>
-                <p style="color:var(--gray-600);font-size:0.875rem">Predictions will appear once the season begins.</p>
+              <div class="picks-grid" id="picks-container-nfl">
+                <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
               </div>
             </div>
             <div id="picks-nba" style="display:none">
@@ -711,12 +710,250 @@
         <div class="pick-team-logo-fallback" style="width:${size}px;height:${size}px;display:none">${abbr}</div>`;
     }
 
+    // ── NFL ───────────────────────────────────────────────────────
+    // Kept fully separate from the MLB functions above rather than
+    // generalizing them with a sport parameter -- MLB's picks.json shape
+    // (moneyline "line", probable-pitcher/ERA cards) is genuinely
+    // different enough from NFL's (spread "line" + separate spread
+    // number, no pitcher concept) that a shared function would need
+    // several sport branches anyway, and this repo's MLB integration is
+    // live in production -- not worth the regression risk to touch it.
+    const NFL_PREDICTIONS_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Model/main/predictions.json';
+
+    // home_team/away_team/pick in NFL-Model's predictions.json are
+    // nflverse's own team abbreviations. ESPN's NFL logo path uses ESPN's
+    // own (mostly identical) abbreviations -- confirmed mismatches:
+    // Washington (nflverse "WAS" vs ESPN "wsh") and the Rams (nflverse
+    // sometimes "LA" vs ESPN "lar"), the same two mismatches the NFL
+    // model's own Novig client had to handle.
+    const TEAM_ESPN_NFL = {
+      ARI:'ari', ATL:'atl', BAL:'bal', BUF:'buf', CAR:'car', CHI:'chi', CIN:'cin', CLE:'cle',
+      DAL:'dal', DEN:'den', DET:'det', GB:'gb', HOU:'hou', IND:'ind', JAX:'jax', KC:'kc',
+      LA:'lar', LAR:'lar', LAC:'lac', LV:'lv', MIA:'mia', MIN:'min', NE:'ne', NO:'no',
+      NYG:'nyg', NYJ:'nyj', PHI:'phi', PIT:'pit', SEA:'sea', SF:'sf', TB:'tb', TEN:'ten',
+      WAS:'wsh', WSH:'wsh'
+    };
+    const NFL_MODEL_TO_ESPN = { WAS: 'WSH', LA: 'LAR' };
+    const toEspnAbbrNFL = a => (NFL_MODEL_TO_ESPN[a] || a || '').toUpperCase();
+
+    function teamLogoURLNFL(abbr) {
+      const espn = TEAM_ESPN_NFL[abbr];
+      return espn ? `https://a.espncdn.com/i/teamlogos/nfl/500/${espn}.png` : null;
+    }
+
+    function teamLogoHTMLNFL(abbr, size = 48) {
+      const url = teamLogoURLNFL(abbr);
+      if (!url) return `<div class="pick-team-logo-fallback" style="width:${size}px;height:${size}px">${abbr}</div>`;
+      return `<img class="pick-team-logo" src="${url}" alt="${abbr}" style="width:${size}px;height:${size}px"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="pick-team-logo-fallback" style="width:${size}px;height:${size}px;display:none">${abbr}</div>`;
+    }
+
+    async function fetchNFLScoreboard() {
+      try {
+        const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard');
+        const data = await r.json();
+        return data.events || [];
+      } catch { return []; }
+    }
+
+    function matchEspnEventNFL(events, pick) {
+      const wantAway = toEspnAbbrNFL(pick.away_team);
+      const wantHome = toEspnAbbrNFL(pick.home_team);
+      return events.find(ev => {
+        const comp = ev.competitions?.[0];
+        const away = comp?.competitors?.find(c => c.homeAway === 'away');
+        const home = comp?.competitors?.find(c => c.homeAway === 'home');
+        return away?.team?.abbreviation?.toUpperCase() === wantAway && home?.team?.abbreviation?.toUpperCase() === wantHome;
+      }) || null;
+    }
+
+    // Same shape/logic as buildLiveInfo (MLB) -- for each pick, find its
+    // live ESPN game (if any) and pull status, score, and (for
+    // in-progress games only) the picked team's live win probability.
+    async function buildLiveInfoNFL(picks, events) {
+      return Promise.all(picks.map(async pick => {
+        const ev = matchEspnEventNFL(events, pick);
+        if (!ev) return null;
+        const comp    = ev.competitions?.[0];
+        const status  = ev.status;
+        const isLive  = status?.type?.state === 'in';
+        const isFinal = status?.type?.state === 'post';
+        if (!isLive && !isFinal) return null;
+
+        const isPickHome = pick.pick === pick.home_team;
+        const home = comp?.competitors?.find(c => c.homeAway === 'home');
+        const away = comp?.competitors?.find(c => c.homeAway === 'away');
+        const awayScore = parseInt(away?.score ?? 0);
+        const homeScore = parseInt(home?.score ?? 0);
+        const pickScore = isPickHome ? homeScore : awayScore;
+        const oppScore  = isPickHome ? awayScore : homeScore;
+
+        const info = {
+          isLive, isFinal, awayScore, homeScore,
+          isCorrect: pickScore === oppScore ? null : pickScore > oppScore,
+          statusText: status?.type?.detail || status?.type?.shortDetail || (isFinal ? 'Final' : ''),
+          winPct: null,
+        };
+
+        if (isLive) {
+          try {
+            const r    = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${ev.id}`);
+            const data = await r.json();
+            const wp   = data.winprobability || [];
+            if (wp.length) {
+              const last    = wp[wp.length - 1];
+              const homePct = (last.homeWinPercentage ?? 0.5) * 100;
+              info.winPct = isPickHome ? homePct : (100 - homePct);
+            }
+          } catch {}
+        }
+        return info;
+      }));
+    }
+
+    let nflTodayRefreshTimer = null;
+
+    async function loadTodayNFL() {
+      if (nflTodayRefreshTimer) { clearTimeout(nflTodayRefreshTimer); nflTodayRefreshTimer = null; }
+      const container = document.getElementById('picks-container-nfl');
+      try {
+        const [picksData, scoreboardEvents] = await Promise.all([
+          fetch(NFL_PREDICTIONS_URL).then(r => r.json()),
+          fetchNFLScoreboard()
+        ]);
+
+        if (picksData.generated_at) {
+          generatedAtBySport.nfl = picksData.generated_at;
+          if (activeSport === 'nfl') updateLastUpdatedLabel();
+        }
+
+        // NFL-Model's predictions.json (unlike the documented schema)
+        // writes every scored game with has_pick flagging which ones
+        // actually cleared the selection rule -- same contract MLB-Model
+        // uses in practice. Only render the real picks.
+        const picks = (picksData.picks || []).filter(p => p.has_pick === true);
+        const liveInfo = await buildLiveInfoNFL(picks, scoreboardEvents);
+        renderTodayPicksNFL(picks, liveInfo);
+
+        if (liveInfo.some(info => info?.isLive)) {
+          nflTodayRefreshTimer = setTimeout(loadTodayNFL, 30000);
+        }
+      } catch (e) {
+        container.innerHTML =
+          `<div class="empty-state" style="grid-column:1/-1"><p>Could not load predictions. Try again later.</p></div>`;
+      }
+    }
+
+    function renderTodayPicksNFL(picks, liveInfoAll = []) {
+      const container = document.getElementById('picks-container-nfl');
+
+      if (!picks.length) {
+        container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+          <p>No picks for this week yet — check back after lines are posted.</p></div>`;
+        return;
+      }
+
+      container.innerHTML = picks.map((pick, i) => {
+        const conf    = pick.confidence || 0.5;
+        const confPct = Math.round(conf * 100);
+        const isHome  = pick.pick === pick.home_team;
+        const side    = isHome ? 'Home' : 'Away';
+        // NFL carries two related-but-different numbers per pick: the
+        // spread itself (e.g. -3.5, what a bettor actually cares about)
+        // and that side's American odds at that spread (e.g. -110, what
+        // determines implied probability). MLB's single "line" field does
+        // both jobs at once because a moneyline number IS both the
+        // display value and the odds -- spread sports don't have that
+        // luxury, hence the extra field.
+        const oddsLine = pick.line ?? 0;
+        const spread   = pick.spread;
+
+        let impliedPct = 50;
+        if (oddsLine < 0) impliedPct = ((Math.abs(oddsLine) / (Math.abs(oddsLine) + 100)) * 100).toFixed(1);
+        else if (oddsLine > 0) impliedPct = ((100 / (oddsLine + 100)) * 100).toFixed(1);
+
+        const li = liveInfoAll[i];
+        const liveBarHTML = li ? `
+          <div class="live-status-bar">
+            <div class="live-status-row">
+              <span class="live-score">${pick.away_team} ${li.awayScore} – ${pick.home_team} ${li.homeScore}</span>
+              ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'Covering' : 'Not Covering')}</span>`}
+            </div>
+            ${li.isLive && li.winPct != null ? `
+            <div class="live-winprob-row">
+              <span class="live-winprob-label">${pick.pick} <b>${li.winPct.toFixed(0)}%</b></span>
+              <div class="live-winprob-bar"><div class="live-winprob-fill" style="width:${li.winPct.toFixed(0)}%"></div></div>
+            </div>` : ''}
+          </div>` : '';
+
+        return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=football&slug=nfl&league=nfl'" style="cursor:pointer">
+          <div class="pick-card-header">
+            <div style="display:flex;align-items:center;gap:0.45rem">
+              ${li ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
+              ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
+            </div>
+            <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','NFL',${oddsLine})">＋ Log Pick</button>
+          </div>
+          <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
+          <div class="pick-team-hero">
+            <div style="display:flex;align-items:center;gap:0.85rem">
+              ${teamLogoHTMLNFL(pick.pick, 48)}
+              <div class="pick-team-info">
+                <div style="font-family:var(--font-display);font-size:1.75rem;font-weight:800;color:var(--text)">${pick.pick} <span style="font-weight:600">${fmtOdds(spread != null ? spread : oddsLine)}</span></div>
+              </div>
+            </div>
+          </div>
+          ${liveBarHTML}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem">
+            <div class="pick-main" style="padding:0.6rem 0.8rem">
+              <div class="pick-label">Win Probability</div>
+              <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--gray-600)">${(conf*100).toFixed(1)}%</div>
+            </div>
+            <div class="pick-main" style="padding:0.6rem 0.8rem">
+              <div class="pick-label">Market Implied</div>
+              <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--gray-600)">${impliedPct}%</div>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:0.6rem">
+            <div class="pick-meta-row">
+              <div class="meta-chip">Edge: <span>+${pick.edge}%</span></div>
+              <div class="meta-chip">Odds: <span>${fmtOdds(oddsLine)}</span></div>
+              <div class="meta-chip">${side}</div>
+            </div>
+            <div class="confidence-row">
+              <div class="confidence-header">
+                <span class="confidence-label">Model vs Market Edge</span>
+                <span class="confidence-pct" style="color:var(--purple-600)">+${pick.edge}%</span>
+              </div>
+              <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pick.edge*10,100)}%;background:var(--purple-600)"></div></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     let historyData = [];
     let filteredHistory = [];
     let equityChart = null;
     let chartMode = 'units';
     let activeSport = 'mlb';
     let activeView  = 'today';
+
+    // Per-sport "Updated <time>" label state. Each sport's loader stores its
+    // own generated_at here instead of writing #last-updated directly --
+    // with two sports' fetches racing in parallel at page load, whichever
+    // finished last would otherwise stomp the other's timestamp even when
+    // that sport's tab isn't the one being viewed.
+    const generatedAtBySport = { mlb: null, nfl: null, nba: null };
+    function updateLastUpdatedLabel() {
+      const el = document.getElementById('last-updated');
+      const ts = generatedAtBySport[activeSport];
+      if (!ts) { el.textContent = ''; return; }
+      const d = new Date(ts);
+      el.textContent = `Updated ${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'})}`;
+    }
 
     Chart.defaults.color = '#9CA3AF';
     Chart.defaults.font  = { family: "'Inter', sans-serif", size: 11 };
@@ -729,6 +966,7 @@
         if (el) el.style.display = s === sport ? 'block' : 'none';
       });
       document.querySelector('.section-title').textContent = sport.toUpperCase() + ' Predictions';
+      updateLastUpdatedLabel();
       if (activeView === 'history') loadHistory();
     }
 
@@ -859,9 +1097,8 @@
         ]);
 
         if (picksData.generated_at) {
-          const d = new Date(picksData.generated_at);
-          document.getElementById('last-updated').textContent =
-            `Updated ${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'})}`;
+          generatedAtBySport.mlb = picksData.generated_at;
+          if (activeSport === 'mlb') updateLastUpdatedLabel();
         }
 
         const picks = picksData.picks || [];
@@ -1431,6 +1668,7 @@
 
     loadTBets();
     loadToday();
+    loadTodayNFL();
     loadHistory();
   </script>
 
