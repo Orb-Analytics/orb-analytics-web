@@ -1472,7 +1472,7 @@
       const colCount = 6 + (showLine ? 1 : 0) + (showEdge ? 1 : 0) + (showConf ? 1 : 0);
       if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--gray-600);padding:2rem">No picks match filters.</td></tr>`; return; }
       tbody.innerHTML = filtered.map(p => {
-        const badgeClass = p.result==='Win'?'badge-win':'badge-loss';
+        const badgeClass = {Win:'badge-win',Loss:'badge-loss',Push:'badge-push'}[p.result] || 'badge-loss';
         const uCls = p.units>=0?'units-positive':'units-negative';
         const uDisp = p.units>=0?`+${p.units.toFixed(2)}u`:`${p.units.toFixed(2)}u`;
         const confPct = Math.round((p.confidence||0.5)*100);
