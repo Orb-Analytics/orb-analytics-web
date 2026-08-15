@@ -202,8 +202,10 @@ function buildNav(activePage = '') {
   if (topNav) {
     topNav.innerHTML = `
       <a class="nav-logo-link" href="predictions.html" aria-label="Orb Analytics Home">
+        <span class="nav-logo-text">orbanalytics.limited</span>
+      </a>
+      <a class="nav-logo-center" href="predictions.html" aria-label="Orb Analytics Home">
         <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img" />
-        <span class="nav-logo-text"><span class="nav-logo-bold">Orb Analytics</span> <span class="nav-logo-light">Ltd.</span></span>
       </a>
       <div style="display:flex;align-items:center;gap:0.5rem;margin-left:auto">
         <div class="nav-social">

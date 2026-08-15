@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="css/style.css?v=20260813d" />
   <style>
     .scoreboard-header {
-      padding: 1.5rem 0 1.5rem;
-      margin-bottom: 1.5rem;
+      padding: 1.75rem 0 1.75rem;
+      margin-bottom: 1.75rem;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: flex-end;
@@ -18,8 +18,28 @@
       flex-wrap: wrap;
     }
     .scoreboard-header-inner {
-      border-left: 3px solid var(--purple-600);
+      position: relative;
       padding-left: 1rem;
+    }
+    .scoreboard-header-inner::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.15rem;
+      bottom: 0.15rem;
+      width: 3px;
+      border-radius: var(--radius-pill);
+      background: var(--purple-600);
+    }
+    .scoreboard-header-inner .section-label {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+    }
+    .scoreboard-header-inner .section-title {
+      font-weight: 900;
+    }
+    @media (min-width: 769px) {
+      .scoreboard-header-inner .section-title { font-size: clamp(2rem, 4vw, 3rem); }
     }
     .date-display {
       font-family: var(--font-mono);
@@ -591,15 +611,8 @@
         <div class="games-grid">${picks.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
       }
 
-      if (rest.length) {
-        html += `<div class="section-divider" style="margin-top:${picks.length ? '1.5rem' : '1.25rem'}">
-          <span class="sdl">Other Games</span>
-          <div class="sdl-line"></div>
-        </div>`;
-      }
-
       if (live.length) {
-        html += `<div class="section-divider">
+        html += `<div class="section-divider" style="margin-top:${picks.length ? '1.5rem' : '1.25rem'}">
           <span class="sdl live"><span class="live-dot"></span>Live Now</span>
           <div class="sdl-line"></div>
         </div>
@@ -607,7 +620,8 @@
       }
 
       if (upcoming.length) {
-        html += `<div class="games-grid" style="margin-top:${live.length ? '1.5rem' : '0'}">
+        const topMargin = live.length ? '1.5rem' : (picks.length ? '1.5rem' : '0');
+        html += `<div class="games-grid" style="margin-top:${topMargin}">
           ${upcoming.map(e => buildCard(e, leagueId, pitcherMap)).join('')}
         </div>`;
       }
@@ -627,9 +641,11 @@
     }
 
     // ── Tennis (ATP) rendering ─────────────────────────────────────
-    function isSameLocalDay(dateStr, ref) {
-      const d = new Date(dateStr);
-      return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
+    // Rolling window rather than strict calendar day so finished matches
+    // don't vanish right at a local midnight boundary, and matches from
+    // tournaments in other time zones still show up.
+    function isWithinWindow(dateStr, ref, hours) {
+      return Math.abs(ref - new Date(dateStr)) <= hours * 60 * 60 * 1000;
     }
 
     function flattenTennisMatches(events) {
@@ -745,7 +761,7 @@
 
       const matches = flattenTennisMatches(events).filter(m => {
         const st = m.comp.status?.type;
-        if (st?.name !== 'STATUS_IN_PROGRESS' && !isSameLocalDay(m.comp.date, now)) return false;
+        if (st?.name !== 'STATUS_IN_PROGRESS' && !isWithinWindow(m.comp.date, now, 20)) return false;
         const away = m.comp.competitors?.find(x => x.homeAway === 'away');
         const home = m.comp.competitors?.find(x => x.homeAway === 'home');
         if (!away || !home) return false;
@@ -800,7 +816,7 @@
         const seeded   = tMatches.filter(isSeeded).sort(seedSort);
         const unseeded = tMatches.filter(m => !isSeeded(m))
                                  .sort((a, b) => new Date(a.comp.date) - new Date(b.comp.date))
-                                 .slice(0, 4);
+                                 .slice(0, 10);
         const toShow = [...seeded, ...unseeded];
         if (!toShow.length) continue;
         html += `<div class="section-divider" style="margin-top:1.5rem">
@@ -839,14 +855,26 @@
       const thC  = `style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);letter-spacing:0.07em;text-transform:uppercase;padding:0.5rem 1rem;text-align:center;font-weight:600;border-bottom:1px solid var(--border);background:var(--gray-50);white-space:nowrap"`;
       const thL  = `style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);letter-spacing:0.07em;text-transform:uppercase;padding:0.5rem 1rem;text-align:left;font-weight:600;border-bottom:1px solid var(--border);background:var(--gray-50)"`;
 
+      const currentPeriod = comp.status?.period;
       const rows = top.map((c, i) => {
         const pos        = c.order ?? (i + 1);
         const name       = c.athlete?.displayName || '???';
         const flag       = c.athlete?.flag?.href;
         const scoreNum   = parseFloat(c.score ?? 'E');
         const scoreColor = !isNaN(scoreNum) && scoreNum < 0 ? 'var(--green)' : !isNaN(scoreNum) && scoreNum > 0 ? '#FCA5A5' : 'var(--text)';
-        const thru       = c.status?.displayValue || '—';
         const rounds     = (c.linescores || []).map(ls => ls.value != null ? ls.value : null);
+
+        // ESPN's golf competitors carry no top-level "status" -- how far a
+        // player is through their round has to be derived from how many
+        // hole-by-hole linescores exist for the tournament's current round.
+        const roundEntry  = (c.linescores || []).find(ls => ls.period === currentPeriod);
+        const holesPlayed = roundEntry?.linescores?.length || 0;
+        let thru;
+        if (final)               thru = 'F';
+        else if (!live)          thru = '—';
+        else if (holesPlayed === 0)   thru = '-';
+        else if (holesPlayed >= 18)   thru = 'F';
+        else                     thru = String(holesPlayed);
 
         const roundCells = [0,1,2,3].map(r => {
           const v = rounds[r];
