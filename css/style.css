@@ -2,16 +2,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,400;1,700&family=Roboto+Slab:wght@100..900&family=Inter:wght@300;400;500;600&family=Audiowide&display=swap');
 
 :root {
-  --purple-950: #0D0118;
-  --purple-900: #1A0533;
-  --purple-800: #2D0A4E;
-  --purple-700: #4A1272;
-  --purple-600: #6B21A8;
-  --purple-500: #9333EA;
-  --purple-400: #A855F7;
-  --purple-300: #7C3AED;
-  --purple-200: #EDE9FE;
-  --purple-100: #F5F3FF;
+  --purple-950: #0B0019;
+  --purple-900: #1A0038;
+  --purple-800: #280058;
+  --purple-700: #3C0183;
+  --purple-600: #6001D2;
+  --purple-500: #8520FE;
+  --purple-400: #A052FE;
+  --purple-300: #8C2CFE;
+  --purple-200: #EEE1FF;
+  --purple-100: #F8F2FF;
 
   --gold:    #D97706;
   --green:   #10B981;
@@ -35,7 +35,7 @@
   --card:    #FFFFFF;
   --border:  #E4E4E7;
   --text:    #3F3F46;
-  --muted:   #6B21A8;
+  --muted:   #6001D2;
   --accent:  var(--purple-600);
 
   --font-display: 'Roboto Slab', serif;
@@ -49,7 +49,7 @@
   --nav-height: 96px;
   --transition: 0.2s ease;
   --glow: 0 2px 12px rgba(0,0,0,0.08);
-  --hover-tint: rgba(147, 51, 234, 0.08);
+  --hover-tint: rgba(133, 32, 254, 0.08);
   --hover-border: var(--purple-400);
 }
 
@@ -76,8 +76,8 @@ body.dark {
   --border:  #303036;
   --text:    #F4F4F5;
   --muted:   #A1A1AA;
-  --purple-600: #A855F7;
-  --purple-300: #C084FC;
+  --purple-600: #A052FE;
+  --purple-300: #B174FB;
 
   --gray-50:  #232327;
   --gray-100: #28282D;
@@ -96,7 +96,7 @@ body.dark .form-select option { background: var(--surface); color: var(--text); 
 body.dark .form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A1A1AA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
 body.dark .form-input[type="date"] { color-scheme: dark; }
 body.dark .nav-links a:hover,
-body.dark .nav-links a.active { color: var(--text); background: rgba(147,51,234,0.18); }
+body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,0.18); }
 
 /* ─── Theme toggle ───────────────────────────────────────────────── */
 .theme-toggle {
@@ -157,19 +157,8 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(147,51,234,
   color: var(--text);
 }
 
-.nav-logo-center {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: var(--text);
-}
-
-.orb-logo-img { width: 64px; height: 64px; object-fit: contain; }
-.nav-logo-text { font-family: var(--font-display); font-weight: 800; font-style: italic; letter-spacing: -0.01em; font-size: 2rem; color: var(--text); white-space: nowrap; }
+.nav-logo-text { font-family: var(--font-display); font-weight: 800; font-style: italic; letter-spacing: -0.01em; font-size: 1.375rem; color: var(--gray-600); white-space: nowrap; }
+.nav-logo-accent { color: var(--purple-600); }
 
 .nav-links {
   display: flex;
@@ -193,7 +182,7 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(147,51,234,
 .nav-links a.active { color: var(--purple-600); background: var(--gray-100); font-weight: 600; }
 
 .nav-social { display: flex; align-items: center; gap: 0.5rem; }
-.nav-social a { color: var(--text); transition: var(--transition); display: flex; align-items: center; padding: 0.3rem; border-radius: var(--radius-sm); }
+.nav-social a { color: var(--gray-600); transition: var(--transition); display: flex; align-items: center; padding: 0.3rem; border-radius: var(--radius-sm); }
 .nav-social a:hover { color: var(--purple-500); background: var(--hover-tint); }
 .nav-social svg { width: 22px; height: 22px; fill: currentColor; }
 
@@ -583,15 +572,10 @@ body.dark .disclaimer-block { background: var(--gray-100); }
     padding-top: max(0.65rem, env(safe-area-inset-top, 0px));
     height: 68px;
   }
-  .nav-logo-center {
-    position: static;
-    transform: none;
-  }
   .nav-links { display: none; }
   .container { padding: 0 1rem; }
   .section-title { font-size: 1.5rem; }
   .nav-logo-text { font-size: 1.125rem; }
-  .orb-logo-img { width: 22px; height: 22px; }
   .nav-social { display: none; }
   .nav-theme-toggle { display: flex; }
   .sidebar-footer { display: none; }
