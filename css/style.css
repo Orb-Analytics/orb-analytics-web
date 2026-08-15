@@ -583,6 +583,10 @@ body.dark .disclaimer-block { background: var(--gray-100); }
     padding-top: max(0.65rem, env(safe-area-inset-top, 0px));
     height: 68px;
   }
+  .nav-logo-center {
+    position: static;
+    transform: none;
+  }
   .nav-links { display: none; }
   .container { padding: 0 1rem; }
   .section-title { font-size: 1.5rem; }

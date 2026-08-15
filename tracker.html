@@ -6,12 +6,18 @@
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <title>Bankroll · Orb Analytics</title>
   <link rel="stylesheet" href="css/style.css?v=20260813d" />
+  <style>
+    @media (max-width: 768px) {
+      #bet-form { grid-template-columns: repeat(2, 1fr) !important; }
+      .cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+  </style>
 </head>
 <body>
   <nav class="nav" id="main-nav"></nav>
 
   <main class="page">
-    <div class="container" style="padding:2rem 0 3rem">
+    <div class="container" style="padding-top:2rem;padding-bottom:3rem">
       <div class="section-label">Performance</div>
       <div class="section-title">Bankroll Tracker</div>
 
