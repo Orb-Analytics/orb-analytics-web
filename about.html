@@ -59,16 +59,13 @@
     /* ── Mission callout card ────────────────────────────────────── */
     .mission-card {
       background: var(--surface);
-      border: 1px solid rgba(107,33,168,0.15);
-      border-left: 4px solid var(--purple-600);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 2.25rem 1.75rem;
       margin: 2rem 0;
+      transition: border-color var(--transition), box-shadow var(--transition);
     }
-    body.dark .mission-card {
-      border-color: rgba(168,85,247,0.25);
-      border-left-color: var(--purple-600);
-    }
+    .mission-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
     .mission-card p { font-size: 1rem; line-height: 1.7; color: var(--text); margin: 0; }
     .mission-card strong { color: var(--purple-600); }
 
@@ -90,7 +87,9 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 2.25rem 1.75rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
     }
+    .value-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
     .value-card p { font-size: 1rem; line-height: 1.7; color: var(--text); margin: 0; }
 
     /* ── Stats row ───────────────────────────────────────────────── */
@@ -107,7 +106,9 @@
       border-radius: var(--radius-lg);
       padding: 2rem 1rem;
       text-align: center;
+      transition: border-color var(--transition), box-shadow var(--transition);
     }
+    .stat-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
     .stat-value {
       font-family: var(--font-display);
       font-size: 1.75rem;
@@ -363,8 +364,7 @@
               <p>
                 Our mission is to bring <strong>transparency to the sports gambling market</strong>.
                 Using Python-powered predictive models, Orb delivers data-driven betting insights
-                across the NFL, NBA, and MLB, paired with accessible content through our newsletter,
-                podcast, and analysis on Substack. <strong>Every pick, win, loss, and unit is tracked publicly.</strong>
+                across the NFL, NBA, and MLB. <strong>Every pick, win, loss, and unit is tracked publicly.</strong>
               </p>
             </div>
           </div>
@@ -373,10 +373,10 @@
             <div class="about-section-label">Our Value Proposition</div>
             <div class="value-card">
               <p>
-                The sports gambling market is fragmented by design — scores on ESPN, headlines on Reddit,
-                lines and line movement scattered across third-party apps. Staying informed means constant
-                context-switching between a dozen sources. Orb Analytics was built to eliminate that friction.
-                We distill the macro professional sports landscape into a single, vertically integrated platform.
+                Staying informed means constant context-switching between scores on ESPN,
+                headlines on Reddit, and lines and line movement scattered across third-party
+                apps. Orb Analytics was built to distill the macro professional sports landscape
+                into a single, vertically integrated platform.
               </p>
             </div>
           </div>

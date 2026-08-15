@@ -13,14 +13,14 @@
       display: grid;
       grid-template-columns: 1fr 340px;
       gap: 2rem;
-      height: calc(100vh - 60px);
+      height: calc(100vh - var(--nav-height));
       padding: 0;
       overflow: hidden;
     }
 
     /* Left: predictions, independently scrollable */
     .predictions-col {
-      height: calc(100vh - 60px);
+      height: calc(100vh - var(--nav-height));
       overflow-y: auto;
       padding: 1.5rem 0.85rem 2rem 0;
       scrollbar-width: thin;
@@ -31,7 +31,7 @@
 
     /* Right: tracker, independently scrollable */
     .tracker-col {
-      height: calc(100vh - 60px);
+      height: calc(100vh - var(--nav-height));
       overflow-y: auto;
       padding: 1.5rem 0.85rem 2rem 0;
       display: flex;
@@ -115,6 +115,8 @@
         grid-template-columns: 1fr !important;
       }
 
+      .tracker-toggle-btn { display: none; }
+
       .summary-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.5rem !important;
@@ -143,12 +145,6 @@
         width: 100%;
         font-size: 0.875rem;
         padding: 0.35rem 1.4rem 0.35rem 0.5rem;
-      }
-
-      #filter-count {
-        grid-column: 1 / -1;
-        margin-left: 0 !important;
-        text-align: left;
       }
 
       .t-form-grid {
@@ -218,13 +214,52 @@
 
     /* ── Predictions header ──────────────────────────────────── */
     .predictions-header {
-      padding: 0.75rem 0 1.25rem;
-      margin-bottom: 1.25rem;
+      padding: 1.5rem 0 1.75rem;
+      margin-bottom: 1.5rem;
       border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
+    .tracker-toggle-btn {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--gray-600); font-size: 0.75rem; font-family: var(--font-body);
+      padding: 0.4rem 0.8rem; cursor: pointer; transition: var(--transition);
+    }
+    .tracker-toggle-btn:hover { color: var(--text); border-color: var(--hover-border); background: var(--hover-tint); }
+    .tracker-toggle-btn svg { width: 13px; height: 13px; }
+
+    /* ── Collapsed tracker: predictions-col takes full width, grid locks to 3 columns ── */
+    .page-split.tracker-collapsed { grid-template-columns: 1fr; }
+    .page-split.tracker-collapsed .tracker-col { display: none; }
+    .page-split.tracker-collapsed .picks-grid { grid-template-columns: repeat(3, 1fr); }
+
     .predictions-header-inner {
-      border-left: 3px solid var(--purple-600);
+      position: relative;
       padding-left: 1rem;
+    }
+    .predictions-header-inner::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.15rem;
+      bottom: 0.15rem;
+      width: 3px;
+      border-radius: var(--radius-pill);
+      background: var(--purple-600);
+    }
+    .predictions-header-inner .section-label {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+    }
+    .predictions-header-inner .section-title {
+      font-weight: 900;
+    }
+    @media (min-width: 769px) {
+      .predictions-header-inner .section-title { font-size: clamp(2rem, 3.5vw, 2.75rem); }
     }
 
     .main-tabs {
@@ -363,7 +398,7 @@
     .chart-toggle-btn:hover:not(.active) { background: var(--hover-tint); }
     .chart-wrap { position: relative; height: 190px; }
 
-    .history-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.85rem; }
+    .history-controls { display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 0.85rem; }
     .split-select { width: 100%; }
     .filter-select {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text);
@@ -431,8 +466,8 @@
       <button class="mobile-page-tab active" onclick="switchMobileTab('picks')">Picks</button>
       <button class="mobile-page-tab" onclick="switchMobileTab('tracker')">Tracker</button>
     </div>
-    <div class="container" id="main-container" style="height:calc(100vh - 60px);padding-top:0;padding-bottom:0">
-      <div class="page-split">
+    <div class="container" id="main-container" style="height:calc(100vh - var(--nav-height));padding-top:0;padding-bottom:0">
+      <div class="page-split" id="page-split">
 
         <!-- ══ LEFT: PREDICTIONS ══════════════════════════════════ -->
         <div class="predictions-col">
@@ -442,6 +477,10 @@
               <div class="section-title">MLB Predictions</div>
               <p style="color:var(--muted);font-size:0.75rem;margin-top:0.3rem" id="last-updated"></p>
             </div>
+            <button class="tracker-toggle-btn" id="tracker-toggle-btn" onclick="toggleTracker()" aria-expanded="true" aria-controls="tracker-col">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+              <span id="tracker-toggle-label">Hide Tracker</span>
+            </button>
           </div>
 
           <!-- Tabs row -->
@@ -498,14 +537,13 @@
                 <option value="31">Last 31 Days</option>
                 <option value="season">Season to Date</option>
               </select>
-              <span id="filter-count" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);margin-left:auto"></span>
             </div>
             <div class="summary-grid" id="summary-grid">
               <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading history...</div>
             </div>
             <div class="chart-card">
               <div class="chart-card-header">
-                <div class="chart-card-title" id="chart-title">Cumulative Units (Equity Curve)</div>
+                <div class="chart-card-title" id="chart-title">Cumulative Units</div>
                 <div class="chart-toggle">
                   <button class="chart-toggle-btn active" data-mode="units" onclick="setChartMode('units')">Units</button>
                   <button class="chart-toggle-btn" data-mode="roi" onclick="setChartMode('roi')">ROI</button>
@@ -530,7 +568,7 @@
         </div><!-- end predictions-col -->
 
         <!-- ══ RIGHT: BET TRACKER ════════════════════════════════ -->
-        <div class="tracker-col">
+        <div class="tracker-col" id="tracker-col">
           <div class="tracker-title">Bet Tracker</div>
 
           <!-- Stats -->
@@ -1070,7 +1108,7 @@
     function renderSummaryStats(s) {
       const roi = s.total_picks ? ((s.total_units / s.total_picks) * 100) : 0;
       document.getElementById('summary-grid').innerHTML = `
-        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral" style="font-size:${String(s.wins+'-'+s.losses).length>6?'1.8rem':'2.5rem'}">${s.wins}-${s.losses}</div></div>
+        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral" style="font-size:${String(s.wins+'-'+s.losses).length>6?'1.8rem':'2.5rem'}">${s.wins}-${s.losses}</div><div class="stat-sub" id="filter-count"></div></div>
         <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${s.win_rate}%</div></div>
         <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${s.total_units>=0?'+':''}${s.total_units}u</div></div>
         <div class="stat-card"><div class="stat-label">ROI %</div><div class="stat-value ${roi>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${roi>=0?'+':''}${roi.toFixed(2)}%</div></div>`;
@@ -1151,7 +1189,7 @@
     function setChartMode(mode) {
       chartMode = mode;
       document.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-      document.getElementById('chart-title').textContent = mode === 'roi' ? 'Cumulative ROI %' : 'Cumulative Units (Equity Curve)';
+      document.getElementById('chart-title').textContent = mode === 'roi' ? 'Cumulative ROI %' : 'Cumulative Units';
       renderChart();
     }
 
@@ -1175,11 +1213,6 @@
       };
 
       if (activeSport !== 'nba') {
-        splits['Confidence Tiers'] = [
-          ['High (≥60%)',  picks.filter(p=>p.confidence>=0.60)],
-          ['Mid (52–60%)', picks.filter(p=>p.confidence>=0.52&&p.confidence<0.60)],
-          ['Low (<52%)',   picks.filter(p=>p.confidence<0.52)],
-        ];
         splits['Edge Tiers'] = [
           ['High Edge (≥3%)', picks.filter(p=>p.edge>=3)],
           ['Mid Edge (1–3%)', picks.filter(p=>p.edge>=1&&p.edge<3)],
@@ -1218,10 +1251,8 @@
       document.getElementById('th-line').style.display = showLine ? '' : 'none';
       document.getElementById('th-conf').style.display = showConf ? '' : 'none';
       const filtered = [...picks].sort((a, b) => new Date(b.date) - new Date(a.date));
-      const wins = filtered.filter(p=>p.result==='Win').length;
-      const losses = filtered.filter(p=>p.result==='Loss').length;
       const units = filtered.reduce((a,b)=>a+(b.units||0),0);
-      document.getElementById('filter-count').textContent = `${filtered.length} picks · ${wins}W-${losses}L · ${units>=0?'+':''}${units.toFixed(2)}u`;
+      document.getElementById('filter-count').textContent = `${filtered.length} picks · ${units>=0?'+':''}${units.toFixed(2)}u`;
       const tbody = document.getElementById('history-tbody');
       const colCount = 7 + (showLine ? 1 : 0) + (showConf ? 1 : 0);
       if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--gray-600);padding:2rem">No picks match filters.</td></tr>`; return; }
@@ -1427,6 +1458,16 @@
         picksCol.classList.add('mobile-hidden');
         trackerCol.classList.remove('mobile-hidden');
       }
+    }
+
+    // ── Desktop tracker toggle ──────────────────────────────────────
+    function toggleTracker() {
+      const pageSplit = document.getElementById('page-split');
+      const btn       = document.getElementById('tracker-toggle-btn');
+      const label     = document.getElementById('tracker-toggle-label');
+      const collapsed = pageSplit.classList.toggle('tracker-collapsed');
+      btn.setAttribute('aria-expanded', String(!collapsed));
+      label.textContent = collapsed ? 'Show Tracker' : 'Hide Tracker';
     }
 
     loadTBets();
