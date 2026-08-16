@@ -70,6 +70,7 @@
     }
     .league-tab.active { background: var(--purple-600); border-color: var(--purple-600); color: white; }
     .league-tab:hover:not(.active) { border-color: var(--hover-border); color: var(--text); background: var(--hover-tint); }
+    body.dark .league-tab:not(.active) { color: var(--text); }
     .tab-live-count {
       background: var(--red); color: white;
       font-size: 0.75rem; font-weight: 700;
@@ -1041,9 +1042,39 @@
       loadLeague(activeLeague, true);
     }, 45000);
 
+    // ── Preload live-game counts for every tab so badges are correct
+    // before the user ever clicks a tab, not just for the active one ──
+    async function preloadLiveCounts() {
+      await Promise.all(LEAGUES.filter(l => l.id !== activeLeague).map(async l => {
+        try {
+          if (l.type === 'tennis') {
+            const cacheKey = l.id + '_combined';
+            const [atpData, wtaData] = await Promise.all([
+              fetch('https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard').then(r => r.json()).catch(() => ({ events: [] })),
+              fetch('https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard').then(r => r.json()).catch(() => ({ events: [] })),
+            ]);
+            const events = [...(atpData.events || []), ...(wtaData.events || [])];
+            cache[cacheKey] = events;
+            const liveCount = flattenTennisMatches(events).filter(m => m.comp.status?.type?.name === 'STATUS_IN_PROGRESS').length;
+            updateLiveBadge(l.id, liveCount);
+          } else {
+            const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${l.sport}/${l.slug}/scoreboard`);
+            const data = await r.json();
+            cache[l.id] = data;
+            const events = data.events || [];
+            const liveCount = l.type === 'golf'
+              ? events.filter(ev => (ev.competitions?.[0]?.status?.type || ev.status?.type)?.state === 'in').length
+              : events.filter(e => isLive(e.status)).length;
+            updateLiveBadge(l.id, liveCount);
+          }
+        } catch { /* leave badge unset on failure, tab click will retry via loadLeague */ }
+      }));
+    }
+
     // ── Init ──────────────────────────────────────────────────────
     buildTabs();
     loadLeague(activeLeague);
+    preloadLiveCounts();
   </script>
 </body>
 </html>
