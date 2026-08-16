@@ -370,7 +370,7 @@
     /* ── Model History ────────────────────────────────────────── */
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
     .summary-grid .stat-card { min-width: 0; }
-    .summary-grid .stat-card .stat-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .summary-grid .stat-card .stat-value { font-size: 2.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
 
     .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
@@ -1373,10 +1373,10 @@
     function renderSummaryStats(s) {
       const roi = s.total_picks ? ((s.total_units / s.total_picks) * 100) : 0;
       document.getElementById('summary-grid').innerHTML = `
-        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral" style="font-size:${String(s.wins+'-'+s.losses).length>6?'1.8rem':'2.5rem'}">${s.wins}-${s.losses}</div><div class="stat-sub" id="filter-count"></div></div>
-        <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral" style="font-size:2.5rem">${s.win_rate}%</div></div>
-        <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${s.total_units>=0?'+':''}${s.total_units}u</div></div>
-        <div class="stat-card"><div class="stat-label">ROI %</div><div class="stat-value ${roi>=0?'stat-positive':'stat-negative'}" style="font-size:2.5rem">${roi>=0?'+':''}${roi.toFixed(2)}%</div></div>`;
+        <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral">${s.wins}-${s.losses}</div><div class="stat-sub" id="filter-count"></div></div>
+        <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral">${s.win_rate}%</div></div>
+        <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value ${s.total_units>=0?'stat-positive':'stat-negative'}">${s.total_units>=0?'+':''}${s.total_units}u</div></div>
+        <div class="stat-card"><div class="stat-label">ROI %</div><div class="stat-value ${roi>=0?'stat-positive':'stat-negative'}">${roi>=0?'+':''}${roi.toFixed(2)}%</div></div>`;
     }
 
     function renderEquityCurve(picks) {
