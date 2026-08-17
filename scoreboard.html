@@ -17,20 +17,6 @@
       gap: 1rem;
       flex-wrap: wrap;
     }
-    .scoreboard-header-inner {
-      position: relative;
-      padding-left: 1rem;
-    }
-    .scoreboard-header-inner::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0.15rem;
-      bottom: 0.15rem;
-      width: 3px;
-      border-radius: var(--radius-pill);
-      background: var(--purple-600);
-    }
     .scoreboard-header-inner .section-label {
       font-weight: 700;
       letter-spacing: 0.14em;
@@ -219,7 +205,7 @@
     .mini-stat-value { font-size: 0.8125rem; font-weight: 700; color: var(--text); }
     .mini-outs-row { display: flex; align-items: center; gap: 0.3rem; }
     .mini-out-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gray-200); border: 1px solid var(--border); }
-    .mini-out-dot.filled { background: #FCA5A5; border-color: #FCA5A5; }
+    .mini-out-dot.filled { background: var(--red); border-color: var(--red); }
 
     .pitcher-matchup {
       background: var(--gray-50); border: 1px solid var(--border);
@@ -371,7 +357,7 @@
     function eraColor(era) {
       if (era === null || era === undefined) return 'var(--gray-500)';
       const v = parseFloat(era);
-      return v < 3.50 ? 'var(--green)' : v > 4.50 ? '#FCA5A5' : 'var(--text)';
+      return v < 3.50 ? 'var(--green)' : v > 4.50 ? 'var(--red)' : 'var(--text)';
     }
 
     function logoHTML(abbr, league) {
@@ -845,7 +831,7 @@
       const live        = status?.state === 'in';
       const final       = status?.name === 'STATUS_FINAL';
       const allPlayers  = comp.competitors || [];
-      const top         = allPlayers.slice(0, 10);
+      const top         = allPlayers.slice(0, 20);
       const total       = allPlayers.length;
 
       let statusHTML;
@@ -853,7 +839,7 @@
       else if (final) statusHTML = `<span class="badge badge-final">Final</span>`;
       else            statusHTML = `<span class="badge badge-final">${new Date(ev.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`;
 
-      const thC  = `style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);letter-spacing:0.07em;text-transform:uppercase;padding:0.5rem 1rem;text-align:center;font-weight:600;border-bottom:1px solid var(--border);background:var(--gray-50);white-space:nowrap"`;
+      const thC  = `style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);letter-spacing:0.07em;text-transform:uppercase;padding:0.5rem 0.5rem;text-align:center;font-weight:600;border-bottom:1px solid var(--border);background:var(--gray-50);white-space:nowrap"`;
       const thL  = `style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);letter-spacing:0.07em;text-transform:uppercase;padding:0.5rem 1rem;text-align:left;font-weight:600;border-bottom:1px solid var(--border);background:var(--gray-50)"`;
 
       const currentPeriod = comp.status?.period;
@@ -862,7 +848,7 @@
         const name       = c.athlete?.displayName || '???';
         const flag       = c.athlete?.flag?.href;
         const scoreNum   = parseFloat(c.score ?? 'E');
-        const scoreColor = !isNaN(scoreNum) && scoreNum < 0 ? 'var(--green)' : !isNaN(scoreNum) && scoreNum > 0 ? '#FCA5A5' : 'var(--text)';
+        const scoreColor = !isNaN(scoreNum) && scoreNum < 0 ? 'var(--green)' : !isNaN(scoreNum) && scoreNum > 0 ? 'var(--red)' : 'var(--text)';
         const rounds     = (c.linescores || []).map(ls => ls.value != null ? ls.value : null);
 
         // ESPN's golf competitors carry no top-level "status" -- how far a
@@ -879,20 +865,20 @@
 
         const roundCells = [0,1,2,3].map(r => {
           const v = rounds[r];
-          return `<td style="font-family:var(--font-mono);font-size:0.75rem;color:${v == null ? 'var(--gray-400)' : 'var(--text)'};text-align:center;padding:0.5rem 1rem">${v != null ? v : '—'}</td>`;
+          return `<td style="font-family:var(--font-mono);font-size:0.8125rem;color:${v == null ? 'var(--gray-400)' : 'var(--text)'};text-align:center;padding:0.5rem 0.5rem">${v != null ? v : '—'}</td>`;
         }).join('');
 
         return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);padding:0.55rem 1rem;text-align:center;width:3.5rem">${pos}</td>
+          <td style="font-family:var(--font-mono);font-size:0.8125rem;color:var(--gray-600);padding:0.55rem 0.5rem;text-align:center;width:2.5rem">${pos}</td>
           <td style="padding:0.55rem 1rem">
             <div style="display:flex;align-items:center;gap:0.6rem">
               ${flag ? `<img src="${flag}" alt="" style="width:20px;height:14px;border-radius:2px;object-fit:cover;flex-shrink:0">` : '<span style="width:20px;display:inline-block"></span>'}
-              <span style="font-size:0.8125rem;font-weight:600;color:var(--text)">${name}</span>
+              <span style="font-size:1rem;font-weight:600;color:var(--text)">${name}</span>
             </div>
           </td>
-          <td style="font-family:var(--font-mono);font-size:0.8125rem;font-weight:800;color:${scoreColor};text-align:center;padding:0.55rem 1rem;width:5rem">${golfScoreStr(scoreNum)}</td>
+          <td style="font-family:var(--font-mono);font-size:0.9375rem;font-weight:800;color:${scoreColor};text-align:center;padding:0.55rem 0.5rem;width:3.5rem">${golfScoreStr(scoreNum)}</td>
           ${roundCells}
-          <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);text-align:center;padding:0.55rem 1rem;width:4rem">${thru}</td>
+          <td style="font-family:var(--font-mono);font-size:0.8125rem;color:var(--gray-600);text-align:center;padding:0.55rem 0.5rem;width:3rem">${thru}</td>
         </tr>`;
       }).join('');
 
@@ -908,19 +894,19 @@
             ${statusHTML}
           </div>
           <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;min-width:480px">
+            <table style="width:100%;border-collapse:collapse;min-width:420px">
               <thead><tr>
-                <th ${thC} style="${thC.slice(7,-1)};width:3.5rem">POS</th>
+                <th ${thC} style="${thC.slice(7,-1)};width:2.5rem">POS</th>
                 <th ${thL}>PLAYER</th>
-                <th ${thC} style="${thC.slice(7,-1)};width:5rem">TOTAL</th>
+                <th ${thC} style="${thC.slice(7,-1)};width:3.5rem">TOTAL</th>
                 <th ${thC}>R1</th><th ${thC}>R2</th><th ${thC}>R3</th><th ${thC}>R4</th>
-                <th ${thC} style="${thC.slice(7,-1)};width:4rem">THRU</th>
+                <th ${thC} style="${thC.slice(7,-1)};width:3rem">THRU</th>
               </tr></thead>
               <tbody>${rows}</tbody>
             </table>
           </div>
           <div style="padding:0.6rem 1rem;border-top:1px solid var(--border);text-align:center">
-            <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600)">Showing 10 of ${total} players</span>
+            <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600)">Showing ${top.length} of ${total} players</span>
           </div>
         </div>`;
     }
