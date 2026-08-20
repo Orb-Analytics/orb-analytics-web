@@ -10,7 +10,7 @@ The official Orb Analytics platform — live scores, bet tracking, ML prediction
 |------|------|--------|
 | Home | `index.html` | ✅ Live |
 | Scoreboard | `scoreboard.html` | ✅ Live (ESPN API) |
-| Bet Tracker | `tracker.html` | ✅ Live (localStorage) |
+| Bet Tracker | `tracker.html` | ✅ Live (Firebase, sign-in required) |
 | Predictions | `predictions.html` | ✅ Live (reads model repos) |
 | Settings | `settings.html` | 🚧 Stub |
 
