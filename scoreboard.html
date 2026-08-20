@@ -346,7 +346,7 @@
     }
 
     document.getElementById('date-display').textContent =
-      new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      `Updated ${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })} at ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'})}`;
 
     // ── Helpers ───────────────────────────────────────────────────
     const isLive  = s => s?.type?.name === 'STATUS_IN_PROGRESS';
