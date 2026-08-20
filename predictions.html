@@ -1202,7 +1202,7 @@
 
         const pd = filteredDetails[i];
         const eraVal = pd?.era != null ? parseFloat(pd.era) : null;
-        const eraCol = eraVal != null ? (eraVal < 3.5 ? 'var(--green)' : eraVal > 4.5 ? '#FCA5A5' : 'var(--text)') : 'var(--gray-500)';
+        const eraCol = eraVal != null ? (eraVal < 3.5 ? 'var(--green)' : eraVal > 4.5 ? 'var(--red)' : 'var(--text)') : 'var(--gray-500)';
         const pitcherHTML = pd ? `
           <div style="display:flex;align-items:center;gap:0.65rem;padding:0.55rem 0.8rem;
                       background:var(--gray-50);border:1px solid var(--border);border-radius:8px">
