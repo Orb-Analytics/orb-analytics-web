@@ -543,7 +543,7 @@
                 <table class="data-table" id="history-table">
                   <thead><tr>
                     <th>Date</th><th>Matchup</th><th>Pick</th><th id="th-line">Line</th>
-                    <th>Odds</th><th id="th-edge">Edge</th><th id="th-conf">Conf</th><th>Result</th><th>Units</th>
+                    <th>Odds</th><th id="th-edge">Edge</th><th>Result</th><th>Units</th>
                   </tr></thead>
                   <tbody id="history-tbody"></tbody>
                 </table>
@@ -919,7 +919,7 @@
             </div>` : ''}
           </div>` : '';
 
-        return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=football&slug=nfl&league=nfl'" style="cursor:pointer">
+        return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="goToGame('game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=football&slug=nfl&league=nfl')" style="cursor:pointer">
           <div class="pick-card-header">
             <div style="display:flex;align-items:center;gap:0.45rem">
               ${li ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
@@ -1230,7 +1230,7 @@
             </div>` : ''}
           </div>` : '';
 
-        return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="location.href='game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb'" style="cursor:pointer">
+        return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="goToGame('game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb')" style="cursor:pointer">
           <div class="pick-card-header">
             <div style="display:flex;align-items:center;gap:0.45rem">
               ${li ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
@@ -1501,26 +1501,23 @@
 
     function renderHistoryTable(picks) {
       const showLine = activeSport !== 'mlb';
-      // NFL's historical picks CSV has no edge or confidence data yet (only
-      // season/week/pick/odds/result) -- hide those columns rather than show
-      // misleading "+null%"/50% placeholders. Revisit once real edge/confidence
+      // NFL's historical picks CSV has no edge data yet (only
+      // season/week/pick/odds/result) -- hide that column rather than show
+      // misleading "+null%" placeholders. Revisit once real edge
       // is tracked for NFL history the way it already is for live picks.
-      const showConf = activeSport !== 'nba' && activeSport !== 'nfl';
       const showEdge = activeSport !== 'nfl';
       document.getElementById('th-line').style.display = showLine ? '' : 'none';
       document.getElementById('th-edge').style.display = showEdge ? '' : 'none';
-      document.getElementById('th-conf').style.display = showConf ? '' : 'none';
       const filtered = [...picks].sort((a, b) => new Date(b.date) - new Date(a.date));
       const units = filtered.reduce((a,b)=>a+(b.units||0),0);
       document.getElementById('filter-count').textContent = `${filtered.length} picks · ${units>=0?'+':''}${units.toFixed(2)}u`;
       const tbody = document.getElementById('history-tbody');
-      const colCount = 6 + (showLine ? 1 : 0) + (showEdge ? 1 : 0) + (showConf ? 1 : 0);
+      const colCount = 6 + (showLine ? 1 : 0) + (showEdge ? 1 : 0);
       if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--gray-600);padding:2rem">No picks match filters.</td></tr>`; return; }
       tbody.innerHTML = filtered.map(p => {
         const badgeClass = {Win:'badge-win',Loss:'badge-loss',Push:'badge-push'}[p.result] || 'badge-loss';
         const uCls = p.units>=0?'units-positive':'units-negative';
         const uDisp = p.units>=0?`+${p.units.toFixed(2)}u`:`${p.units.toFixed(2)}u`;
-        const confPct = Math.round((p.confidence||0.5)*100);
         let scoreDisplay = '—';
         if (p.home_score!=null && p.away_score!=null) {
           const hw = p.home_score>p.away_score;
@@ -1537,7 +1534,6 @@
           ${showLine ? `<td data-label="Line" style="font-family:var(--font-mono);font-size:0.875rem">${spread}</td>` : ''}
           <td data-label="Odds" style="font-family:var(--font-mono);font-size:0.875rem">${fmtOdds(p.line)}</td>
           ${showEdge ? `<td data-label="Edge" style="font-family:var(--font-mono);font-size:0.875rem;color:var(--purple-300)">${p.edge!=null?`${p.edge>=0?'+':''}${p.edge}%`:'—'}</td>` : ''}
-          ${showConf ? `<td data-label="Conf" style="font-family:var(--font-mono);font-size:0.875rem;color:var(--muted)">${confPct}%</td>` : ''}
           <td data-label="Result"><span class="badge ${badgeClass}">${p.result}</span></td>
           <td data-label="Units" class="${uCls}">${uDisp}</td>
         </tr>`;
@@ -1547,7 +1543,6 @@
     // ── Bet Tracker (Firebase-backed, localStorage fallback) ──────
     const T_KEY = 'orb_bets_v1';
     let tBets = [];
-    let currentUser = null;
 
     document.getElementById('t-date').value = new Date().toISOString().split('T')[0];
 
@@ -1568,7 +1563,7 @@
     }
 
     async function saveTBets() {
-      if (currentUser && window.orbSaveBet) {
+      if (window.currentUser && window.orbSaveBet) {
         // Saved individually on add/delete — no bulk save needed
       } else {
         localStorage.setItem(T_KEY, JSON.stringify(tBets));
@@ -1577,7 +1572,7 @@
 
     async function tAddBet() {
       // Require sign in to log bets
-      if (!currentUser) {
+      if (!window.currentUser) {
         openAuthModal('signin');
         return;
       }
@@ -1595,7 +1590,7 @@
       if (!date)  { alert('Select a date.'); return; }
       const bet = { id: Date.now(), pick, sport, type, odds: parseInt(odds), stake, date, result, notes, pl: tCalcPL(odds, stake, result) };
       tBets.unshift(bet);
-      if (currentUser && window.orbSaveBet) {
+      if (window.currentUser && window.orbSaveBet) {
         await window.orbSaveBet(bet);
       } else {
         localStorage.setItem(T_KEY, JSON.stringify(tBets));
@@ -1666,7 +1661,7 @@
 
     async function tDeleteBet(id) {
       tBets = tBets.filter(b => b.id !== id);
-      if (currentUser && window.orbDeleteBet) {
+      if (window.currentUser && window.orbDeleteBet) {
         await window.orbDeleteBet(id);
       } else {
         localStorage.setItem(T_KEY, JSON.stringify(tBets));
@@ -1678,7 +1673,7 @@
       if (!tBets.length) return;
       if (confirm(`Delete all ${tBets.length} bets?`)) {
         tBets = [];
-        if (currentUser && window.orbDeleteAllBets) {
+        if (window.currentUser && window.orbDeleteAllBets) {
           await window.orbDeleteAllBets();
         } else {
           localStorage.setItem(T_KEY, JSON.stringify(tBets));
@@ -1691,7 +1686,7 @@
 
     // Load bets based on auth state
     async function loadTBets() {
-      if (currentUser && window.orbLoadBets) {
+      if (window.currentUser && window.orbLoadBets) {
         const cloudBets = await window.orbLoadBets();
         if (cloudBets !== null) {
           tBets = cloudBets;
