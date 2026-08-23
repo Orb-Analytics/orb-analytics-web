@@ -61,6 +61,16 @@
       .splits-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
+      .t-form-card, .chart-card { padding: 0.85rem; }
+      .summary-grid { gap: 0.5rem; }
+      .summary-grid .stat-card { padding: 0.75rem; }
+      .summary-grid .stat-card .stat-value { font-size: 1.5rem; }
+      .chart-wrap { height: 170px; }
+
+      .history-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .history-controls .filter-select { width: 100%; }
+      .history-controls .btn { grid-column: 1 / -1; width: 100%; justify-content: center; }
+
       #t-table thead { display: none; }
       #t-table, #t-table tbody, #t-table tr { display: block; width: 100%; }
       #t-table tr {
@@ -78,6 +88,10 @@
         color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; flex-shrink: 0;
       }
     }
+    @media (max-width: 480px) {
+      .t-form-grid { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 <body>
@@ -93,8 +107,15 @@
     <div class="sidebar-content">
       <main class="page">
         <div class="container" style="padding-top:1.75rem;padding-bottom:3rem">
-          <div class="section-label">Performance</div>
-          <div class="section-title" style="margin-bottom:1.5rem">Bet Tracker</div>
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem">
+            <button class="sidebar-toggle" id="sidebar-toggle">
+              <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div>
+              <div class="section-label">Performance</div>
+              <div class="section-title">Bet Tracker</div>
+            </div>
+          </div>
 
           <!-- Log a Bet -->
           <div class="t-form-card">
