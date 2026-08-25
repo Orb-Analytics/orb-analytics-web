@@ -1156,7 +1156,7 @@
           .map(p => p.edge != null ? { ...p, edge: Math.abs(p.edge) } : p);
         const pitcherDetails = await Promise.all(
           picks.map(async pick => {
-            const pitcher = pitcherMap[pick.pick];
+            const pitcher = pitcherMap[toEspnAbbr(pick.pick)];
             if (!pitcher) return null;
             const era = await fetchERA(pitcher.id);
             return { name: pitcher.fullName, era };
