@@ -1060,7 +1060,8 @@
         } else {
           const days = parseInt(dateVal, 10);
           const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
-          cutoff = maxDate - days * 24 * 60 * 60 * 1000;
+          // -1 so "days" counts inclusively (e.g. "Last 1 Day" = just the latest day)
+          cutoff = maxDate - (days - 1) * 24 * 60 * 60 * 1000;
         }
         filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
       }
