@@ -779,6 +779,11 @@
       return line > 0 ? `+${line}` : `${line}`;
     }
 
+    function fmtGameTime(iso) {
+      if (!iso) return '';
+      return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
+
     // ── Pitcher fetch ─────────────────────────────────────────────
     async function fetchProbablePitchers() {
       try {
@@ -836,7 +841,7 @@
         const status  = ev.status;
         const isLive  = status?.type?.state === 'in';
         const isFinal = status?.type?.state === 'post';
-        if (!isLive && !isFinal) return null;
+        if (!isLive && !isFinal) return { isLive: false, isFinal: false, startTime: ev.date || null };
 
         const isPickHome = pick.pick === pick.home_team;
         const home = comp?.competitors?.find(c => c.homeAway === 'home');
@@ -952,7 +957,7 @@
           </div>` : '';
 
         const li = filteredLive[i];
-        const liveBarHTML = li ? `
+        const liveBarHTML = (li && (li.isLive || li.isFinal)) ? `
           <div class="live-status-bar">
             <div class="live-status-row">
               <span class="live-score">${pick.away_team} ${li.awayScore} – ${pick.home_team} ${li.homeScore}</span>
@@ -968,7 +973,8 @@
         return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="goToGame('game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb')" style="cursor:pointer">
           <div class="pick-card-header">
             <div style="display:flex;align-items:center;gap:0.45rem">
-              ${li ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
+              ${li && (li.isLive || li.isFinal) ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
+              ${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}
               ${confPct >= 63 ? `<span class="badge badge-win">HIGH CONF</span>` : ''}
             </div>
             <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
