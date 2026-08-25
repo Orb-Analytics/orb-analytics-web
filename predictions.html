@@ -1663,9 +1663,11 @@
       document.getElementById('t-type').value  = 'Moneyline';
       document.getElementById('t-odds').value  = odds;
       updateOddsHint();
-      // On mobile the tracker sits in a hidden tab and isn't its own scroll
-      // container, so switch tabs first, then scroll the field into view
-      // (works for both the mobile page scroll and the desktop sidebar scroll).
+      // On mobile the tracker sits in a hidden tab; on desktop it can be
+      // collapsed via the Hide/Show Tracker toggle. Un-hide it either way
+      // before scrolling the field into view.
+      const pageSplit = document.getElementById('page-split');
+      if (pageSplit && pageSplit.classList.contains('tracker-collapsed')) toggleTracker();
       if (typeof switchMobileTab === 'function') switchMobileTab('tracker');
       document.getElementById('t-pick').scrollIntoView({ behavior: 'smooth', block: 'center' });
       document.getElementById('t-pick').focus();
