@@ -523,11 +523,11 @@
             ${broadcast ? `<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--purple-300);font-weight:700">${broadcast}</span>` : '<span></span>'}
           </div>
           <div class="teams-block">
-            ${teamCol(away, awayWin, homeWin, 'away', gameOdds?.awayLine, gameOdds?.pick === awayAbbr)}
+            ${teamCol(away, awayWin, homeWin, 'away', gameOdds?.awayLine, gameOdds?.pick === toModelAbbr(awayAbbr))}
             <div class="vs-col">
               <span class="vs-at">@</span>
             </div>
-            ${teamCol(home, homeWin, awayWin, 'home', gameOdds?.homeLine, gameOdds?.pick === homeAbbr)}
+            ${teamCol(home, homeWin, awayWin, 'home', gameOdds?.homeLine, gameOdds?.pick === toModelAbbr(homeAbbr))}
           </div>
           ${situationHTML}
           ${pitcherHTML}
