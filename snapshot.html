@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Snapshot Analysis · Orb Analytics</title>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="stylesheet" href="css/style.css?v=20260815" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    .snap-header {
+      padding: 1.75rem 0 1.75rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .snap-header-inner .section-label { font-weight: 700; letter-spacing: 0.14em; }
+    .snap-header-inner .section-title { font-weight: 900; }
+    @media (min-width: 769px) {
+      .snap-header-inner .section-title { font-size: clamp(2rem, 3.5vw, 2.75rem); }
+    }
+
+    .main-tabs {
+      display: flex; gap: 0.25rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.25rem; width: fit-content;
+    }
+    .main-tab {
+      padding: 0.45rem 1.25rem; border: none; background: transparent; color: var(--muted);
+      font-family: var(--font-body); font-size: 0.875rem; font-weight: 600; border-radius: var(--radius-sm);
+      cursor: pointer; transition: var(--transition);
+    }
+    .main-tab.active { background: var(--purple-600); color: white; box-shadow: var(--glow); }
+    .main-tab:hover:not(.active) { color: var(--text); background: var(--hover-tint); }
+    .main-tab.sm { padding: 0.4rem 1rem; font-size: 0.8125rem; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .snap-controls {
+      display: flex; align-items: flex-end; gap: 0.85rem; flex-wrap: wrap;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1rem 1.1rem; margin-bottom: 1.25rem;
+    }
+    .snap-control-group { display: flex; flex-direction: column; gap: 0.3rem; min-width: 168px; }
+    .snap-control-label {
+      font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; color: var(--gray-600);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .snap-swap-btn {
+      display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface);
+      color: var(--gray-600); cursor: pointer; transition: var(--transition); flex-shrink: 0;
+    }
+    .snap-swap-btn:hover { border-color: var(--hover-border); color: var(--purple-600); background: var(--hover-tint); }
+    .snap-swap-btn svg { width: 16px; height: 16px; }
+
+    .snap-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .snap-stats-grid .stat-card .stat-value { font-size: 1.5rem; }
+    .snap-stats-grid .stat-card .stat-value img { width: 22px; height: 22px; vertical-align: -4px; margin-right: 0.3rem; }
+
+    .snap-chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem 1.1rem 0.5rem; margin-bottom: 1.25rem; }
+    .snap-chart-wrap { position: relative; height: 560px; }
+    #snap-trend-chart-wrap { height: 480px; }
+    @media (max-width: 768px) { .snap-chart-wrap { height: 420px; } }
+    .snap-axis-note { font-size: 0.75rem; color: var(--gray-600); text-align: center; padding: 0.5rem 0 1rem; font-family: var(--font-mono); }
+
+    .snap-loading, .snap-error { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; padding: 4rem 1rem; color: var(--gray-600); text-align: center; }
+    .snap-error { color: var(--red); }
+
+    .coming-soon-panel {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 4rem 1.5rem; text-align: center; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+
+    @media (max-width: 640px) {
+      .snap-stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .snap-controls { flex-direction: column; align-items: stretch; }
+      .snap-control-group { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="sidebar-content">
+      <main class="page">
+        <div class="container" style="padding-top:1.75rem;padding-bottom:1rem">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem">
+            <button class="sidebar-toggle" id="sidebar-toggle">
+              <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="snap-header-inner">
+              <div class="section-label">Team Efficiency</div>
+              <div class="section-title">Snapshot Analysis</div>
+            </div>
+          </div>
+
+          <div class="main-tabs" style="margin-bottom:1.25rem">
+            <button class="main-tab" onclick="switchSnapSport('mlb')" id="snap-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
+            <button class="main-tab active" onclick="switchSnapSport('nfl')" id="snap-tab-nfl" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" height="16" style="border-radius:2px"> NFL</button>
+            <button class="main-tab" onclick="switchSnapSport('nba')" id="snap-tab-nba" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" height="16" style="border-radius:2px"> NBA</button>
+          </div>
+
+          <!-- NFL panel -->
+          <div class="tab-panel active" id="snap-panel-nfl">
+
+            <div class="main-tabs" style="margin-bottom:1.25rem">
+              <button class="main-tab sm active" onclick="switchSnapView('quadrant')" id="snap-view-tab-quadrant">Quadrant</button>
+              <button class="main-tab sm" onclick="switchSnapView('trend')" id="snap-view-tab-trend">Trend</button>
+            </div>
+
+            <div id="snap-loading" class="snap-loading">
+              <p>Loading snapshot data…</p>
+            </div>
+            <div id="snap-error" class="snap-error" style="display:none">
+              <p>Couldn't load snapshot data right now. Please try again shortly.</p>
+            </div>
+
+            <div id="snap-body" style="display:none">
+
+              <!-- Quadrant view -->
+              <div class="tab-panel active" id="snap-view-quadrant">
+                <div class="snap-controls">
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Season</label>
+                    <select class="filter-select" id="snap-season" onchange="snapRenderAll()"></select>
+                  </div>
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">X-Axis</label>
+                    <select class="filter-select" id="snap-x-metric" onchange="snapRenderQuadrant()"></select>
+                  </div>
+                  <button class="snap-swap-btn" id="snap-swap" title="Swap axes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  </button>
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Y-Axis</label>
+                    <select class="filter-select" id="snap-y-metric" onchange="snapRenderQuadrant()"></select>
+                  </div>
+                </div>
+
+                <div class="snap-stats-grid" id="snap-stats"></div>
+
+                <div class="snap-chart-card">
+                  <div class="snap-chart-wrap"><canvas id="snap-chart"></canvas></div>
+                  <div class="snap-axis-note" id="snap-axis-note"></div>
+                </div>
+              </div>
+
+              <!-- Trend view -->
+              <div class="tab-panel" id="snap-view-trend">
+                <div class="snap-controls">
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Season</label>
+                    <select class="filter-select" id="snap-trend-season" onchange="snapRenderAll()"></select>
+                  </div>
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Metric</label>
+                    <select class="filter-select" id="snap-trend-metric" onchange="snapRenderTrend()"></select>
+                  </div>
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Window</label>
+                    <select class="filter-select" id="snap-trend-window" onchange="snapRenderTrend()">
+                      <option value="3">Last 3 games</option>
+                      <option value="5">Last 5 games</option>
+                      <option value="8">Last 8 games</option>
+                      <option value="0">Full season</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="snap-chart-card">
+                  <div class="snap-chart-wrap" id="snap-trend-chart-wrap"><canvas id="snap-trend-chart"></canvas></div>
+                  <div class="snap-axis-note" id="snap-trend-axis-note"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- MLB / NBA coming soon panels -->
+          <div class="tab-panel" id="snap-panel-mlb">
+            <div class="coming-soon-panel">
+              <p style="font-weight:600;color:var(--text);font-size:1rem">MLB Snapshot Coming Soon</p>
+              <p style="font-size:0.875rem;color:var(--gray-600)">We're building out the NFL view first — MLB and NBA team efficiency snapshots are next.</p>
+            </div>
+          </div>
+          <div class="tab-panel" id="snap-panel-nba">
+            <div class="coming-soon-panel">
+              <p style="font-weight:600;color:var(--text);font-size:1rem">NBA Snapshot Coming Soon</p>
+              <p style="font-size:0.875rem;color:var(--gray-600)">We're building out the NFL view first — MLB and NBA team efficiency snapshots are next.</p>
+            </div>
+          </div>
+        </div>
+        <div class="container"><div id="site-disclaimer"></div></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/nav.js?v=20260813"></script>
+  <script>
+    buildNav('snapshot.html');
+
+    // ── Sport tabs (only NFL is wired up so far) ─────────────────────
+    function switchSnapSport(sport) {
+      ['mlb','nfl','nba'].forEach(s => {
+        document.getElementById(`snap-tab-${s}`).classList.toggle('active', s === sport);
+        document.getElementById(`snap-panel-${s}`).classList.toggle('active', s === sport);
+      });
+    }
+
+    // ── Quadrant / Trend sub-tabs ─────────────────────────────────────
+    function switchSnapView(view) {
+      ['quadrant','trend'].forEach(v => {
+        document.getElementById(`snap-view-tab-${v}`).classList.toggle('active', v === view);
+        document.getElementById(`snap-view-${v}`).classList.toggle('active', v === view);
+      });
+      if (view === 'trend') snapRenderTrend();
+      else snapRenderQuadrant();
+    }
+
+    // ── Data source ───────────────────────────────────────────────────
+    // Same nflverse play-by-play data (via nfl_data_py) that feeds the
+    // NFL model's training pipeline. NFL-Snapshot-Analysis's GitHub Action
+    // re-derives this weekly as a per-team, per-game log of raw EPA/play
+    // sums and counts -- both the Quadrant view (full-season totals) and
+    // the Trend view (any trailing-N-game window) are just different
+    // slices summed from that same per-game log, computed client-side.
+    const SNAPSHOT_DATA_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Snapshot-Analysis/main/data/snapshot_data.json';
+
+    // Team logos live in NFL-Snapshot-Analysis's own /logos folder (pulled
+    // from nflverse's official squared-logo set), keyed by the same
+    // nflverse abbreviations the data itself uses -- no ESPN hotlinking
+    // and no abbreviation-mapping table needed.
+    const LOGO_BASE_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Snapshot-Analysis/main/logos';
+    function teamLogoURL(abbr) {
+      return `${LOGO_BASE_URL}/${abbr}.png`;
+    }
+
+    // Raw per-game fields present on every team.games[] entry (mirrors
+    // GAME_SUM_FIELDS in build_snapshot.py) -- summed over whatever
+    // trailing window is selected, then run through each metric's calc().
+    const GAME_SUM_FIELDS = [
+      'off_epa_sum','off_plays','off_success_sum','off_yards_sum',
+      'off_pass_epa_sum','off_pass_plays','off_rush_epa_sum','off_rush_plays',
+      'off_explosive','off_turnovers','off_third_conv','off_third_att',
+      'off_dropbacks','off_sacks_taken','off_cpoe_sum','off_cpoe_plays',
+      'off_proe_sum','off_proe_plays','off_rz_trips','off_rz_td',
+      'def_epa_sum','def_plays','def_success_sum','def_yards_sum',
+      'def_pass_epa_sum','def_pass_plays','def_rush_epa_sum','def_rush_plays',
+      'def_explosive_allowed','def_takeaways','def_third_conv_allowed','def_third_att_faced',
+      'def_dropbacks_faced','def_sacks_forced','def_cpoe_sum','def_cpoe_plays',
+      'def_rz_trips_faced','def_rz_td_allowed',
+      'pf','pa',
+    ];
+
+    // Sums the last `n` games from a team's game log (or all games when
+    // n is falsy) into the raw totals every metric below is computed from.
+    function aggregateWindow(games, n) {
+      const slice = n ? games.slice(-n) : games;
+      const s = { games: slice.length };
+      GAME_SUM_FIELDS.forEach(f => { s[f] = slice.reduce((a, g) => a + (g[f] || 0), 0); });
+      return s;
+    }
+
+    const pct = v => (v * 100).toFixed(1) + '%';
+    const epa = v => v.toFixed(3);
+    const signed1 = v => (v >= 0 ? '+' : '') + v.toFixed(1);
+    const safeDiv = (a, b) => (b ? a / b : 0);
+
+    // ── Metrics ───────────────────────────────────────────────────────
+    // Every metric is computed from aggregateWindow()'s raw sums, so the
+    // same definitions power both the Quadrant view (full season) and
+    // the Trend view (any trailing window). `sign:-1` metrics are ones
+    // where the raw ratio is "bad when high" (EPA allowed, turnovers,
+    // sacks taken, ...) -- flipped for display so "up / further right"
+    // always reads as better, matching the reference EPA quadrant chart.
+    const SNAP_METRICS = {
+      off_epa_play:        { label: 'Offensive EPA/Play',              sign: 1,  fmt: epa, calc: s => safeDiv(s.off_epa_sum, s.off_plays) },
+      def_epa_play:        { label: 'Defensive EPA/Play Allowed',      sign: -1, fmt: epa, calc: s => safeDiv(s.def_epa_sum, s.def_plays) },
+      off_success_rate:    { label: 'Offensive Success Rate',          sign: 1,  fmt: pct, calc: s => safeDiv(s.off_success_sum, s.off_plays) },
+      def_success_rate:    { label: 'Defensive Success Rate Allowed',  sign: -1, fmt: pct, calc: s => safeDiv(s.def_success_sum, s.def_plays) },
+      off_pass_epa:        { label: 'Offensive Pass EPA/Play',         sign: 1,  fmt: epa, calc: s => safeDiv(s.off_pass_epa_sum, s.off_pass_plays) },
+      off_rush_epa:        { label: 'Offensive Rush EPA/Play',         sign: 1,  fmt: epa, calc: s => safeDiv(s.off_rush_epa_sum, s.off_rush_plays) },
+      def_pass_epa:        { label: 'Defensive Pass EPA/Play Allowed', sign: -1, fmt: epa, calc: s => safeDiv(s.def_pass_epa_sum, s.def_pass_plays) },
+      def_rush_epa:        { label: 'Defensive Rush EPA/Play Allowed', sign: -1, fmt: epa, calc: s => safeDiv(s.def_rush_epa_sum, s.def_rush_plays) },
+      point_diff:          { label: 'Point Differential / Game',       sign: 1,  fmt: signed1, calc: s => safeDiv(s.pf - s.pa, s.games) },
+      off_explosive_rate:  { label: 'Offensive Explosive-Play Rate',   sign: 1,  fmt: pct, calc: s => safeDiv(s.off_explosive, s.off_plays) },
+      def_explosive_rate:  { label: 'Defensive Explosive-Play Rate Allowed', sign: -1, fmt: pct, calc: s => safeDiv(s.def_explosive_allowed, s.def_plays) },
+      off_turnovers_g:     { label: 'Giveaways / Game',                sign: -1, fmt: v => v.toFixed(2), calc: s => safeDiv(s.off_turnovers, s.games) },
+      def_takeaways_g:     { label: 'Takeaways / Game',                sign: 1,  fmt: v => v.toFixed(2), calc: s => safeDiv(s.def_takeaways, s.games) },
+      off_third_down:      { label: 'Offensive 3rd-Down Conv. Rate',  sign: 1,  fmt: pct, calc: s => safeDiv(s.off_third_conv, s.off_third_att) },
+      def_third_down:      { label: 'Defensive 3rd-Down Rate Allowed', sign: -1, fmt: pct, calc: s => safeDiv(s.def_third_conv_allowed, s.def_third_att_faced) },
+      off_sack_rate:       { label: 'Sacks Taken / Dropback',          sign: -1, fmt: pct, calc: s => safeDiv(s.off_sacks_taken, s.off_dropbacks) },
+      def_sack_rate:       { label: 'Sacks Forced / Dropback',         sign: 1,  fmt: pct, calc: s => safeDiv(s.def_sacks_forced, s.def_dropbacks_faced) },
+      off_cpoe:            { label: 'CPOE (Completion % Over Expected)', sign: 1, fmt: v => v.toFixed(1) + ' pp', calc: s => safeDiv(s.off_cpoe_sum, s.off_cpoe_plays) },
+      def_cpoe_allowed:    { label: 'CPOE Allowed',                    sign: -1, fmt: v => v.toFixed(1) + ' pp', calc: s => safeDiv(s.def_cpoe_sum, s.def_cpoe_plays) },
+      off_proe:            { label: 'Pass Rate Over Expected (PROE)',  sign: 1,  fmt: v => v.toFixed(1) + ' pp', calc: s => safeDiv(s.off_proe_sum, s.off_proe_plays) },
+      off_yards_play:      { label: 'Offensive Yards/Play',            sign: 1,  fmt: v => v.toFixed(2), calc: s => safeDiv(s.off_yards_sum, s.off_plays) },
+      def_yards_play:      { label: 'Defensive Yards/Play Allowed',    sign: -1, fmt: v => v.toFixed(2), calc: s => safeDiv(s.def_yards_sum, s.def_plays) },
+      off_rz_td_rate:      { label: 'Red-Zone TD Rate',                sign: 1,  fmt: pct, calc: s => safeDiv(s.off_rz_td, s.off_rz_trips) },
+      def_rz_td_rate:      { label: 'Red-Zone TD Rate Allowed',        sign: -1, fmt: pct, calc: s => safeDiv(s.def_rz_td_allowed, s.def_rz_trips_faced) },
+    };
+
+    let snapAllData = null;
+    let snapChart = null;
+    let snapTrendChart = null;
+    let snapLogoImages = {}; // abbr -> HTMLImageElement (preloaded)
+
+    function metricValue(agg, metricKey) {
+      const m = SNAP_METRICS[metricKey];
+      return m.calc(agg) * m.sign;
+    }
+
+    function mean(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0) / arr.length : 0; }
+
+    function populateSelect(el, selected) {
+      el.innerHTML = Object.entries(SNAP_METRICS).map(([key, m]) =>
+        `<option value="${key}"${key===selected?' selected':''}>${m.label}</option>`
+      ).join('');
+    }
+
+    // Chart.js draws an image pointStyle at the image element's own
+    // width/height (not at pointRadius), so the loaded logos are resized
+    // down to a fixed marker size here.
+    const SNAP_LOGO_MARKER_PX = 30;
+
+    function preloadLogos(teams) {
+      return Promise.all(teams.map(t => new Promise(resolve => {
+        if (snapLogoImages[t.team]) return resolve();
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          img.width = SNAP_LOGO_MARKER_PX;
+          img.height = SNAP_LOGO_MARKER_PX;
+          snapLogoImages[t.team] = img;
+          resolve();
+        };
+        img.onerror = () => resolve(); // fall back to a plain dot if the logo fails
+        img.src = teamLogoURL(t.team);
+      })));
+    }
+
+    async function snapInit() {
+      try {
+        const res = await fetch(SNAPSHOT_DATA_URL);
+        if (!res.ok) throw new Error('bad response');
+        snapAllData = await res.json();
+      } catch (e) {
+        document.getElementById('snap-loading').style.display = 'none';
+        document.getElementById('snap-error').style.display = 'flex';
+        return;
+      }
+
+      const seasons = Object.keys(snapAllData.seasons).sort((a,b) => b - a);
+      const seasonOptions = seasons.map(s => {
+        const wk = snapAllData.seasons[s].weeks_played;
+        return `<option value="${s}">${s} season (thru wk ${wk})</option>`;
+      }).join('');
+      document.getElementById('snap-season').innerHTML = seasonOptions;
+      document.getElementById('snap-trend-season').innerHTML = seasonOptions;
+
+      populateSelect(document.getElementById('snap-x-metric'), 'off_epa_play');
+      populateSelect(document.getElementById('snap-y-metric'), 'def_epa_play');
+      populateSelect(document.getElementById('snap-trend-metric'), 'off_epa_play');
+
+      // Keep the two season selects in sync so switching Quadrant<->Trend
+      // doesn't silently change which season you're looking at.
+      document.getElementById('snap-season').addEventListener('change', function() {
+        document.getElementById('snap-trend-season').value = this.value;
+      });
+      document.getElementById('snap-trend-season').addEventListener('change', function() {
+        document.getElementById('snap-season').value = this.value;
+      });
+
+      document.getElementById('snap-swap').addEventListener('click', () => {
+        const xSel = document.getElementById('snap-x-metric');
+        const ySel = document.getElementById('snap-y-metric');
+        const tmp = xSel.value; xSel.value = ySel.value; ySel.value = tmp;
+        snapRenderQuadrant();
+      });
+
+      const teams = snapAllData.seasons[seasons[0]].teams;
+      await preloadLogos(teams);
+
+      await snapRenderAll();
+      document.getElementById('snap-loading').style.display = 'none';
+      document.getElementById('snap-body').style.display = 'block';
+    }
+
+    async function snapRenderAll() {
+      const season = document.getElementById('snap-season').value;
+      await preloadLogos(snapAllData.seasons[season].teams);
+      await snapRenderQuadrant();
+      await snapRenderTrend();
+    }
+
+    function renderStats(teams) {
+      const aggAll = teams.map(t => ({ team: t, agg: aggregateWindow(t.games, 0) }));
+      const bestOff = [...aggAll].sort((a,b) => SNAP_METRICS.off_epa_play.calc(b.agg) - SNAP_METRICS.off_epa_play.calc(a.agg))[0];
+      const bestDef = [...aggAll].sort((a,b) => SNAP_METRICS.def_epa_play.calc(a.agg) - SNAP_METRICS.def_epa_play.calc(b.agg))[0];
+      const bestDiff = [...aggAll].sort((a,b) => SNAP_METRICS.point_diff.calc(b.agg) - SNAP_METRICS.point_diff.calc(a.agg))[0];
+      const gamesPlayed = aggAll[0] ? aggAll[0].agg.games : 0;
+
+      const cardHTML = (label, entry, valueText) => `
+        <div class="stat-card">
+          <div class="stat-label">${label}</div>
+          <div class="stat-value" style="color:var(--text)">
+            <img src="${teamLogoURL(entry.team.team)}" onerror="this.style.display='none'">${entry.team.team}
+          </div>
+          <div class="stat-sub">${valueText}</div>
+        </div>`;
+
+      document.getElementById('snap-stats').innerHTML =
+        cardHTML('Best Offense', bestOff, `${SNAP_METRICS.off_epa_play.calc(bestOff.agg).toFixed(3)} EPA/play`) +
+        cardHTML('Best Defense', bestDef, `${SNAP_METRICS.def_epa_play.calc(bestDef.agg).toFixed(3)} EPA/play allowed`) +
+        cardHTML('Best Point Diff.', bestDiff, `${signed1(SNAP_METRICS.point_diff.calc(bestDiff.agg))} / game`) +
+        `<div class="stat-card"><div class="stat-label">Sample</div><div class="stat-value" style="color:var(--text)">${teams.length} teams</div><div class="stat-sub">${gamesPlayed} games played</div></div>`;
+    }
+
+    // ── Quadrant lines + number labels, drawn behind the chart data ───
+    const quadrantPlugin = {
+      id: 'quadrantPlugin',
+      beforeDatasetsDraw(chart) {
+        const { ctx, chartArea, scales } = chart;
+        const xMean = chart.$snapXMean, yMean = chart.$snapYMean;
+        if (xMean === undefined) return;
+        const xPix = scales.x.getPixelForValue(xMean);
+        const yPix = scales.y.getPixelForValue(yMean);
+
+        ctx.save();
+        ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--gray-600').trim() || '#71717A';
+        ctx.globalAlpha = 0.55;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(xPix, chartArea.top); ctx.lineTo(xPix, chartArea.bottom);
+        ctx.moveTo(chartArea.left, yPix); ctx.lineTo(chartArea.right, yPix);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        ctx.font = '600 13px var(--font-body), sans-serif';
+        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--gray-600').trim() || '#71717A';
+        const pad = 14;
+        const quadrants = [
+          { n: 1, x: chartArea.right - pad, y: chartArea.top + pad + 10, align: 'right' },
+          { n: 2, x: chartArea.left + pad, y: chartArea.top + pad + 10, align: 'left' },
+          { n: 3, x: chartArea.left + pad, y: chartArea.bottom - pad, align: 'left' },
+          { n: 4, x: chartArea.right - pad, y: chartArea.bottom - pad, align: 'right' },
+        ];
+        quadrants.forEach(q => {
+          ctx.textAlign = q.align;
+          ctx.fillText(String(q.n), q.x, q.y);
+        });
+        ctx.restore();
+      }
+    };
+
+    async function snapRenderQuadrant() {
+      if (!snapAllData) return;
+      const season = document.getElementById('snap-season').value;
+      const xKey = document.getElementById('snap-x-metric').value;
+      const yKey = document.getElementById('snap-y-metric').value;
+      if (!season) return;
+
+      const teams = snapAllData.seasons[season].teams;
+      renderStats(teams);
+      await preloadLogos(teams);
+
+      const aggs = teams.map(t => aggregateWindow(t.games, 0));
+      const xVals = aggs.map(a => metricValue(a, xKey));
+      const yVals = aggs.map(a => metricValue(a, yKey));
+      const xMean = mean(xVals), yMean = mean(yVals);
+
+      const points = teams.map((t, i) => ({ x: xVals[i], y: yVals[i], team: t }));
+      const pointImages = teams.map(t => snapLogoImages[t.team] || undefined);
+
+      const isDark = document.body.classList.contains('dark');
+      const gridColor = 'rgba(133,32,254,0.08)';
+      const tickColor = isDark ? '#A1A1AA' : '#6B7280';
+
+      if (snapChart) snapChart.destroy();
+      const ctx = document.getElementById('snap-chart').getContext('2d');
+      snapChart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+          datasets: [{
+            data: points,
+            pointStyle: pointImages.map(img => img || 'circle'),
+            pointRadius: pointImages.map(img => img ? 15 : 5),
+            pointHoverRadius: pointImages.map(img => img ? 17 : 7),
+            backgroundColor: '#9A29E9',
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: 20 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: items => items[0].raw.team.team_name || items[0].raw.team.team,
+                label: item => [
+                  `${SNAP_METRICS[xKey].label}: ${SNAP_METRICS[xKey].fmt(item.raw.x)}`,
+                  `${SNAP_METRICS[yKey].label}: ${SNAP_METRICS[yKey].fmt(item.raw.y)}`,
+                ]
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: SNAP_METRICS[xKey].label, color: tickColor, font: { family: "'Roboto Mono', monospace", size: 12 } },
+              grid: { color: gridColor },
+              ticks: { color: tickColor }
+            },
+            y: {
+              title: { display: true, text: SNAP_METRICS[yKey].label, color: tickColor, font: { family: "'Roboto Mono', monospace", size: 12 } },
+              grid: { color: gridColor },
+              ticks: { color: tickColor }
+            }
+          }
+        },
+        plugins: [quadrantPlugin]
+      });
+      snapChart.$snapXMean = xMean;
+      snapChart.$snapYMean = yMean;
+      snapChart.update();
+
+      document.getElementById('snap-axis-note').textContent =
+        `Quadrant lines mark the league-average ${SNAP_METRICS[xKey].label.toLowerCase()} and ${SNAP_METRICS[yKey].label.toLowerCase()} for the ${season} season · further up-and-right reads as better on both axes`;
+    }
+
+    // ── Diverging red -> green color scale for the Trend bar chart ────
+    function divergingColor(t) {
+      // t in [0,1]; 0 = worst (red), 0.5 = mid (pale yellow), 1 = best (green)
+      const stops = [
+        [0.00, [153, 27, 27]],   // deep red
+        [0.25, [220, 90, 60]],
+        [0.50, [245, 222, 150]], // pale yellow
+        [0.75, [110, 180, 100]],
+        [1.00, [22, 101, 52]],   // deep green
+      ];
+      for (let i = 0; i < stops.length - 1; i++) {
+        const [t0, c0] = stops[i], [t1, c1] = stops[i+1];
+        if (t >= t0 && t <= t1) {
+          const f = (t - t0) / (t1 - t0);
+          const c = c0.map((v, j) => Math.round(v + (c1[j] - v) * f));
+          return `rgb(${c[0]},${c[1]},${c[2]})`;
+        }
+      }
+      return `rgb(${stops[stops.length-1][1].join(',')})`;
+    }
+
+    async function snapRenderTrend() {
+      if (!snapAllData) return;
+      const season = document.getElementById('snap-trend-season').value;
+      const metricKey = document.getElementById('snap-trend-metric').value;
+      const windowSize = parseInt(document.getElementById('snap-trend-window').value, 10);
+      if (!season) return;
+
+      const teams = snapAllData.seasons[season].teams;
+      await preloadLogos(teams);
+
+      let rows = teams.map(t => {
+        const agg = aggregateWindow(t.games, windowSize);
+        return { team: t, value: metricValue(agg, metricKey), gamesUsed: agg.games };
+      });
+      rows.sort((a, b) => a.value - b.value); // ascending, matches the reference chart
+
+      const vals = rows.map(r => r.value);
+      const lo = Math.min(...vals), hi = Math.max(...vals);
+      const colors = vals.map(v => divergingColor(hi > lo ? (v - lo) / (hi - lo) : 0.5));
+
+      const isDark = document.body.classList.contains('dark');
+      const gridColor = 'rgba(133,32,254,0.08)';
+      const tickColor = isDark ? '#A1A1AA' : '#6B7280';
+
+      if (snapTrendChart) snapTrendChart.destroy();
+      const ctx = document.getElementById('snap-trend-chart').getContext('2d');
+      snapTrendChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: rows.map((_, i) => String(i + 1)),
+          datasets: [{
+            data: vals,
+            backgroundColor: colors,
+            borderRadius: 3,
+            barPercentage: 0.85,
+            categoryPercentage: 0.9,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 34, left: 10, right: 10, bottom: 4 } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: items => rows[items[0].dataIndex].team.team_name,
+                label: item => `${SNAP_METRICS[metricKey].label}: ${SNAP_METRICS[metricKey].fmt(rows[item.dataIndex].value)} (last ${rows[item.dataIndex].gamesUsed} games)`
+              }
+            },
+            snapTrendLogos: { rows }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Team (ranked)', color: tickColor, font: { family: "'Roboto Mono', monospace", size: 12 } },
+              grid: { display: false },
+              ticks: { color: tickColor }
+            },
+            y: {
+              // Extra headroom top and bottom so the logo drawn just past
+              // each bar's tip -- including the single most extreme bar --
+              // never gets clipped by the chart area edge.
+              min: lo - (hi - lo || Math.abs(lo) || 1) * 0.14,
+              max: hi + (hi - lo || Math.abs(hi) || 1) * 0.14,
+              title: { display: true, text: SNAP_METRICS[metricKey].label, color: tickColor, font: { family: "'Roboto Mono', monospace", size: 12 } },
+              grid: { color: gridColor },
+              ticks: { color: tickColor }
+            }
+          }
+        },
+        plugins: [trendLogoPlugin]
+      });
+
+      const windowLabel = windowSize ? `last ${windowSize} games` : 'the full season';
+      document.getElementById('snap-trend-axis-note').textContent =
+        `${SNAP_METRICS[metricKey].label} over ${windowLabel} for the ${season} season, ranked worst → best · logos mark each team's bar`;
+    }
+
+    // Draws each team's logo just above (positive bars) or below (negative
+    // bars) its bar -- same idea as the reference "3-Week EPA/Play Trend"
+    // chart, using the real preloaded logo images.
+    const trendLogoPlugin = {
+      id: 'trendLogoPlugin',
+      afterDatasetsDraw(chart, args, opts) {
+        const rows = chart.options.plugins.snapTrendLogos && chart.options.plugins.snapTrendLogos.rows;
+        if (!rows) return;
+        const { ctx } = chart;
+        const meta = chart.getDatasetMeta(0);
+        meta.data.forEach((bar, i) => {
+          const row = rows[i];
+          const img = snapLogoImages[row.team.team];
+          const size = 26;
+          const isPositive = row.value >= 0;
+          const y = isPositive ? bar.y - size - 4 : bar.y + 4;
+          if (img) {
+            ctx.drawImage(img, bar.x - size / 2, y, size, size);
+          } else {
+            ctx.save();
+            ctx.font = '700 10px var(--font-body), sans-serif';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.fillText(row.team.team, bar.x, y + size / 2 + 3);
+            ctx.restore();
+          }
+        });
+      }
+    };
+
+    snapInit();
+  </script>
+
+  <!-- Firebase (kept for parity with other pages; snapshot page itself needs no auth) -->
+  <script type="module">
+    import { onAuthChange } from './js/firebase.js';
+    onAuthChange(user => {
+      window.currentUser = user;
+      if (window.updateAuthUI) window.updateAuthUI(user);
+    });
+  </script>
+</body>
+</html>
