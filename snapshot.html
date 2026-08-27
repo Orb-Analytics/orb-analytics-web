@@ -89,28 +89,45 @@
 
     .snap-compare-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 0.5rem 1.1rem 1rem; margin-bottom: 1.25rem; overflow-x: auto;
+      padding: 0.5rem 1.25rem 1rem; margin: 0 auto 1.25rem; max-width: 760px;
     }
     .snap-compare-section-title {
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
       font-weight: 700; font-size: 0.9375rem; color: var(--text); padding: 1rem 0 0.75rem;
     }
     .snap-compare-section-title img { width: 22px; height: 22px; }
-    .snap-compare-table { width: 100%; border-collapse: collapse; }
-    .snap-compare-table th {
-      padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); font-family: var(--font-mono);
-      font-size: 0.7rem; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em;
+
+    .snap-cmp-header {
+      display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; gap: 0.6rem;
+      padding: 0.65rem 0; border-bottom: 1px solid var(--border); margin-bottom: 0.15rem;
     }
-    .snap-compare-table th.team-col { text-align: center; }
-    .snap-compare-table th.team-col img { width: 20px; height: 20px; vertical-align: -5px; margin-right: 0.35rem; }
-    .snap-compare-table td { padding: 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
-    .snap-compare-table td.snap-cmp-val { text-align: center; font-weight: 700; font-family: var(--font-mono); width: 22%; }
-    .snap-compare-table td.snap-cmp-label { text-align: center; color: var(--gray-600); font-size: 0.75rem; }
-    .snap-compare-table td.snap-cmp-win { color: #22C55E; }
-    .snap-compare-table td.snap-cmp-lose { color: var(--text); opacity: 0.5; }
-    .snap-compare-table td.snap-cmp-tie { color: var(--text); }
-    .snap-compare-table tr:last-child td { border-bottom: none; }
-    .snap-compare-sub { font-size: 0.7rem; font-weight: 400; opacity: 0.7; display: block; }
+    .snap-cmp-header-team {
+      text-align: center; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--text);
+    }
+    .snap-cmp-header-team img { width: 18px; height: 18px; vertical-align: -4px; margin-right: 0.3rem; }
+    .snap-cmp-header-label {
+      text-align: center; font-family: var(--font-mono); font-size: 0.7rem; color: var(--gray-600);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    .snap-cmp-row { padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+    .snap-cmp-row:last-child { border-bottom: none; }
+    .snap-cmp-row-label {
+      text-align: center; font-size: 0.7rem; color: var(--gray-600); margin-bottom: 0.25rem;
+      font-family: var(--font-mono);
+    }
+    .snap-cmp-row-main { display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; gap: 0.6rem; }
+    .snap-cmp-row-val { text-align: center; font-family: var(--font-mono); font-size: 0.875rem; color: var(--text); font-weight: 600; }
+    .snap-cmp-row-val.win { font-weight: 800; }
+    .snap-cmp-row-val.lose { opacity: 0.42; font-weight: 500; }
+    .snap-compare-sub { font-size: 0.65rem; font-weight: 400; opacity: 0.75; display: block; }
+
+    .snap-cmp-bar-track { display: flex; align-items: center; height: 12px; }
+    .snap-cmp-bar-half { flex: 1; height: 6px; background: var(--hover-tint); display: flex; }
+    .snap-cmp-bar-half.left { justify-content: flex-end; border-radius: 3px 0 0 3px; margin-right: 1px; }
+    .snap-cmp-bar-half.right { justify-content: flex-start; border-radius: 0 3px 3px 0; margin-left: 1px; }
+    .snap-cmp-bar-fill { height: 100%; border-radius: inherit; }
+    .snap-cmp-bar-center-dot { width: 2px; height: 14px; background: var(--gray-600); opacity: 0.5; flex-shrink: 0; }
     @media (max-width: 768px) { .snap-chart-wrap { height: 420px; } }
     .snap-axis-note { font-size: 0.75rem; color: var(--gray-600); text-align: center; padding: 0.5rem 0 1rem; font-family: var(--font-mono); }
 
@@ -1014,6 +1031,41 @@
     }
 
     // ── Compare view: two teams, head to head ──────────────────────────
+    // Green intensity scales with how lopsided the matchup is (0 = dead
+    // even, 1 = biggest possible percentile gap) -- a close row barely
+    // tints, a blowout row is vivid.
+    function advantageColor(magnitude) {
+      const alpha = 0.18 + magnitude * 0.72;
+      return `rgba(34,197,94,${alpha.toFixed(2)})`;
+    }
+
+    // One comparison row: a value on each side plus a center-anchored bar
+    // whose length AND color intensity both scale with the percentile gap
+    // between the two sides. Used by both Compare modes so a metric-vs-
+    // metric (Direct) row and an offense-vs-defense (On the Field) row
+    // read identically.
+    function compareRowHTML(label, leftFmt, leftRank, rightFmt, rightRank, pctLeft, pctRight, totalTeams) {
+      const magnitude = Math.abs(pctLeft - pctRight);
+      const winner = pctLeft > pctRight ? 'left' : pctLeft < pctRight ? 'right' : 'tie';
+      const barPct = (magnitude * 50).toFixed(1);
+      const color = advantageColor(magnitude);
+      const leftFill = winner === 'left' ? `<div class="snap-cmp-bar-fill" style="width:${barPct}%;background:${color}"></div>` : '';
+      const rightFill = winner === 'right' ? `<div class="snap-cmp-bar-fill" style="width:${barPct}%;background:${color}"></div>` : '';
+      return `
+        <div class="snap-cmp-row">
+          <div class="snap-cmp-row-label">${label}</div>
+          <div class="snap-cmp-row-main">
+            <div class="snap-cmp-row-val ${winner === 'left' ? 'win' : winner === 'right' ? 'lose' : ''}">${leftFmt}<span class="snap-compare-sub">rank ${leftRank}/${totalTeams}</span></div>
+            <div class="snap-cmp-bar-track">
+              <div class="snap-cmp-bar-half left">${leftFill}</div>
+              <div class="snap-cmp-bar-center-dot"></div>
+              <div class="snap-cmp-bar-half right">${rightFill}</div>
+            </div>
+            <div class="snap-cmp-row-val ${winner === 'right' ? 'win' : winner === 'left' ? 'lose' : ''}">${rightFmt}<span class="snap-compare-sub">rank ${rightRank}/${totalTeams}</span></div>
+          </div>
+        </div>`;
+    }
+
     async function snapRenderCompare() {
       if (!snapAllData) return;
       const season = document.getElementById('snap-compare-season').value;
@@ -1051,82 +1103,59 @@
 
       let html;
 
+      // Every mode's winner/magnitude is decided by league percentile rank
+      // for the selected window, not raw value -- that's what makes rows
+      // for wildly different metric types (an EPA/play row vs. a red-zone
+      // rate row) comparable on the same bar scale.
+      const rankCache = {};
+      const ranksFor = key => (rankCache[key] || (rankCache[key] = computeRanks(teams, key, windowSize)));
+
       if (mode === 'direct') {
-        const rows = Object.values(SNAP_METRICS).map(m => {
+        const rowsHTML = Object.entries(SNAP_METRICS).map(([key, m]) => {
           const valA = m.calc(aggA), valB = m.calc(aggB);
-          const goodA = valA * m.sign, goodB = valB * m.sign;
-          const winner = goodA > goodB ? 'a' : goodA < goodB ? 'b' : 'tie';
-          return { label: m.label, fmtA: m.fmt(valA), fmtB: m.fmt(valB), winner };
-        });
+          const rA = ranksFor(key)[teamA.team], rB = ranksFor(key)[teamB.team];
+          return compareRowHTML(m.label, m.fmt(valA), rA.rank, m.fmt(valB), rB.rank, rA.percentile, rB.percentile, teams.length);
+        }).join('');
         html = `
           <div class="snap-compare-card">
-            <table class="snap-compare-table">
-              <thead><tr>
-                <th class="team-col"><img src="${teamLogoURL(teamA.team)}" onerror="this.style.display='none'">${teamA.team}</th>
-                <th>Metric</th>
-                <th class="team-col"><img src="${teamLogoURL(teamB.team)}" onerror="this.style.display='none'">${teamB.team}</th>
-              </tr></thead>
-              <tbody>
-                ${rows.map(r => `
-                  <tr>
-                    <td class="snap-cmp-val ${r.winner === 'a' ? 'snap-cmp-win' : r.winner === 'b' ? 'snap-cmp-lose' : 'snap-cmp-tie'}">${r.fmtA}</td>
-                    <td class="snap-cmp-label">${r.label}</td>
-                    <td class="snap-cmp-val ${r.winner === 'b' ? 'snap-cmp-win' : r.winner === 'a' ? 'snap-cmp-lose' : 'snap-cmp-tie'}">${r.fmtB}</td>
-                  </tr>`).join('')}
-              </tbody>
-            </table>
+            <div class="snap-cmp-header">
+              <div class="snap-cmp-header-team"><img src="${teamLogoURL(teamA.team)}" onerror="this.style.display='none'">${teamA.team}</div>
+              <div class="snap-cmp-header-label">Metric</div>
+              <div class="snap-cmp-header-team"><img src="${teamLogoURL(teamB.team)}" onerror="this.style.display='none'">${teamB.team}</div>
+            </div>
+            ${rowsHTML}
           </div>
-          <div class="snap-axis-note">${teamA.team_name} vs ${teamB.team_name} · every metric, ${windowLabel} · green marks the better side of each row</div>
+          <div class="snap-axis-note">${teamA.team_name} vs ${teamB.team_name} · every metric, ${windowLabel} · bar length and color track each side's league-percentile edge</div>
         `;
       } else {
-        // "On the Field": each offense's raw stat against the opposing
-        // defense's raw allowed stat -- different metric types/scales, so
-        // the edge is decided by league percentile rank for the selected
-        // window, not by comparing the two raw numbers directly.
-        const rankCache = {};
-        const ranksFor = key => (rankCache[key] || (rankCache[key] = computeRanks(teams, key, windowSize)));
-
+        // "On the Field": each offense's stat against the opposing
+        // defense's allowed stat -- different metric types/scales, so the
+        // edge and bar come from percentile rank, not the raw numbers.
         const fieldSection = (offTeam, offAgg, defTeam, defAgg) => {
-          const rows = SNAP_OFF_DEF_PAIRS.map(([offKey, defKey, label]) => {
+          const rowsHTML = SNAP_OFF_DEF_PAIRS.map(([offKey, defKey, label]) => {
             const offM = SNAP_METRICS[offKey], defM = SNAP_METRICS[defKey];
-            const pctOff = ranksFor(offKey)[offTeam.team].percentile;
-            const pctDef = ranksFor(defKey)[defTeam.team].percentile;
-            const winner = pctOff > pctDef ? 'off' : pctOff < pctDef ? 'def' : 'tie';
-            return {
-              label,
-              fmtOff: offM.fmt(offM.calc(offAgg)), fmtDef: defM.fmt(defM.calc(defAgg)),
-              rankOff: ranksFor(offKey)[offTeam.team].rank, rankDef: ranksFor(defKey)[defTeam.team].rank,
-              winner,
-            };
-          });
+            const rOff = ranksFor(offKey)[offTeam.team], rDef = ranksFor(defKey)[defTeam.team];
+            return compareRowHTML(label, offM.fmt(offM.calc(offAgg)), rOff.rank, defM.fmt(defM.calc(defAgg)), rDef.rank, rOff.percentile, rDef.percentile, teams.length);
+          }).join('');
           return `
             <div class="snap-compare-section-title">
               <img src="${teamLogoURL(offTeam.team)}" onerror="this.style.display='none'">${offTeam.team} offense
               <span style="opacity:0.5">vs</span>
               <img src="${teamLogoURL(defTeam.team)}" onerror="this.style.display='none'">${defTeam.team} defense
             </div>
-            <table class="snap-compare-table">
-              <thead><tr>
-                <th class="team-col">${offTeam.team} offense</th>
-                <th>Stat</th>
-                <th class="team-col">${defTeam.team} defense</th>
-              </tr></thead>
-              <tbody>
-                ${rows.map(r => `
-                  <tr>
-                    <td class="snap-cmp-val ${r.winner === 'off' ? 'snap-cmp-win' : r.winner === 'def' ? 'snap-cmp-lose' : 'snap-cmp-tie'}">${r.fmtOff}<span class="snap-compare-sub">rank ${r.rankOff}/${teams.length}</span></td>
-                    <td class="snap-cmp-label">${r.label}</td>
-                    <td class="snap-cmp-val ${r.winner === 'def' ? 'snap-cmp-win' : r.winner === 'off' ? 'snap-cmp-lose' : 'snap-cmp-tie'}">${r.fmtDef}<span class="snap-compare-sub">rank ${r.rankDef}/${teams.length}</span></td>
-                  </tr>`).join('')}
-              </tbody>
-            </table>
+            <div class="snap-cmp-header">
+              <div class="snap-cmp-header-team">${offTeam.team} offense</div>
+              <div class="snap-cmp-header-label">Stat</div>
+              <div class="snap-cmp-header-team">${defTeam.team} defense</div>
+            </div>
+            ${rowsHTML}
           `;
         };
 
         html = `
           <div class="snap-compare-card">${fieldSection(teamA, aggA, teamB, aggB)}</div>
           <div class="snap-compare-card">${fieldSection(teamB, aggB, teamA, aggA)}</div>
-          <div class="snap-axis-note">${teamA.team_name} vs ${teamB.team_name} · ${windowLabel} · edge decided by each side's league percentile rank on that stat, since offense and defense stats aren't on the same raw scale</div>
+          <div class="snap-axis-note">${teamA.team_name} vs ${teamB.team_name} · ${windowLabel} · edge and bar length come from each side's league percentile rank on that stat</div>
         `;
       }
 
