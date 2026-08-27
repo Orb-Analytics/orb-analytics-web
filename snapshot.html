@@ -235,13 +235,13 @@
     // slices summed from that same per-game log, computed client-side.
     const SNAPSHOT_DATA_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Snapshot-Analysis/main/data/snapshot_data.json';
 
-    // Team logos live in NFL-Snapshot-Analysis's own /logos folder (pulled
-    // from nflverse's official squared-logo set), keyed by the same
-    // nflverse abbreviations the data itself uses -- no ESPN hotlinking
-    // and no abbreviation-mapping table needed.
+    // Team logos live in NFL-Snapshot-Analysis's own /logos folder, keyed by
+    // the same nflverse abbreviations the data itself uses -- no ESPN
+    // hotlinking and no abbreviation-mapping table needed.
     const LOGO_BASE_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Snapshot-Analysis/main/logos';
+    const LOGO_VERSION = '20260826'; // bump when logos/ changes so browsers don't serve stale cached images
     function teamLogoURL(abbr) {
-      return `${LOGO_BASE_URL}/${abbr}.png`;
+      return `${LOGO_BASE_URL}/${abbr}.png?v=${LOGO_VERSION}`;
     }
 
     // Raw per-game fields present on every team.games[] entry (mirrors
