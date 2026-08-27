@@ -64,6 +64,7 @@
     .snap-chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem 1.1rem 0.5rem; margin-bottom: 1.25rem; }
     .snap-chart-wrap { position: relative; height: 560px; }
     #snap-trend-chart-wrap { height: 480px; }
+    #snap-weektrend-chart-wrap { height: 480px; }
     @media (max-width: 768px) { .snap-chart-wrap { height: 420px; } }
     .snap-axis-note { font-size: 0.75rem; color: var(--gray-600); text-align: center; padding: 0.5rem 0 1rem; font-family: var(--font-mono); }
 
@@ -113,8 +114,9 @@
           <div class="tab-panel active" id="snap-panel-nfl">
 
             <div class="main-tabs" style="margin-bottom:1.25rem">
-              <button class="main-tab sm active" onclick="switchSnapView('quadrant')" id="snap-view-tab-quadrant">Quadrant</button>
-              <button class="main-tab sm" onclick="switchSnapView('trend')" id="snap-view-tab-trend">Trend</button>
+              <button class="main-tab sm active" onclick="switchSnapView('quadrant')" id="snap-view-tab-quadrant">Landscape</button>
+              <button class="main-tab sm" onclick="switchSnapView('trend')" id="snap-view-tab-trend">Recent Form</button>
+              <button class="main-tab sm" onclick="switchSnapView('weektrend')" id="snap-view-tab-weektrend">Trend</button>
             </div>
 
             <div id="snap-loading" class="snap-loading">
@@ -131,7 +133,7 @@
                 <div class="snap-controls">
                   <div class="snap-control-group">
                     <label class="snap-control-label">Season</label>
-                    <select class="filter-select" id="snap-season" onchange="snapRenderAll()"></select>
+                    <select class="filter-select" id="snap-season" onchange="snapSeasonChanged(this)"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Window</label>
@@ -164,12 +166,12 @@
                 </div>
               </div>
 
-              <!-- Trend view -->
+              <!-- Recent Form view -->
               <div class="tab-panel" id="snap-view-trend">
                 <div class="snap-controls">
                   <div class="snap-control-group">
                     <label class="snap-control-label">Season</label>
-                    <select class="filter-select" id="snap-trend-season" onchange="snapRenderAll()"></select>
+                    <select class="filter-select" id="snap-trend-season" onchange="snapSeasonChanged(this)"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Metric</label>
@@ -178,6 +180,7 @@
                   <div class="snap-control-group">
                     <label class="snap-control-label">Window</label>
                     <select class="filter-select" id="snap-trend-window" onchange="snapRenderTrend()">
+                      <option value="1" selected>Last 1 week</option>
                       <option value="3">Last 3 games</option>
                       <option value="5">Last 5 games</option>
                       <option value="8">Last 8 games</option>
@@ -189,6 +192,37 @@
                 <div class="snap-chart-card">
                   <div class="snap-chart-wrap" id="snap-trend-chart-wrap"><canvas id="snap-trend-chart"></canvas></div>
                   <div class="snap-axis-note" id="snap-trend-axis-note"></div>
+                </div>
+              </div>
+
+              <!-- Trend view: actual week-by-week trajectory for one team -->
+              <div class="tab-panel" id="snap-view-weektrend">
+                <div class="snap-controls">
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Season</label>
+                    <select class="filter-select" id="snap-weektrend-season" onchange="snapSeasonChanged(this)"></select>
+                  </div>
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Team</label>
+                    <select class="filter-select" id="snap-weektrend-team" onchange="snapRenderWeekTrend()"></select>
+                  </div>
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Metric</label>
+                    <select class="filter-select" id="snap-weektrend-metric" onchange="snapRenderWeekTrend()"></select>
+                  </div>
+                  <div class="snap-control-group">
+                    <label class="snap-control-label">Smoothing</label>
+                    <select class="filter-select" id="snap-weektrend-smoothing" onchange="snapRenderWeekTrend()">
+                      <option value="1">Raw (per game)</option>
+                      <option value="3" selected>3-game rolling avg</option>
+                      <option value="5">5-game rolling avg</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="snap-chart-card">
+                  <div class="snap-chart-wrap" id="snap-weektrend-chart-wrap"><canvas id="snap-weektrend-chart"></canvas></div>
+                  <div class="snap-axis-note" id="snap-weektrend-axis-note"></div>
                 </div>
               </div>
 
@@ -226,13 +260,17 @@
       });
     }
 
-    // ── Quadrant / Trend sub-tabs ─────────────────────────────────────
+    // ── Landscape / Recent Form / Trend sub-tabs ──────────────────────
+    // Internal ids kept as 'quadrant' and 'trend' for the first two (their
+    // logic is unchanged from before the relabel) -- 'weektrend' is the
+    // new third tab.
     function switchSnapView(view) {
-      ['quadrant','trend'].forEach(v => {
+      ['quadrant','trend','weektrend'].forEach(v => {
         document.getElementById(`snap-view-tab-${v}`).classList.toggle('active', v === view);
         document.getElementById(`snap-view-${v}`).classList.toggle('active', v === view);
       });
       if (view === 'trend') snapRenderTrend();
+      else if (view === 'weektrend') snapRenderWeekTrend();
       else snapRenderQuadrant();
     }
 
@@ -240,9 +278,10 @@
     // Same nflverse play-by-play data (via nfl_data_py) that feeds the
     // NFL model's training pipeline. NFL-Snapshot-Analysis's GitHub Action
     // re-derives this weekly as a per-team, per-game log of raw EPA/play
-    // sums and counts -- both the Quadrant view (full-season totals) and
-    // the Trend view (any trailing-N-game window) are just different
-    // slices summed from that same per-game log, computed client-side.
+    // sums and counts -- Landscape (full-season or trailing-N-week totals),
+    // Recent Form (any trailing-N-game window, ranked), and Trend (a single
+    // team's week-by-week trajectory) are all just different slices summed
+    // from that same per-game log, computed client-side.
     const SNAPSHOT_DATA_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Snapshot-Analysis/main/data/snapshot_data.json';
 
     // Team logos live in NFL-Snapshot-Analysis's own /logos folder, keyed by
@@ -322,6 +361,7 @@
     let snapAllData = null;
     let snapChart = null;
     let snapTrendChart = null;
+    let snapWeekTrendChart = null;
     let snapLogoImages = {}; // abbr -> HTMLImageElement (preloaded)
 
     function metricValue(agg, metricKey) {
@@ -376,19 +416,12 @@
       }).join('');
       document.getElementById('snap-season').innerHTML = seasonOptions;
       document.getElementById('snap-trend-season').innerHTML = seasonOptions;
+      document.getElementById('snap-weektrend-season').innerHTML = seasonOptions;
 
       populateSelect(document.getElementById('snap-x-metric'), 'off_epa_play');
       populateSelect(document.getElementById('snap-y-metric'), 'def_epa_play');
       populateSelect(document.getElementById('snap-trend-metric'), 'off_epa_play');
-
-      // Keep the two season selects in sync so switching Quadrant<->Trend
-      // doesn't silently change which season you're looking at.
-      document.getElementById('snap-season').addEventListener('change', function() {
-        document.getElementById('snap-trend-season').value = this.value;
-      });
-      document.getElementById('snap-trend-season').addEventListener('change', function() {
-        document.getElementById('snap-season').value = this.value;
-      });
+      populateSelect(document.getElementById('snap-weektrend-metric'), 'off_epa_play');
 
       document.getElementById('snap-swap').addEventListener('click', () => {
         const xSel = document.getElementById('snap-x-metric');
@@ -405,11 +438,25 @@
       document.getElementById('snap-body').style.display = 'block';
     }
 
+    // The three tabs each have their own Season select (so switching tabs
+    // never silently changes which season you're looking at), kept in sync
+    // here -- whichever one the user touches becomes the source of truth
+    // for this render pass, and its value is copied onto the other two
+    // before anything re-renders.
+    function snapSeasonChanged(sourceEl) {
+      ['snap-season', 'snap-trend-season', 'snap-weektrend-season'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el !== sourceEl) el.value = sourceEl.value;
+      });
+      snapRenderAll();
+    }
+
     async function snapRenderAll() {
       const season = document.getElementById('snap-season').value;
       await preloadLogos(snapAllData.seasons[season].teams);
       await snapRenderQuadrant();
       await snapRenderTrend();
+      await snapRenderWeekTrend();
     }
 
     function renderStats(teams, windowSize) {
@@ -645,7 +692,7 @@
         plugins: [trendLogoPlugin]
       });
 
-      const windowLabel = windowSize ? `last ${windowSize} games` : 'the full season';
+      const windowLabel = windowSize ? `last ${windowSize} game${windowSize === 1 ? '' : 's'}` : 'the full season';
       document.getElementById('snap-trend-axis-note').textContent =
         `${SNAP_METRICS[metricKey].label} over ${windowLabel} for the ${season} season, ranked worst → best · logos mark each team's bar`;
     }
@@ -679,6 +726,125 @@
         });
       }
     };
+
+    // ── Trend view: one team's actual week-by-week trajectory ─────────
+    // Unlike Recent Form (a single trailing-window snapshot, ranked across
+    // teams), this plots every game in the season for one team, so you can
+    // see whether they're actually improving or declining -- a faint raw
+    // per-game line plus a bold trailing-average line on top of it.
+    function rollingMetricSeries(games, metricKey, windowSize) {
+      const m = SNAP_METRICS[metricKey];
+      return games.map((_, i) => {
+        const start = Math.max(0, i - windowSize + 1);
+        const slice = games.slice(start, i + 1);
+        const agg = { games: slice.length };
+        GAME_SUM_FIELDS.forEach(f => { agg[f] = slice.reduce((a, g) => a + (g[f] || 0), 0); });
+        return m.calc(agg);
+      });
+    }
+
+    async function snapRenderWeekTrend() {
+      if (!snapAllData) return;
+      const season = document.getElementById('snap-weektrend-season').value;
+      if (!season) return;
+
+      const teams = snapAllData.seasons[season].teams;
+
+      // Team list can shift across seasons (relocations/expansion) -- only
+      // rebuild the select when it's out of sync with the current season.
+      const teamSel = document.getElementById('snap-weektrend-team');
+      const currentOptionTeams = Array.from(teamSel.options).map(o => o.value).sort().join(',');
+      const seasonTeams = teams.map(t => t.team).sort().join(',');
+      if (currentOptionTeams !== seasonTeams) {
+        const prevSelected = teamSel.value;
+        const sorted = [...teams].sort((a, b) => a.team.localeCompare(b.team));
+        teamSel.innerHTML = sorted.map(t => `<option value="${t.team}">${t.team} — ${t.team_name}</option>`).join('');
+        if (sorted.some(t => t.team === prevSelected)) teamSel.value = prevSelected;
+      }
+
+      const team = teams.find(t => t.team === teamSel.value);
+      if (!team) return;
+      await preloadLogos([team]);
+
+      const metricKey = document.getElementById('snap-weektrend-metric').value;
+      const smoothing = parseInt(document.getElementById('snap-weektrend-smoothing').value, 10);
+      const m = SNAP_METRICS[metricKey];
+      const games = team.games;
+
+      const rawValues = rollingMetricSeries(games, metricKey, 1);
+      const smoothedValues = rollingMetricSeries(games, metricKey, smoothing);
+      const labels = games.map(g => `Wk ${g.week}`);
+
+      const isDark = document.body.classList.contains('dark');
+      const gridColor = 'rgba(133,32,254,0.08)';
+      const tickColor = isDark ? '#A1A1AA' : '#6B7280';
+
+      if (snapWeekTrendChart) snapWeekTrendChart.destroy();
+      const ctx = document.getElementById('snap-weektrend-chart').getContext('2d');
+      snapWeekTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Single game',
+              data: rawValues,
+              borderColor: 'rgba(154,41,233,0.3)',
+              backgroundColor: 'rgba(154,41,233,0.3)',
+              borderWidth: 1,
+              pointRadius: 3,
+              pointBackgroundColor: 'rgba(154,41,233,0.45)',
+              tension: 0,
+              order: 2,
+            },
+            {
+              label: `${smoothing}-game rolling avg`,
+              data: smoothedValues,
+              borderColor: '#9A29E9',
+              backgroundColor: '#9A29E9',
+              borderWidth: 3,
+              pointRadius: 4,
+              pointBackgroundColor: '#9A29E9',
+              tension: 0.3,
+              order: 1,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: 16 },
+          plugins: {
+            legend: { display: smoothing > 1, labels: { color: tickColor } },
+            tooltip: {
+              callbacks: {
+                title: items => `${labels[items[0].dataIndex]} vs ${games[items[0].dataIndex].opponent}`,
+                label: item => item.datasetIndex === 0
+                  ? `Single game: ${m.fmt(rawValues[item.dataIndex])}`
+                  : `${smoothing}-game avg: ${m.fmt(smoothedValues[item.dataIndex])}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Week', color: tickColor, font: { family: "'Roboto Mono', monospace", size: 12 } },
+              grid: { display: false },
+              ticks: { color: tickColor }
+            },
+            y: {
+              title: { display: true, text: m.label, color: tickColor, font: { family: "'Roboto Mono', monospace", size: 12 } },
+              grid: { color: gridColor },
+              ticks: { color: tickColor, callback: v => m.fmt(v) }
+            }
+          }
+        }
+      });
+
+      const direction = m.sign === 1 ? 'higher is better' : 'lower is better';
+      const smoothingLabel = smoothing > 1 ? `bold line is the ${smoothing}-game rolling average, faint points are each individual game` : 'each point is that single game\'s value';
+      document.getElementById('snap-weektrend-axis-note').textContent =
+        `${team.team_name} · ${m.label} by week for the ${season} season (${direction}) · ${smoothingLabel}`;
+    }
 
     snapInit();
   </script>
