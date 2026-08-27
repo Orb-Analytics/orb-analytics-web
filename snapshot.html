@@ -65,6 +65,27 @@
     .snap-chart-wrap { position: relative; height: 560px; }
     #snap-trend-chart-wrap { height: 480px; }
     #snap-weektrend-chart-wrap { height: 480px; }
+
+    .snap-team-select-btn {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+      cursor: pointer; text-align: left;
+    }
+    .snap-team-select-btn::after {
+      content: ''; width: 0; height: 0; flex-shrink: 0;
+      border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--gray-600);
+    }
+    .snap-team-panel {
+      position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; width: 240px; max-height: 280px;
+      overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.4rem; box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+    }
+    .snap-team-panel label {
+      display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.4rem; border-radius: var(--radius-sm);
+      font-size: 0.8125rem; color: var(--text); cursor: pointer;
+    }
+    .snap-team-panel label:hover { background: var(--hover-tint); }
+    .snap-team-panel img { width: 18px; height: 18px; flex-shrink: 0; }
+    .snap-team-panel input { flex-shrink: 0; }
     @media (max-width: 768px) { .snap-chart-wrap { height: 420px; } }
     .snap-axis-note { font-size: 0.75rem; color: var(--gray-600); text-align: center; padding: 0.5rem 0 1rem; font-family: var(--font-mono); }
 
@@ -195,16 +216,17 @@
                 </div>
               </div>
 
-              <!-- Trend view: actual week-by-week trajectory for one team -->
+              <!-- Trend view: actual week-by-week trajectory, one or more teams -->
               <div class="tab-panel" id="snap-view-weektrend">
                 <div class="snap-controls">
                   <div class="snap-control-group">
                     <label class="snap-control-label">Season</label>
                     <select class="filter-select" id="snap-weektrend-season" onchange="snapSeasonChanged(this)"></select>
                   </div>
-                  <div class="snap-control-group">
-                    <label class="snap-control-label">Team</label>
-                    <select class="filter-select" id="snap-weektrend-team" onchange="snapRenderWeekTrend()"></select>
+                  <div class="snap-control-group" style="position:relative">
+                    <label class="snap-control-label">Teams</label>
+                    <button type="button" class="filter-select snap-team-select-btn" id="snap-weektrend-team-btn" onclick="toggleWeekTrendTeamPanel()"></button>
+                    <div class="snap-team-panel" id="snap-weektrend-team-panel" style="display:none"></div>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Metric</label>
@@ -428,6 +450,14 @@
         const ySel = document.getElementById('snap-y-metric');
         const tmp = xSel.value; xSel.value = ySel.value; ySel.value = tmp;
         snapRenderQuadrant();
+      });
+
+      document.addEventListener('click', (e) => {
+        const panel = document.getElementById('snap-weektrend-team-panel');
+        const btn = document.getElementById('snap-weektrend-team-btn');
+        if (panel.style.display === 'block' && !panel.contains(e.target) && e.target !== btn) {
+          panel.style.display = 'none';
+        }
       });
 
       const teams = snapAllData.seasons[seasons[0]].teams;
@@ -727,11 +757,20 @@
       }
     };
 
-    // ── Trend view: one team's actual week-by-week trajectory ─────────
+    // ── Trend view: real week-by-week trajectory, one or more teams ───
     // Unlike Recent Form (a single trailing-window snapshot, ranked across
-    // teams), this plots every game in the season for one team, so you can
-    // see whether they're actually improving or declining -- a faint raw
-    // per-game line plus a bold trailing-average line on top of it.
+    // teams), this plots every week of the season so you can see whether a
+    // team is actually improving or declining -- and, since any number of
+    // teams can be selected, compare them directly against each other.
+    // Points are drawn as each team's own logo, aligned on a shared 1..N
+    // week axis (not just game order) so bye weeks don't misalign teams
+    // against each other when comparing.
+    const SNAP_TEAM_COLORS = [
+      '#9A29E9', '#F97316', '#22C55E', '#EF4444', '#3B82F6',
+      '#EAB308', '#EC4899', '#14B8A6', '#8B5CF6', '#84CC16',
+    ];
+    let snapWeekTrendSelectedTeams = new Set();
+
     function rollingMetricSeries(games, metricKey, windowSize) {
       const m = SNAP_METRICS[metricKey];
       return games.map((_, i) => {
@@ -743,85 +782,113 @@
       });
     }
 
+    function toggleWeekTrendTeamPanel(forceClose) {
+      const panel = document.getElementById('snap-weektrend-team-panel');
+      panel.style.display = (forceClose || panel.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function updateWeekTrendTeamButtonLabel(teams) {
+      const btn = document.getElementById('snap-weektrend-team-btn');
+      const selected = teams.filter(t => snapWeekTrendSelectedTeams.has(t.team));
+      if (selected.length === 0) { btn.textContent = 'Select teams…'; return; }
+      btn.textContent = selected.length <= 3
+        ? selected.map(t => t.team).join(', ')
+        : `${selected.slice(0, 3).map(t => t.team).join(', ')} +${selected.length - 3} more`;
+    }
+
+    // Keeps at least one team selected -- unchecking the last remaining
+    // team re-checks its own box instead of leaving the chart empty.
+    function snapWeekTrendTeamToggle(abbr, checked) {
+      if (!checked && snapWeekTrendSelectedTeams.size === 1 && snapWeekTrendSelectedTeams.has(abbr)) {
+        document.getElementById(`snap-weektrend-team-cb-${abbr}`).checked = true;
+        return;
+      }
+      if (checked) snapWeekTrendSelectedTeams.add(abbr);
+      else snapWeekTrendSelectedTeams.delete(abbr);
+      snapRenderWeekTrend();
+    }
+
+    function populateWeekTrendTeamPanel(teams) {
+      const panel = document.getElementById('snap-weektrend-team-panel');
+      const sorted = [...teams].sort((a, b) => a.team.localeCompare(b.team));
+      panel.innerHTML = sorted.map(t => `
+        <label>
+          <input type="checkbox" id="snap-weektrend-team-cb-${t.team}" ${snapWeekTrendSelectedTeams.has(t.team) ? 'checked' : ''}
+            onchange="snapWeekTrendTeamToggle('${t.team}', this.checked)">
+          <img src="${teamLogoURL(t.team)}" onerror="this.style.display='none'">${t.team} — ${t.team_name}
+        </label>
+      `).join('');
+    }
+
     async function snapRenderWeekTrend() {
       if (!snapAllData) return;
       const season = document.getElementById('snap-weektrend-season').value;
       if (!season) return;
 
-      const teams = snapAllData.seasons[season].teams;
+      const seasonData = snapAllData.seasons[season];
+      const teams = seasonData.teams;
 
-      // Team list can shift across seasons (relocations/expansion) -- only
-      // rebuild the select when it's out of sync with the current season.
-      const teamSel = document.getElementById('snap-weektrend-team');
-      const currentOptionTeams = Array.from(teamSel.options).map(o => o.value).sort().join(',');
-      const seasonTeams = teams.map(t => t.team).sort().join(',');
-      if (currentOptionTeams !== seasonTeams) {
-        const prevSelected = teamSel.value;
-        const sorted = [...teams].sort((a, b) => a.team.localeCompare(b.team));
-        teamSel.innerHTML = sorted.map(t => `<option value="${t.team}">${t.team} — ${t.team_name}</option>`).join('');
-        if (sorted.some(t => t.team === prevSelected)) teamSel.value = prevSelected;
-      }
+      // Team list can shift across seasons (relocations/expansion) -- drop
+      // any selected team that no longer exists, and fall back to the
+      // first team alphabetically if that empties the selection.
+      const seasonTeamSet = new Set(teams.map(t => t.team));
+      const stillValid = [...snapWeekTrendSelectedTeams].filter(t => seasonTeamSet.has(t));
+      snapWeekTrendSelectedTeams = stillValid.length
+        ? new Set(stillValid)
+        : new Set([[...teams].sort((a, b) => a.team.localeCompare(b.team))[0].team]);
 
-      const team = teams.find(t => t.team === teamSel.value);
-      if (!team) return;
-      await preloadLogos([team]);
+      populateWeekTrendTeamPanel(teams);
+      updateWeekTrendTeamButtonLabel(teams);
+
+      const selectedTeams = teams.filter(t => snapWeekTrendSelectedTeams.has(t.team));
+      await preloadLogos(selectedTeams);
 
       const metricKey = document.getElementById('snap-weektrend-metric').value;
       const smoothing = parseInt(document.getElementById('snap-weektrend-smoothing').value, 10);
       const m = SNAP_METRICS[metricKey];
-      const games = team.games;
-
-      const rawValues = rollingMetricSeries(games, metricKey, 1);
-      const smoothedValues = rollingMetricSeries(games, metricKey, smoothing);
-      const labels = games.map(g => `Wk ${g.week}`);
+      const weeksPlayed = seasonData.weeks_played;
+      const labels = Array.from({ length: weeksPlayed }, (_, i) => `Wk ${i + 1}`);
 
       const isDark = document.body.classList.contains('dark');
       const gridColor = 'rgba(133,32,254,0.08)';
       const tickColor = isDark ? '#A1A1AA' : '#6B7280';
 
+      const datasets = selectedTeams.map((team, i) => {
+        const rolling = rollingMetricSeries(team.games, metricKey, smoothing);
+        const byWeek = new Array(weeksPlayed).fill(null);
+        team.games.forEach((g, gi) => { byWeek[g.week - 1] = rolling[gi]; });
+        const color = SNAP_TEAM_COLORS[i % SNAP_TEAM_COLORS.length];
+        const logo = snapLogoImages[team.team];
+        return {
+          label: team.team,
+          data: byWeek,
+          borderColor: color,
+          backgroundColor: color,
+          borderWidth: 2.5,
+          pointStyle: logo || 'circle',
+          pointRadius: logo ? 13 : 4,
+          pointHoverRadius: logo ? 15 : 6,
+          tension: 0.25,
+          spanGaps: true, // bridge bye weeks instead of breaking the line
+        };
+      });
+
       if (snapWeekTrendChart) snapWeekTrendChart.destroy();
       const ctx = document.getElementById('snap-weektrend-chart').getContext('2d');
       snapWeekTrendChart = new Chart(ctx, {
         type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Single game',
-              data: rawValues,
-              borderColor: 'rgba(154,41,233,0.3)',
-              backgroundColor: 'rgba(154,41,233,0.3)',
-              borderWidth: 1,
-              pointRadius: 3,
-              pointBackgroundColor: 'rgba(154,41,233,0.45)',
-              tension: 0,
-              order: 2,
-            },
-            {
-              label: `${smoothing}-game rolling avg`,
-              data: smoothedValues,
-              borderColor: '#9A29E9',
-              backgroundColor: '#9A29E9',
-              borderWidth: 3,
-              pointRadius: 4,
-              pointBackgroundColor: '#9A29E9',
-              tension: 0.3,
-              order: 1,
-            }
-          ]
-        },
+        data: { labels, datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           layout: { padding: 16 },
+          interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { display: smoothing > 1, labels: { color: tickColor } },
+            legend: { display: datasets.length > 1, labels: { color: tickColor } },
             tooltip: {
               callbacks: {
-                title: items => `${labels[items[0].dataIndex]} vs ${games[items[0].dataIndex].opponent}`,
-                label: item => item.datasetIndex === 0
-                  ? `Single game: ${m.fmt(rawValues[item.dataIndex])}`
-                  : `${smoothing}-game avg: ${m.fmt(smoothedValues[item.dataIndex])}`
+                title: items => labels[items[0].dataIndex],
+                label: item => `${item.dataset.label}: ${item.raw === null ? 'bye' : m.fmt(item.raw)}`
               }
             }
           },
@@ -841,9 +908,10 @@
       });
 
       const direction = m.sign === 1 ? 'higher is better' : 'lower is better';
-      const smoothingLabel = smoothing > 1 ? `bold line is the ${smoothing}-game rolling average, faint points are each individual game` : 'each point is that single game\'s value';
+      const smoothingLabel = smoothing > 1 ? `${smoothing}-game rolling average` : 'raw per-game value';
+      const teamLabel = selectedTeams.length === 1 ? selectedTeams[0].team_name : `${selectedTeams.length} teams`;
       document.getElementById('snap-weektrend-axis-note').textContent =
-        `${team.team_name} · ${m.label} by week for the ${season} season (${direction}) · ${smoothingLabel}`;
+        `${teamLabel} · ${m.label} by week for the ${season} season (${direction}) · ${smoothingLabel} · logos mark each data point`;
     }
 
     snapInit();
