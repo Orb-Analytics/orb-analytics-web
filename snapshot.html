@@ -134,6 +134,16 @@
                     <select class="filter-select" id="snap-season" onchange="snapRenderAll()"></select>
                   </div>
                   <div class="snap-control-group">
+                    <label class="snap-control-label">Window</label>
+                    <select class="filter-select" id="snap-window" onchange="snapRenderQuadrant()">
+                      <option value="0" selected>Season to date</option>
+                      <option value="1">Last 1 week</option>
+                      <option value="3">Last 3 weeks</option>
+                      <option value="5">Last 5 weeks</option>
+                      <option value="10">Last 10 weeks</option>
+                    </select>
+                  </div>
+                  <div class="snap-control-group">
                     <label class="snap-control-label">X-Axis</label>
                     <select class="filter-select" id="snap-x-metric" onchange="snapRenderQuadrant()"></select>
                   </div>
@@ -402,8 +412,8 @@
       await snapRenderTrend();
     }
 
-    function renderStats(teams) {
-      const aggAll = teams.map(t => ({ team: t, agg: aggregateWindow(t.games, 0) }));
+    function renderStats(teams, windowSize) {
+      const aggAll = teams.map(t => ({ team: t, agg: aggregateWindow(t.games, windowSize) }));
       const bestOff = [...aggAll].sort((a,b) => SNAP_METRICS.off_epa_play.calc(b.agg) - SNAP_METRICS.off_epa_play.calc(a.agg))[0];
       const bestDef = [...aggAll].sort((a,b) => SNAP_METRICS.def_epa_play.calc(a.agg) - SNAP_METRICS.def_epa_play.calc(b.agg))[0];
       const bestDiff = [...aggAll].sort((a,b) => SNAP_METRICS.point_diff.calc(b.agg) - SNAP_METRICS.point_diff.calc(a.agg))[0];
@@ -465,15 +475,16 @@
     async function snapRenderQuadrant() {
       if (!snapAllData) return;
       const season = document.getElementById('snap-season').value;
+      const windowSize = parseInt(document.getElementById('snap-window').value, 10);
       const xKey = document.getElementById('snap-x-metric').value;
       const yKey = document.getElementById('snap-y-metric').value;
       if (!season) return;
 
       const teams = snapAllData.seasons[season].teams;
-      renderStats(teams);
+      renderStats(teams, windowSize);
       await preloadLogos(teams);
 
-      const aggs = teams.map(t => aggregateWindow(t.games, 0));
+      const aggs = teams.map(t => aggregateWindow(t.games, windowSize));
       const xVals = aggs.map(a => metricValue(a, xKey));
       const yVals = aggs.map(a => metricValue(a, yKey));
       const xMean = mean(xVals), yMean = mean(yVals);
@@ -533,8 +544,11 @@
       snapChart.$snapYMean = yMean;
       snapChart.update();
 
+      const windowLabel = windowSize
+        ? `the last ${windowSize} week${windowSize === 1 ? '' : 's'} of the ${season} season`
+        : `the ${season} season`;
       document.getElementById('snap-axis-note').textContent =
-        `Quadrant lines mark the league-average ${SNAP_METRICS[xKey].label.toLowerCase()} and ${SNAP_METRICS[yKey].label.toLowerCase()} for the ${season} season · further up-and-right reads as better on both axes`;
+        `Quadrant lines mark the league-average ${SNAP_METRICS[xKey].label.toLowerCase()} and ${SNAP_METRICS[yKey].label.toLowerCase()} for ${windowLabel} · further up-and-right reads as better on both axes`;
     }
 
     // ── Diverging red -> green color scale for the Trend bar chart ────
