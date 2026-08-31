@@ -1065,7 +1065,8 @@
 
   <!-- Firebase -->
   <script type="module">
-    import { onAuthChange } from './js/firebase.js';
+    import { onAuthChange, logOut } from './js/firebase.js';
+    window.orbSignOut = logOut;
     onAuthChange(user => {
       window.currentUser = user;
       if (window.updateAuthUI) window.updateAuthUI(user);

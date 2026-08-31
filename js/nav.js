@@ -353,7 +353,16 @@ window.handleSignOut = async function() {
 
 window.confirmSignOut = async function() {
   document.getElementById('signout-modal').style.display = 'none';
-  await window.orbSignOut();
+  let attempts = 0;
+  while (!window.orbSignOut && attempts < 20) {
+    await new Promise(r => setTimeout(r, 100));
+    attempts++;
+  }
+  if (window.orbSignOut) {
+    await window.orbSignOut();
+  } else {
+    console.error('orbSignOut not available');
+  }
 };
 
 // ── Gate game clickthroughs behind sign-up ─────────────────────────
