@@ -314,6 +314,45 @@ window.updateAuthUI = function(user) {
 };
 
 window.handleSignOut = async function() {
+  // Inject confirmation modal if not already there
+  if (!document.getElementById('signout-modal')) {
+    const m = document.createElement('div');
+    m.id = 'signout-modal';
+    m.style.cssText = `
+      display:none;position:fixed;inset:0;z-index:1001;
+      background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);
+      align-items:center;justify-content:center;padding:1rem;
+    `;
+    m.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;
+                  padding:2rem;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.15);text-align:center">
+        <div style="font-size:2rem;margin-bottom:0.75rem">👋</div>
+        <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Sign out?</div>
+        <div style="font-size:0.875rem;color:var(--gray-600);margin-bottom:1.5rem">Your bets are saved and will be here when you come back.</div>
+        <div style="display:flex;gap:0.75rem">
+          <button onclick="document.getElementById('signout-modal').style.display='none'"
+            style="flex:1;padding:0.65rem;background:transparent;color:var(--text);
+                   border:1px solid var(--border);border-radius:8px;font-family:var(--font-body);
+                   font-size:0.875rem;font-weight:600;cursor:pointer;transition:all 0.2s"
+            onmouseover="this.style.background='var(--gray-100)'"
+            onmouseout="this.style.background='transparent'">Cancel</button>
+          <button onclick="confirmSignOut()"
+            style="flex:1;padding:0.65rem;background:var(--red);color:white;
+                   border:none;border-radius:8px;font-family:var(--font-body);
+                   font-size:0.875rem;font-weight:600;cursor:pointer;transition:opacity 0.2s"
+            onmouseover="this.style.opacity='0.85'"
+            onmouseout="this.style.opacity='1'">Sign Out</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(m);
+    m.addEventListener('click', e => { if (e.target === m) m.style.display = 'none'; });
+  }
+  document.getElementById('signout-modal').style.display = 'flex';
+};
+
+window.confirmSignOut = async function() {
+  document.getElementById('signout-modal').style.display = 'none';
   await window.orbSignOut();
 };
 
