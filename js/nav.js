@@ -239,7 +239,20 @@ function buildNav(activePage = '') {
         <div class="sidebar-footer">
           <!-- Auth section -->
           <div id="sidebar-auth" style="margin-bottom:0.75rem">
-            <div id="sidebar-signed-out" style="display:none"></div>
+            <div id="sidebar-signed-out" style="display:none">
+              <button onclick="openAuthModal('signin')"
+                style="width:100%;padding:0.55rem;background:var(--purple-600);color:white;border:none;
+                       border-radius:8px;font-family:var(--font-body);font-size:0.82rem;font-weight:600;
+                       cursor:pointer;margin-bottom:0.35rem;transition:background 0.2s"
+                onmouseover="this.style.background='var(--purple-500)'"
+                onmouseout="this.style.background='var(--purple-600)'">Sign In</button>
+              <button onclick="openAuthModal('signup')"
+                style="width:100%;padding:0.55rem;background:transparent;color:var(--purple-600);
+                       border:1px solid var(--purple-600);border-radius:8px;font-family:var(--font-body);
+                       font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s"
+                onmouseover="this.style.background='rgba(107,33,168,0.08)'"
+                onmouseout="this.style.background='transparent'">Create Account</button>
+            </div>
             <div id="sidebar-signed-in" style="display:none">
               <div id="sidebar-user-email"
                 style="font-size:0.75rem;color:var(--gray-600);margin-bottom:0.5rem;
