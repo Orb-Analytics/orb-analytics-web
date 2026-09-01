@@ -385,12 +385,13 @@
     // Recent Form (any trailing-N-game window, ranked), and Trend (a single
     // team's week-by-week trajectory) are all just different slices summed
     // from that same per-game log, computed client-side.
-    const SNAPSHOT_DATA_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Snapshot-Analysis/main/data/snapshot_data.json';
+    const SNAPSHOT_DATA_URL = '/data/nfl-snapshot/snapshot_data.json';
 
-    // Team logos live in NFL-Snapshot-Analysis's own /logos folder, keyed by
+    // Team logos live in this repo's data/nfl-snapshot/logos folder (pushed
+    // there by the NFL-Snapshot-Analysis repo's own GitHub Action), keyed by
     // the same nflverse abbreviations the data itself uses -- no ESPN
     // hotlinking and no abbreviation-mapping table needed.
-    const LOGO_BASE_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Snapshot-Analysis/main/logos';
+    const LOGO_BASE_URL = '/data/nfl-snapshot/logos';
     const LOGO_VERSION = '20260826'; // bump when logos/ changes so browsers don't serve stale cached images
     function teamLogoURL(abbr) {
       return `${LOGO_BASE_URL}/${abbr}.png?v=${LOGO_VERSION}`;
@@ -539,6 +540,9 @@
         const res = await fetch(SNAPSHOT_DATA_URL);
         if (!res.ok) throw new Error('bad response');
         snapAllData = await res.json();
+        if (!snapAllData.seasons || Object.keys(snapAllData.seasons).length === 0) {
+          throw new Error('no seasons yet');
+        }
       } catch (e) {
         document.getElementById('snap-loading').style.display = 'none';
         document.getElementById('snap-error').style.display = 'flex';

@@ -702,11 +702,11 @@
   <script>
     buildNav('predictions.html');
 
-    const PREDICTIONS_URL = 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json';
+    const PREDICTIONS_URL = '/data/mlb/predictions.json';
     const HISTORY_URLS = {
-      mlb: 'https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions_history.json',
-      nba: 'https://raw.githubusercontent.com/Orb-Analytics/NBA-Model/main/nba_predictions_history.json',
-      nfl: 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Model/main/predictions_history.json'
+      mlb: '/data/mlb/predictions_history.json',
+      nba: '/data/nba/predictions_history.json',
+      nfl: '/data/nfl/predictions_history.json'
     };
 
     const TEAM_ESPN = {
@@ -743,7 +743,7 @@
     // number, no pitcher concept) that a shared function would need
     // several sport branches anyway, and this repo's MLB integration is
     // live in production -- not worth the regression risk to touch it.
-    const NFL_PREDICTIONS_URL = 'https://raw.githubusercontent.com/Orb-Analytics/NFL-Model/main/predictions.json';
+    const NFL_PREDICTIONS_URL = '/data/nfl/predictions.json';
 
     // home_team/away_team/pick in NFL-Model's predictions.json are
     // nflverse's own team abbreviations. ESPN's NFL logo path uses ESPN's

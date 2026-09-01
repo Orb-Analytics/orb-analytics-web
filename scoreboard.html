@@ -327,7 +327,7 @@
 
     async function fetchOdds() {
       try {
-        const res  = await fetch('https://raw.githubusercontent.com/Orb-Analytics/MLB-Model/main/predictions.json');
+        const res  = await fetch('/data/mlb/predictions.json');
         const data = await res.json();
         const map  = {};
         for (const pick of data.picks || []) {
