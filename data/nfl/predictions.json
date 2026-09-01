@@ -1,6 +1,71 @@
 {
   "model": "NFL",
-  "generated_at": null,
-  "version": null,
-  "picks": []
+  "generated_at": "2026-08-27T01:59:34Z",
+  "version": "v3.1-2model-raw-edge-symmetric-1pct-ewma10",
+  "picks": [
+    {
+      "game_id": "2026_01_CHI_CAR",
+      "home_team": "CAR",
+      "away_team": "CHI",
+      "pick": "CAR",
+      "has_pick": true,
+      "confidence": 0.5033,
+      "spread": 2.5,
+      "home_odds": 113,
+      "away_odds": -141,
+      "line": 113,
+      "market_implied": 0.4695,
+      "edge": 3.38,
+      "is_favorite": false,
+      "notes": "2-model avg (logit+xgb), edge +3.38% (underdog)"
+    },
+    {
+      "game_id": "2026_01_BUF_HOU",
+      "home_team": "HOU",
+      "away_team": "BUF",
+      "pick": "BUF",
+      "has_pick": true,
+      "confidence": 0.5249,
+      "spread": -1.5,
+      "home_odds": -147,
+      "away_odds": -102,
+      "line": -102,
+      "market_implied": 0.505,
+      "edge": 1.99,
+      "is_favorite": true,
+      "notes": "2-model avg (logit+xgb), edge +1.99% (favorite)"
+    },
+    {
+      "game_id": "2026_01_CLE_JAX",
+      "home_team": "JAX",
+      "away_team": "CLE",
+      "pick": "CLE",
+      "has_pick": true,
+      "confidence": 0.5034,
+      "spread": 7.5,
+      "home_odds": -111,
+      "away_odds": 106,
+      "line": 106,
+      "market_implied": 0.4854,
+      "edge": 1.8,
+      "is_favorite": false,
+      "notes": "2-model avg (logit+xgb), edge +1.80% (underdog)"
+    },
+    {
+      "game_id": "2026_01_NYJ_TEN",
+      "home_team": "TEN",
+      "away_team": "NYJ",
+      "pick": "NYJ",
+      "has_pick": true,
+      "confidence": 0.5354,
+      "spread": 2.5,
+      "home_odds": -127,
+      "away_odds": -108,
+      "line": -108,
+      "market_implied": 0.5192,
+      "edge": 1.62,
+      "is_favorite": false,
+      "notes": "2-model avg (logit+xgb), edge +1.62% (underdog)"
+    }
+  ]
 }
