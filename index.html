@@ -1471,9 +1471,10 @@
 
   <!-- Firebase -->
   <script type="module">
-    import { signUp, signIn, logOut, onAuthChange, saveBet, loadBets, deleteBet, deleteAllBets } from './js/firebase.js';
+    import { signUp, signIn, signInWithGoogle, logOut, onAuthChange, saveBet, loadBets, deleteBet, deleteAllBets } from './js/firebase.js';
     window.orbSignUp   = signUp;
     window.orbSignIn   = signIn;
+    window.orbSignInWithGoogle = signInWithGoogle;
     window.orbSignOut  = logOut;
     window.orbSaveBet  = saveBet;
     window.orbLoadBets = loadBets;
