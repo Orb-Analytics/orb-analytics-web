@@ -542,7 +542,7 @@
                 <table class="data-table" id="history-table">
                   <thead><tr>
                     <th>Date</th><th>Matchup</th><th>Pick</th><th id="th-line">Line</th>
-                    <th>Odds</th><th>Edge</th><th>Result</th><th>Units</th>
+                    <th>Odds</th><th id="th-edge">Edge</th><th>Result</th><th>Units</th>
                   </tr></thead>
                   <tbody id="history-tbody"></tbody>
                 </table>
@@ -705,7 +705,7 @@
     const HISTORY_URLS = {
       mlb: '/data/mlb/predictions_history.json',
       nba: '/data/nba/predictions_history.json',
-      nfl: null
+      nfl: '/data/nfl/predictions_history.json'
     };
 
     const TEAM_ESPN = {
@@ -833,6 +833,21 @@
     function fmtGameTime(iso) {
       if (!iso) return '';
       return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
+
+    // Favorite/underdog status. For a MONEYLINE sport (MLB), the sign of the
+    // odds itself tells you: negative = favorite, positive = underdog. For a
+    // SPREAD sport (NFL), that's wrong -- both sides of a spread are usually
+    // priced around -110 regardless of which team is actually favored, so
+    // odds sign reflects the book's vig, not favorite/underdog status. NFL
+    // history/live picks carry an explicit `is_favorite` boolean (derived
+    // from the actual spread, not the odds) for exactly this reason; fall
+    // back to the odds-sign heuristic only when that field isn't present.
+    function isFavoritePick(p) {
+      return p.is_favorite != null ? p.is_favorite : p.line < 0;
+    }
+    function isUnderdogPick(p) {
+      return p.is_favorite != null ? !p.is_favorite : p.line > 0;
     }
 
     // ── Pitcher fetch ─────────────────────────────────────────────
@@ -1264,7 +1279,7 @@
         historyData = data.picks || [];
         // MLB edge is already a percentage (0.7 = 0.7%); NBA stores it as a decimal (0.06 = 6%)
         if (activeSport === 'nba') {
-          historyData = historyData.map(p => ({ ...p, edge: parseFloat((p.edge * 100).toFixed(4)) }));
+          historyData = historyData.map(p => ({ ...p, edge: parseFloat((Math.abs(p.edge) * 100).toFixed(4)) }));
         }
         applyHistoryFilters();
       } catch(e) {
@@ -1302,8 +1317,8 @@
       }
       if (categoryVal === 'home')      filtered = filtered.filter(p => p.pick === p.home_team);
       else if (categoryVal === 'away') filtered = filtered.filter(p => p.pick === p.away_team);
-      else if (categoryVal === 'fav')  filtered = filtered.filter(p => p.line < 0);
-      else if (categoryVal === 'dog')  filtered = filtered.filter(p => p.line > 0);
+      else if (categoryVal === 'fav')  filtered = filtered.filter(isFavoritePick);
+      else if (categoryVal === 'dog')  filtered = filtered.filter(isUnderdogPick);
       else if (categoryVal === 'edge-high') filtered = filtered.filter(p => p.edge >= 3);
       else if (categoryVal === 'edge-mid')  filtered = filtered.filter(p => p.edge >= 1 && p.edge < 3);
       else if (categoryVal === 'edge-low')  filtered = filtered.filter(p => p.edge < 1);
@@ -1429,12 +1444,15 @@
           ['Away Picks', picks.filter(p=>p.pick===p.away_team)],
         ],
         'Favorites vs Underdogs': [
-          ['Favorites', picks.filter(p=>p.line<0)],
-          ['Underdogs', picks.filter(p=>p.line>0)],
+          ['Favorites', picks.filter(isFavoritePick)],
+          ['Underdogs', picks.filter(isUnderdogPick)],
         ],
       };
 
-      if (activeSport !== 'nba') {
+      // NFL history has no edge data yet (see renderHistoryTable) --
+      // skip this tier rather than showing every NFL pick lumped into a
+      // single misleading bucket (was already skipped for nba).
+      if (activeSport !== 'nba' && activeSport !== 'nfl') {
         splits['Edge Tiers'] = [
           ['High Edge (≥3%)', picks.filter(p=>p.edge>=3)],
           ['Mid Edge (1–3%)', picks.filter(p=>p.edge>=1&&p.edge<3)],
@@ -1469,15 +1487,21 @@
 
     function renderHistoryTable(picks) {
       const showLine = activeSport !== 'mlb';
+      // NFL's historical picks CSV has no edge data yet (only
+      // season/week/pick/odds/result) -- hide that column rather than show
+      // misleading "+null%" placeholders. Revisit once real edge
+      // is tracked for NFL history the way it already is for live picks.
+      const showEdge = activeSport !== 'nfl';
       document.getElementById('th-line').style.display = showLine ? '' : 'none';
+      document.getElementById('th-edge').style.display = showEdge ? '' : 'none';
       const filtered = [...picks].sort((a, b) => new Date(b.date) - new Date(a.date));
       const units = filtered.reduce((a,b)=>a+(b.units||0),0);
       document.getElementById('filter-count').textContent = `${filtered.length} picks · ${units>=0?'+':''}${units.toFixed(2)}u`;
       const tbody = document.getElementById('history-tbody');
-      const colCount = 7 + (showLine ? 1 : 0);
+      const colCount = 6 + (showLine ? 1 : 0) + (showEdge ? 1 : 0);
       if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--gray-600);padding:2rem">No picks match filters.</td></tr>`; return; }
       tbody.innerHTML = filtered.map(p => {
-        const badgeClass = p.result==='Win'?'badge-win':'badge-loss';
+        const badgeClass = {Win:'badge-win',Loss:'badge-loss',Push:'badge-push'}[p.result] || 'badge-loss';
         const uCls = p.units>=0?'units-positive':'units-negative';
         const uDisp = p.units>=0?`+${p.units.toFixed(2)}u`:`${p.units.toFixed(2)}u`;
         let scoreDisplay = '—';
@@ -1495,7 +1519,7 @@
           <td data-label="Pick" style="font-weight:600;font-size:0.875rem;white-space:nowrap">${p.pick} <span style="color:var(--gray-600);font-size:0.8125rem">${side}</span></td>
           ${showLine ? `<td data-label="Line" style="font-family:var(--font-mono);font-size:0.875rem">${spread}</td>` : ''}
           <td data-label="Odds" style="font-family:var(--font-mono);font-size:0.875rem">${fmtOdds(p.line)}</td>
-          <td data-label="Edge" style="font-family:var(--font-mono);font-size:0.875rem;color:var(--purple-300)">+${p.edge}%</td>
+          ${showEdge ? `<td data-label="Edge" style="font-family:var(--font-mono);font-size:0.875rem;color:var(--purple-300)">${p.edge!=null?`${p.edge>=0?'+':''}${p.edge}%`:'—'}</td>` : ''}
           <td data-label="Result"><span class="badge ${badgeClass}">${p.result}</span></td>
           <td data-label="Units" class="${uCls}">${uDisp}</td>
         </tr>`;
