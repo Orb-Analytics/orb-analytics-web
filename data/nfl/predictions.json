@@ -1,6 +1,6 @@
 {
   "model": "NFL",
-  "generated_at": "2026-09-01T23:05:05Z",
+  "generated_at": "2026-09-02T01:02:17Z",
   "version": "v3.1-2model-raw-edge-symmetric-1pct-ewma10",
   "picks": [
     {
@@ -57,15 +57,15 @@
       "away_team": "CLE",
       "pick": "CLE",
       "has_pick": true,
-      "confidence": 0.5129,
+      "confidence": 0.5097,
       "spread": 7.5,
       "home_odds": -108,
-      "away_odds": 100,
-      "line": 100,
-      "market_implied": 0.5,
-      "edge": 1.29,
+      "away_odds": 102,
+      "line": 102,
+      "market_implied": 0.495,
+      "edge": 1.46,
       "is_favorite": false,
-      "notes": "2-model avg (logit+xgb), edge +1.29% (underdog)"
+      "notes": "2-model avg (logit+xgb), edge +1.46% (underdog)"
     },
     {
       "game_id": "2026_01_GB_MIN",
@@ -75,7 +75,7 @@
       "has_pick": true,
       "confidence": 0.5222,
       "spread": 1.5,
-      "home_odds": 102,
+      "home_odds": 100,
       "away_odds": -104,
       "line": -104,
       "market_implied": 0.5098,
