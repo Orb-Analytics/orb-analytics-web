@@ -1065,7 +1065,10 @@
 
   <!-- Firebase -->
   <script type="module">
-    import { onAuthChange, logOut } from './js/firebase.js';
+    import { signUp, signIn, signInWithGoogle, logOut, onAuthChange } from './js/firebase.js';
+    window.orbSignUp   = signUp;
+    window.orbSignIn   = signIn;
+    window.orbSignInWithGoogle = signInWithGoogle;
     window.orbSignOut = logOut;
     onAuthChange(user => {
       window.currentUser = user;
