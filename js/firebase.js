@@ -52,7 +52,7 @@ export async function signIn(email, password) {
 export async function signInWithGoogle() {
   const result = await signInWithPopup(auth, googleProvider);
   // Log whether this was a new signup or an existing sign in
-  const isNew = result._tokenResponse?.isNewUser;
+  const isNew = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
   await logAuthEvent(result.user, isNew ? 'sign_up_google' : 'sign_in_google');
   return result;
 }
