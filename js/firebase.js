@@ -6,7 +6,7 @@ import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.12.0/firebas
 
 const firebaseConfig = {
   apiKey: "AIzaSyCvtE91aea6sACryP_sBEKF1mD7zNBlaBs",
-  authDomain: "orbanalytics.limited",
+  authDomain: "orb-analytics-7d212.firebaseapp.com",
   projectId: "orb-analytics-7d212",
   storageBucket: "orb-analytics-7d212.firebasestorage.app",
   messagingSenderId: "1035099165596",
