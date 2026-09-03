@@ -26,11 +26,11 @@
 
     .main-tabs {
       display: flex; gap: 0.25rem; background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 0.25rem; width: fit-content;
+      border-radius: 10px; padding: 0.25rem; width: fit-content;
     }
     .main-tab {
       padding: 0.45rem 1.25rem; border: none; background: transparent; color: var(--muted);
-      font-family: var(--font-body); font-size: 0.875rem; font-weight: 600; border-radius: var(--radius-sm);
+      font-family: var(--font-body); font-size: 0.875rem; font-weight: 600; border-radius: 7px;
       cursor: pointer; transition: var(--transition);
     }
     .main-tab.active { background: var(--purple-600); color: white; box-shadow: var(--glow); }
@@ -525,12 +525,24 @@
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          img.width = SNAP_LOGO_MARKER_PX;
-          img.height = SNAP_LOGO_MARKER_PX;
-          snapLogoImages[t.team] = img;
-          resolve();
+          // Create a square canvas with the logo drawn to preserve aspect ratio
+          const size = SNAP_LOGO_MARKER_PX * 2; // 2x for retina
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const c = canvas.getContext('2d');
+          // Draw centered, maintaining aspect ratio
+          const scale = Math.min(size / img.naturalWidth, size / img.naturalHeight);
+          const w = img.naturalWidth * scale;
+          const h = img.naturalHeight * scale;
+          const x = (size - w) / 2;
+          const y = (size - h) / 2;
+          c.drawImage(img, x, y, w, h);
+          const squareImg = new Image();
+          squareImg.onload = () => { snapLogoImages[t.team] = squareImg; resolve(); };
+          squareImg.src = canvas.toDataURL();
         };
-        img.onerror = () => resolve(); // fall back to a plain dot if the logo fails
+        img.onerror = () => resolve();
         img.src = teamLogoURL(t.team);
       })));
     }
@@ -689,6 +701,11 @@
       const points = teams.map((t, i) => ({ x: xVals[i], y: yVals[i], team: t }));
       const pointImages = teams.map(t => snapLogoImages[t.team] || undefined);
 
+      // Compute symmetric axis bounds so X and Y scales match
+      const allVals = [...xVals, ...yVals].filter(v => v != null && !isNaN(v));
+      const absMax = Math.max(...allVals.map(Math.abs)) * 1.2;
+      const axisBound = parseFloat(absMax.toFixed(2));
+
       const isDark = document.body.classList.contains('dark');
       const gridColor = 'rgba(133,32,254,0.08)';
       const tickColor = isDark ? '#A1A1AA' : '#6B7280';
@@ -726,12 +743,16 @@
             x: {
               title: { display: true, text: SNAP_METRICS[xKey].label, color: tickColor, font: { family: "'Roboto Mono', monospace", size: 12 } },
               grid: { color: gridColor },
-              ticks: { color: tickColor }
+              ticks: { color: tickColor },
+              min: -axisBound,
+              max:  axisBound
             },
             y: {
               title: { display: true, text: SNAP_METRICS[yKey].label, color: tickColor, font: { family: "'Roboto Mono', monospace", size: 12 } },
               grid: { color: gridColor },
-              ticks: { color: tickColor }
+              ticks: { color: tickColor },
+              min: -axisBound,
+              max:  axisBound
             }
           }
         },
