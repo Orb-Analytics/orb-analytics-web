@@ -517,7 +517,7 @@
     // Chart.js draws an image pointStyle at the image element's own
     // width/height (not at pointRadius), so the loaded logos are resized
     // down to a fixed marker size here.
-    const SNAP_LOGO_MARKER_PX = 30;
+    const SNAP_LOGO_MARKER_PX = 18;
 
     function preloadLogos(teams) {
       return Promise.all(teams.map(t => new Promise(resolve => {
@@ -718,8 +718,8 @@
           datasets: [{
             data: points,
             pointStyle: pointImages.map(img => img || 'circle'),
-            pointRadius: pointImages.map(img => img ? 15 : 5),
-            pointHoverRadius: pointImages.map(img => img ? 17 : 7),
+            pointRadius: pointImages.map(img => img ? 9 : 4),
+            pointHoverRadius: pointImages.map(img => img ? 11 : 6),
             backgroundColor: '#9A29E9',
           }]
         },
