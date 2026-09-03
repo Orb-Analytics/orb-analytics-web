@@ -14,26 +14,52 @@ const firebaseConfig = {
   measurementId: "G-FHRKJ4YP4K"
 };
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
-const analytics = getAnalytics(app);
+const app            = initializeApp(firebaseConfig);
+const auth           = getAuth(app);
+const db             = getFirestore(app);
+const analytics      = getAnalytics(app);
 const googleProvider = new GoogleAuthProvider();
+
+// ── Auth event logger ─────────────────────────────────────────────
+async function logAuthEvent(user, eventType) {
+  try {
+    const ref = doc(db, 'users', user.uid, 'auth_events', String(Date.now()));
+    await setDoc(ref, {
+      event:      eventType,
+      email:      user.email,
+      uid:        user.uid,
+      timestamp:  new Date().toISOString(),
+      user_agent: navigator.userAgent
+    });
+  } catch(e) {
+    console.warn('Auth event log failed:', e);
+  }
+}
 
 // ── Auth helpers ──────────────────────────────────────────────────
 export async function signUp(email, password) {
-  return createUserWithEmailAndPassword(auth, email, password);
+  const result = await createUserWithEmailAndPassword(auth, email, password);
+  await logAuthEvent(result.user, 'sign_up');
+  return result;
 }
 
 export async function signIn(email, password) {
-  return signInWithEmailAndPassword(auth, email, password);
+  const result = await signInWithEmailAndPassword(auth, email, password);
+  await logAuthEvent(result.user, 'sign_in');
+  return result;
 }
 
 export async function signInWithGoogle() {
-  return signInWithPopup(auth, googleProvider);
+  const result = await signInWithPopup(auth, googleProvider);
+  // Log whether this was a new signup or an existing sign in
+  const isNew = result._tokenResponse?.isNewUser;
+  await logAuthEvent(result.user, isNew ? 'sign_up_google' : 'sign_in_google');
+  return result;
 }
 
 export async function logOut() {
+  const user = auth.currentUser;
+  if (user) await logAuthEvent(user, 'sign_out');
   return signOut(auth);
 }
 
