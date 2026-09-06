@@ -1383,14 +1383,39 @@
         <div class="stat-card"><div class="stat-label">ROI %</div><div class="stat-value ${roi>=0?'stat-positive':'stat-negative'}">${roi>=0?'+':''}${roi.toFixed(2)}%</div></div>`;
     }
 
-    function renderEquityCurve(picks) {
-      const sorted = [...picks].sort((a, b) => new Date(a.date) - new Date(b.date));
-      let cum = 0;
-      const labels = [], values = [];
-      sorted.forEach(p => { cum += (p.units||0); labels.push(p.date); values.push(parseFloat(cum.toFixed(2))); });
-      const finalVal = values[values.length-1] || 0;
+    // Vertical scrubber that tracks the cursor across the history chart
+    // (like a finance ticker) -- drawn at whatever point the tooltip is
+    // currently locked to.
+    const historyCrosshair = {
+      id: 'historyCrosshair',
+      afterDatasetsDraw(chart) {
+        const active = chart.getActiveElements();
+        if (!active.length) return;
+        const { ctx, chartArea } = chart;
+        const x = active[0].element.x;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x, chartArea.top);
+        ctx.lineTo(x, chartArea.bottom);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(133,32,254,0.4)';
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+
+    function fmtHistoryDate(d) {
+      const dt = new Date(d);
+      return isNaN(dt) ? d : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // Shared builder for both history curves -- Units and ROI render
+    // identically apart from how the running value is formatted.
+    function buildHistoryChart({ labels, values, unit }) {
+      const finalVal = values[values.length - 1] || 0;
       const color = finalVal >= 0 ? '#10B981' : '#EF4444';
       const segColor = (ctx, posColor, negColor) => ((ctx.p0.parsed.y + ctx.p1.parsed.y) / 2 >= 0 ? posColor : negColor);
+      const fmtVal = v => `${v > 0 ? '+' : ''}${v}${unit}`;
       if (equityChart) equityChart.destroy();
       equityChart = new Chart(document.getElementById('equity-chart'), {
         type: 'line',
@@ -1404,14 +1429,53 @@
               backgroundColor: ctx => segColor(ctx, 'rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)'),
             },
             fill: { target: { value: 0 } },
-            tension: 0.3, pointRadius: 0, borderWidth: 2,
+            tension: 0.3, borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            pointHoverBorderWidth: 2,
+            pointHoverBorderColor: '#FFFFFF',
+            pointHoverBackgroundColor: color,
+            pointHitRadius: 24,
           },
-          { data: values.map(() => 0), borderColor: '#EF4444', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false }
+          { data: values.map(() => 0), borderColor: '#EF4444', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 0, fill: false }
         ] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              filter: item => item.datasetIndex === 0,
+              backgroundColor: '#FFFFFF',
+              borderColor: 'rgba(133,32,254,0.15)',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 10,
+              displayColors: false,
+              caretSize: 5,
+              titleColor: color,
+              titleFont: { family: "'Inter', sans-serif", size: 15, weight: 'bold' },
+              bodyColor: '#6B7280',
+              bodyFont: { family: "'Inter', sans-serif", size: 12 },
+              callbacks: {
+                title: items => fmtVal(items[0].parsed.y),
+                label: item => fmtHistoryDate(item.label),
+              },
+            },
+          },
           scales: { x: { grid: { color: 'rgba(133,32,254,0.08)' }, ticks: { maxTicksLimit: 8, color: '#6B7280' } },
-                    y: { grid: { color: 'rgba(133,32,254,0.08)' }, ticks: { color: '#6B7280', callback: v => `${v>0?'+':''}${v}u` } } } }
+                    y: { grid: { color: 'rgba(133,32,254,0.08)' }, ticks: { color: '#6B7280', callback: fmtVal } } },
+        },
+        plugins: [historyCrosshair],
       });
+    }
+
+    function renderEquityCurve(picks) {
+      const sorted = [...picks].sort((a, b) => new Date(a.date) - new Date(b.date));
+      let cum = 0;
+      const labels = [], values = [];
+      sorted.forEach(p => { cum += (p.units||0); labels.push(p.date); values.push(parseFloat(cum.toFixed(2))); });
+      buildHistoryChart({ labels, values, unit: 'u' });
     }
 
     function renderROICurve(picks) {
@@ -1423,30 +1487,7 @@
         labels.push(p.date);
         values.push(parseFloat(((cumUnits / (i + 1)) * 100).toFixed(2)));
       });
-      const finalVal = values[values.length-1] || 0;
-      const color = finalVal >= 0 ? '#10B981' : '#EF4444';
-      const segColor = (ctx, posColor, negColor) => ((ctx.p0.parsed.y + ctx.p1.parsed.y) / 2 >= 0 ? posColor : negColor);
-      if (equityChart) equityChart.destroy();
-      equityChart = new Chart(document.getElementById('equity-chart'), {
-        type: 'line',
-        data: { labels, datasets: [
-          {
-            data: values,
-            borderColor: color,
-            backgroundColor: 'rgba(16,185,129,0.1)',
-            segment: {
-              borderColor: ctx => segColor(ctx, '#10B981', '#EF4444'),
-              backgroundColor: ctx => segColor(ctx, 'rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)'),
-            },
-            fill: { target: { value: 0 } },
-            tension: 0.3, pointRadius: 0, borderWidth: 2,
-          },
-          { data: values.map(() => 0), borderColor: '#EF4444', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false }
-        ] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-          scales: { x: { grid: { color: 'rgba(133,32,254,0.08)' }, ticks: { maxTicksLimit: 8, color: '#6B7280' } },
-                    y: { grid: { color: 'rgba(133,32,254,0.08)' }, ticks: { color: '#6B7280', callback: v => `${v>0?'+':''}${v}%` } } } }
-      });
+      buildHistoryChart({ labels, values, unit: '%' });
     }
 
     function renderChart() {

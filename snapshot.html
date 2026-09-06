@@ -44,7 +44,7 @@
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
       padding: 1rem 1.1rem; margin-bottom: 1.25rem;
     }
-    .snap-control-group { display: flex; flex-direction: column; gap: 0.3rem; min-width: 168px; }
+    .snap-control-group { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 190px; min-width: 190px; }
     .snap-control-label {
       font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; color: var(--gray-600);
       text-transform: uppercase; letter-spacing: 0.06em;
@@ -59,7 +59,9 @@
 
     .snap-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
     .snap-stats-grid .stat-card .stat-value { font-size: 1.5rem; }
-    .snap-stats-grid .stat-card .stat-value img { width: 22px; height: 22px; vertical-align: -4px; margin-right: 0.3rem; }
+    /* Logos vary wildly in aspect ratio (SEA ~2.3:1, MIN ~0.8:1) -- size by
+       height only and let width follow, never force a square. */
+    .snap-stats-grid .stat-card .stat-value img { height: 28px; width: auto; vertical-align: -7px; margin-right: 0.4rem; }
 
     .snap-chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem 1.1rem 0.5rem; margin-bottom: 1.25rem; }
     .snap-chart-wrap { position: relative; height: 560px; }
@@ -70,59 +72,60 @@
       display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
       cursor: pointer; text-align: left;
     }
-    .snap-team-select-btn::after {
-      content: ''; width: 0; height: 0; flex-shrink: 0;
-      border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--gray-600);
-    }
+    /* form-select supplies its own chevron; drop the extra CSS triangle */
+    .snap-team-select-btn::after { content: none; }
     .snap-team-panel {
-      position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; width: 240px; max-height: 280px;
+      position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; width: 270px; max-height: 280px;
       overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
       padding: 0.4rem; box-shadow: 0 12px 28px rgba(0,0,0,0.28);
     }
     .snap-team-panel label {
-      display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.4rem; border-radius: var(--radius-sm);
-      font-size: 0.8125rem; color: var(--text); cursor: pointer;
+      display: flex; align-items: center; gap: 0.55rem; padding: 0.35rem 0.4rem; border-radius: var(--radius-sm);
+      font-size: 0.8125rem; color: var(--text); cursor: pointer; white-space: nowrap;
     }
     .snap-team-panel label:hover { background: var(--hover-tint); }
-    .snap-team-panel img { width: 18px; height: 18px; flex-shrink: 0; }
+    /* fixed slot keeps the team names aligned; object-fit stops distortion */
+    .snap-team-panel img { width: 30px; height: 24px; object-fit: contain; flex-shrink: 0; }
     .snap-team-panel input { flex-shrink: 0; }
 
     .snap-compare-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 0.5rem 1.25rem 1rem; margin: 0 auto 1.25rem; max-width: 760px;
+      padding: 0.5rem 1.75rem 1.25rem; margin: 0 0 1.25rem;
     }
     .snap-compare-section-title {
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-      font-weight: 700; font-size: 0.9375rem; color: var(--text); padding: 1rem 0 0.75rem;
+      font-weight: 700; font-size: 1rem; color: var(--text); padding: 1rem 0 0.75rem;
     }
-    .snap-compare-section-title img { width: 22px; height: 22px; }
+    .snap-compare-section-title img { height: 32px; width: auto; }
 
     .snap-cmp-header {
-      display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; gap: 0.6rem;
-      padding: 0.65rem 0; border-bottom: 1px solid var(--border); margin-bottom: 0.15rem;
+      display: grid; grid-template-columns: 150px 1fr 150px; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 0; border-bottom: 1px solid var(--border); margin-bottom: 0.15rem;
     }
     .snap-cmp-header-team {
-      text-align: center; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--text);
+      display: flex; flex-direction: column; align-items: center; gap: 0.7rem;
+      font-family: var(--font-display); font-size: 0.9375rem; font-weight: 800;
+      letter-spacing: -0.01em; color: var(--text);
     }
-    .snap-cmp-header-team img { width: 18px; height: 18px; vertical-align: -4px; margin-right: 0.3rem; }
+    .snap-cmp-header-team img { height: 44px; width: auto; }
     .snap-cmp-header-label {
-      text-align: center; font-family: var(--font-mono); font-size: 0.7rem; color: var(--gray-600);
-      text-transform: uppercase; letter-spacing: 0.05em;
+      text-align: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600);
+      text-transform: uppercase; letter-spacing: 0.08em;
     }
 
-    .snap-cmp-row { padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+    .snap-cmp-row { padding: 0.9rem 0; border-bottom: 1px solid var(--border); }
     .snap-cmp-row:last-child { border-bottom: none; }
     .snap-cmp-row-label {
-      text-align: center; font-size: 0.7rem; color: var(--gray-600); margin-bottom: 0.25rem;
-      font-family: var(--font-mono);
+      text-align: center; font-size: 0.8125rem; color: var(--gray-600); margin-bottom: 0.45rem;
+      font-family: var(--font-mono); letter-spacing: 0.02em;
     }
-    .snap-cmp-row-main { display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; gap: 0.6rem; }
-    .snap-cmp-row-val { text-align: center; font-family: var(--font-mono); font-size: 0.875rem; color: var(--text); font-weight: 600; }
+    .snap-cmp-row-main { display: grid; grid-template-columns: 150px 1fr 150px; align-items: center; gap: 0.75rem; }
+    .snap-cmp-row-val { text-align: center; font-family: var(--font-mono); font-size: 1rem; color: var(--text); font-weight: 600; line-height: 1.35; }
     .snap-cmp-row-val.win { font-weight: 800; }
-    .snap-cmp-row-val.lose { opacity: 0.42; font-weight: 500; }
-    .snap-compare-sub { font-size: 0.65rem; font-weight: 400; opacity: 0.75; display: block; }
+    .snap-cmp-row-val.lose { opacity: 0.4; font-weight: 500; }
+    .snap-compare-sub { font-size: 0.6875rem; font-weight: 400; opacity: 0.7; display: block; }
 
-    .snap-cmp-bar-track { display: flex; align-items: center; height: 12px; }
+    .snap-cmp-bar-track { display: flex; align-items: center; height: 12px; max-width: 620px; width: 100%; margin: 0 auto; }
     .snap-cmp-bar-half { flex: 1; height: 6px; background: var(--hover-tint); display: flex; }
     .snap-cmp-bar-half.left { justify-content: flex-end; border-radius: 3px 0 0 3px; margin-right: 1px; }
     .snap-cmp-bar-half.right { justify-content: flex-start; border-radius: 0 3px 3px 0; margin-left: 1px; }
@@ -167,21 +170,22 @@
             </div>
           </div>
 
-          <div class="main-tabs" style="margin-bottom:1.25rem">
-            <button class="main-tab" onclick="switchSnapSport('mlb')" id="snap-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
-            <button class="main-tab active" onclick="switchSnapSport('nfl')" id="snap-tab-nfl" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" height="16" style="border-radius:2px"> NFL</button>
-            <button class="main-tab" onclick="switchSnapSport('nba')" id="snap-tab-nba" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" height="16" style="border-radius:2px"> NBA</button>
-          </div>
-
-          <!-- NFL panel -->
-          <div class="tab-panel active" id="snap-panel-nfl">
-
-            <div class="main-tabs" style="margin-bottom:1.25rem">
+          <div class="snap-tab-bar" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem">
+            <div class="main-tabs" id="snap-view-tabs" style="margin:0">
               <button class="main-tab sm active" onclick="switchSnapView('quadrant')" id="snap-view-tab-quadrant">Landscape</button>
               <button class="main-tab sm" onclick="switchSnapView('trend')" id="snap-view-tab-trend">Recent Form</button>
               <button class="main-tab sm" onclick="switchSnapView('weektrend')" id="snap-view-tab-weektrend">Trend</button>
               <button class="main-tab sm" onclick="switchSnapView('compare')" id="snap-view-tab-compare">Compare</button>
             </div>
+            <div class="main-tabs" style="margin:0">
+              <button class="main-tab" onclick="switchSnapSport('mlb')" id="snap-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
+              <button class="main-tab active" onclick="switchSnapSport('nfl')" id="snap-tab-nfl" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" height="16" style="border-radius:2px"> NFL</button>
+              <button class="main-tab" onclick="switchSnapSport('nba')" id="snap-tab-nba" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" height="16" style="border-radius:2px"> NBA</button>
+            </div>
+          </div>
+
+          <!-- NFL panel -->
+          <div class="tab-panel active" id="snap-panel-nfl">
 
             <div id="snap-loading" class="snap-loading">
               <p>Loading snapshot data…</p>
@@ -197,11 +201,11 @@
                 <div class="snap-controls">
                   <div class="snap-control-group">
                     <label class="snap-control-label">Season</label>
-                    <select class="filter-select" id="snap-season" onchange="snapSeasonChanged(this)"></select>
+                    <select class="form-select" id="snap-season" onchange="snapSeasonChanged(this)"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Window</label>
-                    <select class="filter-select" id="snap-window" onchange="snapRenderQuadrant()">
+                    <select class="form-select" id="snap-window" onchange="snapRenderQuadrant()">
                       <option value="0" selected>Season to date</option>
                       <option value="1">Last 1 week</option>
                       <option value="3">Last 3 weeks</option>
@@ -211,14 +215,14 @@
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">X-Axis</label>
-                    <select class="filter-select" id="snap-x-metric" onchange="snapRenderQuadrant()"></select>
+                    <select class="form-select" id="snap-x-metric" onchange="snapRenderQuadrant()"></select>
                   </div>
                   <button class="snap-swap-btn" id="snap-swap" title="Swap axes">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
                   </button>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Y-Axis</label>
-                    <select class="filter-select" id="snap-y-metric" onchange="snapRenderQuadrant()"></select>
+                    <select class="form-select" id="snap-y-metric" onchange="snapRenderQuadrant()"></select>
                   </div>
                 </div>
 
@@ -235,15 +239,15 @@
                 <div class="snap-controls">
                   <div class="snap-control-group">
                     <label class="snap-control-label">Season</label>
-                    <select class="filter-select" id="snap-trend-season" onchange="snapSeasonChanged(this)"></select>
+                    <select class="form-select" id="snap-trend-season" onchange="snapSeasonChanged(this)"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Metric</label>
-                    <select class="filter-select" id="snap-trend-metric" onchange="snapRenderTrend()"></select>
+                    <select class="form-select" id="snap-trend-metric" onchange="snapRenderTrend()"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Window</label>
-                    <select class="filter-select" id="snap-trend-window" onchange="snapRenderTrend()">
+                    <select class="form-select" id="snap-trend-window" onchange="snapRenderTrend()">
                       <option value="1" selected>Last 1 week</option>
                       <option value="3">Last 3 games</option>
                       <option value="5">Last 5 games</option>
@@ -264,20 +268,20 @@
                 <div class="snap-controls">
                   <div class="snap-control-group">
                     <label class="snap-control-label">Season</label>
-                    <select class="filter-select" id="snap-weektrend-season" onchange="snapSeasonChanged(this)"></select>
+                    <select class="form-select" id="snap-weektrend-season" onchange="snapSeasonChanged(this)"></select>
                   </div>
                   <div class="snap-control-group" style="position:relative">
                     <label class="snap-control-label">Teams</label>
-                    <button type="button" class="filter-select snap-team-select-btn" id="snap-weektrend-team-btn" onclick="toggleWeekTrendTeamPanel()"></button>
+                    <button type="button" class="form-select snap-team-select-btn" id="snap-weektrend-team-btn" onclick="toggleWeekTrendTeamPanel()"></button>
                     <div class="snap-team-panel" id="snap-weektrend-team-panel" style="display:none"></div>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Metric</label>
-                    <select class="filter-select" id="snap-weektrend-metric" onchange="snapRenderWeekTrend()"></select>
+                    <select class="form-select" id="snap-weektrend-metric" onchange="snapRenderWeekTrend()"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Smoothing</label>
-                    <select class="filter-select" id="snap-weektrend-smoothing" onchange="snapRenderWeekTrend()">
+                    <select class="form-select" id="snap-weektrend-smoothing" onchange="snapRenderWeekTrend()">
                       <option value="1">Raw (per game)</option>
                       <option value="3" selected>3-game rolling avg</option>
                       <option value="5">5-game rolling avg</option>
@@ -296,26 +300,26 @@
                 <div class="snap-controls">
                   <div class="snap-control-group">
                     <label class="snap-control-label">Season</label>
-                    <select class="filter-select" id="snap-compare-season" onchange="snapSeasonChanged(this)"></select>
+                    <select class="form-select" id="snap-compare-season" onchange="snapSeasonChanged(this)"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Team A</label>
-                    <select class="filter-select" id="snap-compare-team-a" onchange="snapRenderCompare()"></select>
+                    <select class="form-select" id="snap-compare-team-a" onchange="snapRenderCompare()"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Team B</label>
-                    <select class="filter-select" id="snap-compare-team-b" onchange="snapRenderCompare()"></select>
+                    <select class="form-select" id="snap-compare-team-b" onchange="snapRenderCompare()"></select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Comparison</label>
-                    <select class="filter-select" id="snap-compare-mode" onchange="snapRenderCompare()">
+                    <select class="form-select" id="snap-compare-mode" onchange="snapRenderCompare()">
                       <option value="direct" selected>Direct (same stat vs. same stat)</option>
                       <option value="field">On the Field (offense vs. opposing defense)</option>
                     </select>
                   </div>
                   <div class="snap-control-group">
                     <label class="snap-control-label">Window</label>
-                    <select class="filter-select" id="snap-compare-window" onchange="snapRenderCompare()">
+                    <select class="form-select" id="snap-compare-window" onchange="snapRenderCompare()">
                       <option value="0" selected>Season to date</option>
                       <option value="1">Last 1 week</option>
                       <option value="3">Last 3 weeks</option>
@@ -360,6 +364,9 @@
         document.getElementById(`snap-tab-${s}`).classList.toggle('active', s === sport);
         document.getElementById(`snap-panel-${s}`).classList.toggle('active', s === sport);
       });
+      // View tabs (Landscape/Recent Form/Trend/Compare) only apply to NFL for now;
+      // keep the slot occupied so the sport tabs stay right-aligned.
+      document.getElementById('snap-view-tabs').style.visibility = sport === 'nfl' ? 'visible' : 'hidden';
     }
 
     // ── Landscape / Recent Form / Trend / Compare sub-tabs ────────────
@@ -515,9 +522,13 @@
     }
 
     // Chart.js draws an image pointStyle at the image element's own
-    // width/height (not at pointRadius), so the loaded logos are resized
-    // down to a fixed marker size here.
-    const SNAP_LOGO_MARKER_PX = 18;
+    // width/height (not at pointRadius). Source art is only ~100px and
+    // every team has a different aspect ratio, so each logo is letterboxed
+    // -- undistorted -- into a square, high-resolution backing bitmap, and
+    // the <img> we hand back is tagged with the on-screen marker size so it
+    // stays crisp on high-DPI screens instead of being upscaled.
+    const SNAP_LOGO_MARKER_PX = 32;   // on-screen marker size in the charts
+    const SNAP_LOGO_BITMAP_PX = 160;  // dense backing bitmap (~5x the marker)
 
     function preloadLogos(teams) {
       return Promise.all(teams.map(t => new Promise(resolve => {
@@ -525,22 +536,28 @@
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          // Create a square canvas with the logo drawn to preserve aspect ratio
-          const size = SNAP_LOGO_MARKER_PX * 2; // 2x for retina
+          const size = SNAP_LOGO_BITMAP_PX;
           const canvas = document.createElement('canvas');
           canvas.width = size;
           canvas.height = size;
           const c = canvas.getContext('2d');
-          // Draw centered, maintaining aspect ratio
-          const scale = Math.min(size / img.naturalWidth, size / img.naturalHeight);
+          c.imageSmoothingEnabled = true;
+          c.imageSmoothingQuality = 'high';
+          // Fit the logo's longest side to the box, minus a hair of even
+          // padding, so every team's mark carries similar visual weight.
+          const pad = size * 0.05;
+          const scale = Math.min((size - pad * 2) / img.naturalWidth, (size - pad * 2) / img.naturalHeight);
           const w = img.naturalWidth * scale;
           const h = img.naturalHeight * scale;
-          const x = (size - w) / 2;
-          const y = (size - h) / 2;
-          c.drawImage(img, x, y, w, h);
-          const squareImg = new Image();
-          squareImg.onload = () => { snapLogoImages[t.team] = squareImg; resolve(); };
-          squareImg.src = canvas.toDataURL();
+          c.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+          const marker = new Image();
+          marker.onload = () => {
+            marker.width = SNAP_LOGO_MARKER_PX;
+            marker.height = SNAP_LOGO_MARKER_PX;
+            snapLogoImages[t.team] = marker;
+            resolve();
+          };
+          marker.src = canvas.toDataURL();
         };
         img.onerror = () => resolve();
         img.src = teamLogoURL(t.team);
@@ -664,9 +681,11 @@
         ctx.stroke();
         ctx.globalAlpha = 1;
 
-        ctx.font = '600 13px var(--font-body), sans-serif';
-        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--gray-600').trim() || '#71717A';
-        const pad = 14;
+        // NB: canvas ctx.font can't read CSS var() -- use a literal family
+        // or the string is ignored and text falls back to 10px sans-serif.
+        ctx.font = '800 22px Inter, system-ui, sans-serif';
+        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--purple-600').trim() || '#9A29E9';
+        const pad = 16;
         const quadrants = [
           { n: 1, x: chartArea.right - pad, y: chartArea.top + pad + 10, align: 'right' },
           { n: 2, x: chartArea.left + pad, y: chartArea.top + pad + 10, align: 'left' },
@@ -881,7 +900,7 @@
         meta.data.forEach((bar, i) => {
           const row = rows[i];
           const img = snapLogoImages[row.team.team];
-          const size = 26;
+          const size = 30;
           const isPositive = row.value >= 0;
           const y = isPositive ? bar.y - size - 4 : bar.y + 4;
           if (img) {
@@ -906,10 +925,34 @@
     // Points are drawn as each team's own logo, aligned on a shared 1..N
     // week axis (not just game order) so bye weeks don't misalign teams
     // against each other when comparing.
+    // Generic fallback palette, used only when a team has no brand color
+    // in the map below (e.g. a future non-NFL sport).
     const SNAP_TEAM_COLORS = [
       '#9A29E9', '#F97316', '#22C55E', '#EF4444', '#3B82F6',
       '#EAB308', '#EC4899', '#14B8A6', '#8B5CF6', '#84CC16',
     ];
+
+    // Per-team brand colors, keyed by the nflverse abbreviations the
+    // snapshot data uses. Each value is the team's primary identity color,
+    // nudged toward the more legible of its two brand colors where the
+    // truest one (near-black, pale gold) would wash out on the chart.
+    const SNAP_NFL_COLORS = {
+      ARI: '#97233F', ATL: '#A71930', BAL: '#241773', BUF: '#00338D',
+      CAR: '#0085CA', CHI: '#C83803', CIN: '#FB4F14', CLE: '#FF3C00',
+      DAL: '#003594', DEN: '#FB4F14', DET: '#0076B6', GB:  '#204E36',
+      HOU: '#A71930', IND: '#002C5F', JAX: '#006778', KC:  '#E31837',
+      LV:  '#5B5B5B', LAC: '#0080C6', LAR: '#003594', MIA: '#008E97',
+      MIN: '#4F2683', NE:  '#002244', NO:  '#B58500', NYG: '#0B2265',
+      NYJ: '#125740', PHI: '#004C54', PIT: '#C9A227', SEA: '#69BE28',
+      SF:  '#AA0000', TB:  '#D50A0A', TEN: '#4B92DB', WAS: '#5A1414',
+    };
+
+    // Brand color for a team's line/legend/point, with a graceful fallback
+    // to the generic palette by draw order.
+    function snapTeamColor(abbr, index) {
+      return SNAP_NFL_COLORS[abbr] || SNAP_TEAM_COLORS[index % SNAP_TEAM_COLORS.length];
+    }
+
     let snapWeekTrendSelectedTeams = new Set();
 
     function rollingMetricSeries(games, metricKey, windowSize) {
@@ -998,17 +1041,28 @@
         const rolling = rollingMetricSeries(team.games, metricKey, smoothing);
         const byWeek = new Array(weeksPlayed).fill(null);
         team.games.forEach((g, gi) => { byWeek[g.week - 1] = rolling[gi]; });
-        const color = SNAP_TEAM_COLORS[i % SNAP_TEAM_COLORS.length];
+        const color = snapTeamColor(team.team, i);
         const logo = snapLogoImages[team.team];
+
+        // One logo badge per line, at its leading edge (latest week with
+        // data) -- everywhere else is a small dot, so the trend line reads
+        // clean instead of as a chain of identical logos.
+        let lastIdx = -1;
+        for (let w = weeksPlayed - 1; w >= 0; w--) { if (byWeek[w] !== null) { lastIdx = w; break; } }
+        const pointStyle = byWeek.map((_, w) => (w === lastIdx && logo) ? logo : 'circle');
+        const pointRadius = byWeek.map((v, w) => v === null ? 0 : (w === lastIdx && logo ? 13 : 2.5));
+        const pointHoverRadius = byWeek.map((v, w) => v === null ? 0 : (w === lastIdx && logo ? 15 : 5));
+
         return {
           label: team.team,
           data: byWeek,
           borderColor: color,
           backgroundColor: color,
           borderWidth: 2.5,
-          pointStyle: logo || 'circle',
-          pointRadius: logo ? 13 : 4,
-          pointHoverRadius: logo ? 15 : 6,
+          pointStyle,
+          pointRadius,
+          pointHoverRadius,
+          pointHitRadius: 12, // keep every week hoverable despite tiny dots
           tension: 0.25,
           spanGaps: true, // bridge bye weeks instead of breaking the line
         };
@@ -1022,7 +1076,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: 16 },
+          layout: { padding: { top: 16, left: 16, bottom: 16, right: 30 } },
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { display: datasets.length > 1, labels: { color: tickColor } },
@@ -1052,7 +1106,7 @@
       const smoothingLabel = smoothing > 1 ? `${smoothing}-game rolling average` : 'raw per-game value';
       const teamLabel = selectedTeams.length === 1 ? selectedTeams[0].team_name : `${selectedTeams.length} teams`;
       document.getElementById('snap-weektrend-axis-note').textContent =
-        `${teamLabel} · ${m.label} by week for the ${season} season (${direction}) · ${smoothingLabel} · logos mark each data point`;
+        `${teamLabel} · ${m.label} by week for the ${season} season (${direction}) · ${smoothingLabel} · a logo marks each line's latest week`;
     }
 
     // ── Compare view: two teams, head to head ──────────────────────────

@@ -153,6 +153,12 @@
 
     .team-record { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); }
 
+    .team-rank {
+      font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700;
+      color: var(--purple-600); vertical-align: 2px; margin-left: 0.25rem;
+      flex-shrink: 0;
+    }
+
     .team-score {
       font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; line-height: 1;
     }
@@ -305,6 +311,7 @@
     const LEAGUES = [
       { id:'mlb', label:'MLB', logo:'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png',     sport:'baseball',   slug:'mlb',  type:'team' },
       { id:'nfl', label:'NFL', logo:'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png',     sport:'football',   slug:'nfl',  type:'team' },
+      { id:'cfb', label:'CFB', logo:'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football-college.png', sport:'football', slug:'college-football', type:'team', query:'?groups=80&limit=100' },
       { id:'nba', label:'NBA', logo:'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png',     sport:'basketball', slug:'nba',  type:'team' },
       { id:'nhl', label:'NHL', logo:'https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png',     sport:'hockey',     slug:'nhl',  type:'team' },
       { id:'atp', label:'ATP', logo:'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-tennis.png', sport:'tennis', slug:'atp', type:'tennis' },
@@ -360,8 +367,11 @@
       return v < 3.50 ? 'var(--green)' : v > 4.50 ? 'var(--red)' : 'var(--text)';
     }
 
-    function logoHTML(abbr, league) {
-      const url = `https://a.espncdn.com/i/teamlogos/${league}/500/${abbr.toLowerCase()}.png`;
+    function logoHTML(abbr, league, directUrl) {
+      // Prefer the logo URL the API hands us (needed for college teams, whose
+      // logos are keyed by team id, not abbreviation); fall back to the
+      // league/abbr path for the pro leagues.
+      const url = directUrl || `https://a.espncdn.com/i/teamlogos/${league}/500/${abbr.toLowerCase()}.png`;
       return `<img class="team-logo" src="${url}" alt="${abbr}"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
               <div class="team-logo-fallback" style="display:none">${abbr.slice(0,3).toUpperCase()}</div>`;
@@ -442,6 +452,7 @@
       function teamCol(team, isWin, isLoss, side, oddsLine, isPick) {
         const abbr   = team.team?.abbreviation || '???';
         const record = team.records?.[0]?.summary || '';
+        const rank   = team.curatedRank?.current;
         const score  = team.score ?? '';
         const abbrClass  = showScore ? (isWin ? 'winning' : isLoss ? 'losing' : '') : '';
         const scoreClass = live ? '' : isWin ? 'winning' : isLoss ? 'losing' : '';
@@ -450,8 +461,8 @@
         const fmtOdds = o => o > 0 ? `+${o}` : `${o}`;
 
         return `<div class="team-col">
-          ${logoHTML(abbr, leagueId)}
-          <div class="team-abbr ${abbrClass}" style="font-weight:${abbrWeight}">${abbr}</div>
+          ${logoHTML(abbr, leagueId, team.team?.logo)}
+          <div class="team-abbr ${abbrClass}" style="font-weight:${abbrWeight}">${abbr}${rank >= 1 && rank <= 25 ? `<span class="team-rank">${rank}</span>` : ''}</div>
           ${record ? `<div class="team-record">${record}</div>` : ''}
           ${oddsLine != null ? `<div class="team-odds${isPick ? ' pick' : ''}">${fmtOdds(Math.round(oddsLine))}${isPick ? (final && !isWin ? ' ✗' : ' ✓') : ''}</div>` : ''}
           ${showScore ? `<div class="team-score ${scoreClass}" style="font-weight:${scoreWeight}">${score}</div>` : ''}
@@ -627,12 +638,35 @@
       updateLiveBadge(leagueId, picks.filter(e => isLive(e.status)).length + live.length);
     }
 
-    // ── Tennis (ATP) rendering ─────────────────────────────────────
-    // Rolling window rather than strict calendar day so finished matches
-    // don't vanish right at a local midnight boundary, and matches from
-    // tournaments in other time zones still show up.
-    function isWithinWindow(dateStr, ref, hours) {
-      return Math.abs(ref - new Date(dateStr)) <= hours * 60 * 60 * 1000;
+    // ── Tennis (ATP/WTA) rendering ─────────────────────────────────
+    // ESPN hands back the whole tournament draw in one payload, so we split
+    // it into Live / Upcoming (next few days) / Recent results and rank each
+    // list by the better-ranked player, so marquee matchups and show-court
+    // matches float to the top instead of drowning in qualifiers.
+    const TENNIS_UPCOMING_DAYS = 4;   // how far ahead scheduled matches show
+    const TENNIS_RESULT_HOURS  = 48;  // how long finished matches stay up
+
+    const isTBD = n => !n || n.trim().toUpperCase() === 'TBD';
+
+    // Best (lowest) live ATP/WTA world ranking across the two players -- the
+    // scoreboard feed drops `seed` mid-event, so `curatedRank` is what we have.
+    function matchRank(comp) {
+      const ranks = (comp.competitors || [])
+        .map(c => c.curatedRank?.current ?? c.athlete?.rank ?? null)
+        .filter(r => r != null && r > 0);
+      return ranks.length ? Math.min(...ranks) : 999;
+    }
+    const SHOW_COURTS = {
+      'Arthur Ashe Stadium': 0, 'Louis Armstrong Stadium': 1,
+      'Court Philippe-Chatrier': 0, 'Rod Laver Arena': 0, 'Centre Court': 0, 'No. 1 Court': 1,
+    };
+    const courtRank = comp => SHOW_COURTS[comp.venue?.court] ?? 5;
+
+    // Biggest match first: better world ranking, then show court, then sooner.
+    function tennisSort(a, b) {
+      return (matchRank(a.comp) - matchRank(b.comp))
+        || (courtRank(a.comp) - courtRank(b.comp))
+        || (new Date(a.comp.date) - new Date(b.comp.date));
     }
 
     function flattenTennisMatches(events) {
@@ -654,7 +688,7 @@
       const c      = m.comp;
       const status = c.status?.type;
       const live   = status?.name === 'STATUS_IN_PROGRESS';
-      const final  = status?.state === 'post';
+      const final  = status?.state === 'post' || ['STATUS_FINAL','STATUS_RETIRED','STATUS_WALKOVER'].includes(status?.name);
       const away   = c.competitors?.find(x => x.homeAway === 'away');
       const home   = c.competitors?.find(x => x.homeAway === 'home');
       if (!away || !home) return '';
@@ -673,7 +707,9 @@
         const won  = final && p.winner;
         const lost = final && !p.winner;
         const seed = p.seed > 0 ? p.seed : null;
-        const rank = p.rank;
+        // ESPN's scoreboard feed leaves `seed` null mid-tournament, so fall
+        // back to the player's live ATP/WTA world ranking.
+        const rank = p.rank || p.curatedRank?.current || null;
 
         const setCells = Array.from({length: numSets}, (_, i) => {
           const my  = myScores[i];
@@ -690,7 +726,7 @@
               ${flag ? `<img src="${flag}" alt="" style="width:24px;height:16px;border-radius:2px;object-fit:cover;flex-shrink:0">` : ''}
               ${seed ? `<span style="font-family:var(--font-mono);font-size:0.75rem;font-weight:700;color:var(--purple-600);flex-shrink:0;background:var(--purple-100);border-radius:3px;padding:0.05rem 0.3rem">${seed}</span>` : ''}
               <span style="font-size:1rem;font-weight:${won ? '700' : seed ? '600' : '500'};color:${lost ? 'var(--gray-400)' : 'var(--text)'}">${name}</span>
-              ${!seed && rank ? `<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600);flex-shrink:0">#${rank}</span>` : ''}
+              ${!seed && rank ? `<span class="team-rank">${rank}</span>` : ''}
             </div>
           </td>
           ${setCells}
@@ -700,95 +736,97 @@
       let statusBadge;
       if (live)       statusBadge = `<span class="badge badge-live"><span class="live-dot"></span>${status?.detail || 'Live'}</span>`;
       else if (final) statusBadge = `<span class="badge badge-final">Final Score</span>`;
-      else            statusBadge = `<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600)">${new Date(c.date).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}</span>`;
+      else {
+        const d = new Date(c.date);
+        const sameDay = d.toDateString() === new Date().toDateString();
+        // ESPN uses local midnight as a placeholder when a match is scheduled
+        // for a day but not yet slotted to a time -- show just the day then.
+        const timeTBD = d.getHours() === 0 && d.getMinutes() === 0;
+        const t = d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true });
+        const day = d.toLocaleDateString('en-US', { weekday:'short' });
+        const when = timeTBD ? `${day} · TBD` : sameDay ? t : `${day} ${t}`;
+        statusBadge = `<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600)">${when}</span>`;
+      }
 
       const dateStr    = new Date(c.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
       const tennisBroadcast = c.broadcasts?.[0]?.names?.join('/') || c.geoBroadcasts?.[0]?.media?.shortName || '';
-      const footerBits = [m.round, c.venue?.court].filter(Boolean).join(' · ');
+      const footerLeft = m.tournament || c.venue?.court || '';
 
+      // Same shell as the team-sport cards (padded .game-card + .card-footer)
+      // so the footer divider is inset to match, not edge-to-edge.
       return `
-        <div class="game-card ${live ? 'live' : ''}" style="padding:0;overflow:hidden">
-          <div class="card-header" style="padding:0.85rem 1.1rem 0.7rem">
+        <div class="game-card ${live ? 'live' : ''}">
+          <div class="card-header">
             ${statusBadge}
             ${tennisBroadcast
               ? `<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--purple-300);font-weight:700">${tennisBroadcast}</span>`
-              : `<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--gray-600)">${dateStr}</span>`}
+              : '<span></span>'}
           </div>
-          <div style="padding:0 1.1rem 0.85rem">
-            <table style="width:100%;border-collapse:collapse">
-              <thead><tr>
-                <th style="width:100%"></th>
-                ${setHeaders}
-              </tr></thead>
-              <tbody>
-                ${playerRow(away, awayScores, homeScores, false)}
-                ${playerRow(home, homeScores, awayScores, true)}
-              </tbody>
-            </table>
-          </div>
-          ${m.tournament ? `<div style="padding:0.55rem 1.1rem 0.75rem;border-top:1px solid var(--border)"><span style="font-size:0.75rem;color:var(--gray-600)">${m.tournament}</span></div>` : ''}
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr>
+              <th style="width:100%"></th>
+              ${setHeaders}
+            </tr></thead>
+            <tbody>
+              ${playerRow(away, awayScores, homeScores, false)}
+              ${playerRow(home, homeScores, awayScores, true)}
+            </tbody>
+          </table>
+          ${footerLeft ? `<div class="card-footer">
+            <span class="card-venue">${footerLeft}</span>
+            <span class="card-time">${dateStr}</span>
+          </div>` : ''}
         </div>`;
     }
 
     function renderTennisOutput(events, leagueId) {
       const output = document.getElementById('scoreboard-output');
-      const now     = new Date();
+      const now         = Date.now();
+      const H           = 3600 * 1000;
+      const upcomingMax  = now + TENNIS_UPCOMING_DAYS * 24 * H;
+      const resultMin    = now - TENNIS_RESULT_HOURS * H;
 
-      function matchMinSeed(m) {
-        const seeds = (m.comp.competitors || []).map(c => c.seed).filter(s => s > 0);
-        return seeds.length ? Math.min(...seeds) : 999;
-      }
-      function isSeeded(m) {
-        return (m.comp.competitors || []).some(c => c.seed > 0);
-      }
-      const seedSort = (a, b) => {
-        const diff = matchMinSeed(a) - matchMinSeed(b);
-        return diff !== 0 ? diff : new Date(a.comp.date) - new Date(b.comp.date);
-      };
-
-      const matches = flattenTennisMatches(events).filter(m => {
-        const st = m.comp.status?.type;
-        if (st?.name !== 'STATUS_IN_PROGRESS' && !isWithinWindow(m.comp.date, now, 20)) return false;
+      const named = flattenTennisMatches(events).filter(m => {
         const away = m.comp.competitors?.find(x => x.homeAway === 'away');
         const home = m.comp.competitors?.find(x => x.homeAway === 'home');
         if (!away || !home) return false;
-        const awayName = away.athlete?.shortName || away.athlete?.displayName;
-        const homeName = home.athlete?.shortName || home.athlete?.displayName;
-        return !!(awayName && homeName);
+        const an = away.athlete?.shortName || away.athlete?.displayName;
+        const hn = home.athlete?.shortName || home.athlete?.displayName;
+        return an && hn && !(isTBD(an) && isTBD(hn));
       });
 
-      if (!matches.length) {
+      const live = [], upcoming = [], results = [];
+      for (const m of named) {
+        const st = m.comp.status?.type;
+        const t  = new Date(m.comp.date).getTime();
+        if (st?.name === 'STATUS_IN_PROGRESS')      live.push(m);
+        else if (st?.state === 'pre')               { if (t <= upcomingMax) upcoming.push(m); }
+        else if (t >= resultMin)                    results.push(m); // final / retired / walkover
+      }
+
+      live.sort(tennisSort);
+      upcoming.sort(tennisSort);
+      // Results: newest day first, then biggest match within the day.
+      results.sort((a, b) => {
+        const da = new Date(a.comp.date), db = new Date(b.comp.date);
+        return da.toDateString() === db.toDateString() ? tennisSort(a, b) : db - da;
+      });
+      const recentResults = results.slice(0, 40);
+
+      if (!live.length && !upcoming.length && !recentResults.length) {
         output.innerHTML = `<div class="empty-state">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
             <rect x="3" y="4" width="18" height="18" rx="2"/>
             <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
             <line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
-          <p>No ATP/WTA matches today.</p>
+          <p>No ATP/WTA matches right now.</p>
         </div>`;
         updateLiveBadge(leagueId, 0);
         return;
       }
 
-      const live = matches.filter(m => m.comp.status?.type?.name === 'STATUS_IN_PROGRESS')
-                          .sort(seedSort);
-      const rest = matches.filter(m => m.comp.status?.type?.name !== 'STATUS_IN_PROGRESS');
-
-      // Group by tournament, within each: seeded matches first (all shown), unseeded capped at 4
-      const byTournament = new Map();
-      for (const m of rest) {
-        const key = m.tournament || 'Other';
-        if (!byTournament.has(key)) byTournament.set(key, []);
-        byTournament.get(key).push(m);
-      }
-
-      // Sort tournaments so those with the highest-seeded matchups (lowest min seed) appear first
-      const sortedTournaments = [...byTournament.entries()].sort((a, b) => {
-        const aMin = Math.min(...a[1].map(matchMinSeed));
-        const bMin = Math.min(...b[1].map(matchMinSeed));
-        return aMin - bMin;
-      });
-
+      const sectionMargin = any => any ? '1.5rem' : '1.25rem';
       let html = '';
 
       if (live.length) {
@@ -799,18 +837,20 @@
         <div class="games-grid">${live.map(buildTennisCard).join('')}</div>`;
       }
 
-      for (const [tournament, tMatches] of sortedTournaments) {
-        const seeded   = tMatches.filter(isSeeded).sort(seedSort);
-        const unseeded = tMatches.filter(m => !isSeeded(m))
-                                 .sort((a, b) => new Date(a.comp.date) - new Date(b.comp.date))
-                                 .slice(0, 10);
-        const toShow = [...seeded, ...unseeded];
-        if (!toShow.length) continue;
-        html += `<div class="section-divider" style="margin-top:1.5rem">
-          <span class="sdl" style="color:var(--text);font-weight:600">${tournament}</span>
+      if (upcoming.length) {
+        html += `<div class="section-divider" style="margin-top:${sectionMargin(live.length)}">
+          <span class="sdl" style="color:var(--text);font-weight:600">Upcoming</span>
           <div class="sdl-line"></div>
         </div>
-        <div class="games-grid">${toShow.map(buildTennisCard).join('')}</div>`;
+        <div class="games-grid">${upcoming.map(buildTennisCard).join('')}</div>`;
+      }
+
+      if (recentResults.length) {
+        html += `<div class="section-divider" style="margin-top:${sectionMargin(live.length || upcoming.length)}">
+          <span class="sdl final">Recent Results</span>
+          <div class="sdl-line"></div>
+        </div>
+        <div class="games-grid">${recentResults.map(buildTennisCard).join('')}</div>`;
       }
 
       output.innerHTML = html;
@@ -960,7 +1000,7 @@
         if (!force && cache[leagueId]) {
           data = cache[leagueId];
         } else {
-          const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${leagueObj.sport}/${leagueObj.slug}/scoreboard`);
+          const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${leagueObj.sport}/${leagueObj.slug}/scoreboard${leagueObj.query || ''}`);
           data = await r.json();
           cache[leagueId] = data;
         }
@@ -1044,7 +1084,7 @@
             const liveCount = flattenTennisMatches(events).filter(m => m.comp.status?.type?.name === 'STATUS_IN_PROGRESS').length;
             updateLiveBadge(l.id, liveCount);
           } else {
-            const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${l.sport}/${l.slug}/scoreboard`);
+            const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${l.sport}/${l.slug}/scoreboard${l.query || ''}`);
             const data = await r.json();
             cache[l.id] = data;
             const events = data.events || [];

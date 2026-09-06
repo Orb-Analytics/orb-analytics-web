@@ -3,11 +3,11 @@
 const SIDEBAR_LINKS = [
   { href: 'predictions.html', label: 'Predictions', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>` },
   { href: 'scoreboard.html',  label: 'Scoreboard',  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>` },
-  { href: 'snapshot.html',    label: 'Snapshot Analysis', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="4" y2="20"/><line x1="4" y1="20" x2="20" y2="20"/><circle cx="8.5" cy="15.5" r="1.6"/><circle cx="13" cy="9" r="1.6"/><circle cx="18" cy="6" r="1.6"/><circle cx="10.5" cy="17.5" r="1.6"/></svg>` },
-  { href: 'tracker.html',     label: 'Bet Tracker', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>` },
+  { href: 'snapshot.html',    label: 'Snapshot Analysis', icon: `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="3" y="11" width="4" height="10"/><rect x="10" y="3" width="4" height="18"/><rect x="17" y="8" width="4" height="13"/></svg>` },
+  { href: 'tracker.html',     label: 'Bet Tracker', hidden: true, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>` },
   { href: 'about.html',       label: 'About Us',    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>` },
-  { href: 'feed.html',        label: 'Feed',         icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>`, soon: true },
-  { href: 'settings.html',    label: 'Settings',     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`, soon: true },
+  { href: 'feed.html',        label: 'Feed',        hidden: true, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>`, soon: true },
+  { href: 'settings.html',    label: 'Settings',    hidden: true, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`, soon: true },
 ];
 
 const SOCIAL_LINKS = [
@@ -267,7 +267,7 @@ function buildNav(activePage = '') {
     sidebar.innerHTML = `
       <div class="sidebar-inner">
         <nav class="sidebar-nav">
-          ${SIDEBAR_LINKS.map(item => `
+          ${SIDEBAR_LINKS.filter(item => !item.hidden).map(item => `
             <a href="${item.soon ? '#' : item.href}"
                class="sidebar-link${activePage === item.href ? ' active' : ''}${item.soon ? ' soon' : ''}"
                title="${item.label}">
@@ -278,35 +278,23 @@ function buildNav(activePage = '') {
         </nav>
         <div class="sidebar-footer">
           <!-- Auth section -->
-          <div id="sidebar-auth" style="margin-bottom:0.75rem">
-            <div id="sidebar-signed-out" style="display:none">
-              <button onclick="openAuthModal('signin')"
-                style="width:100%;padding:0.55rem;background:var(--purple-600);color:white;border:none;
-                       border-radius:8px;font-family:var(--font-body);font-size:0.82rem;font-weight:600;
-                       cursor:pointer;margin-bottom:0.35rem;transition:background 0.2s"
-                onmouseover="this.style.background='var(--purple-500)'"
-                onmouseout="this.style.background='var(--purple-600)'">Sign In</button>
-              <button onclick="openAuthModal('signup')"
-                style="width:100%;padding:0.55rem;background:transparent;color:var(--purple-600);
-                       border:1px solid var(--purple-600);border-radius:8px;font-family:var(--font-body);
-                       font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s"
-                onmouseover="this.style.background='rgba(107,33,168,0.08)'"
-                onmouseout="this.style.background='transparent'">Create Account</button>
+          <div id="sidebar-auth">
+            <div id="sidebar-signed-out" class="sidebar-auth-group" style="display:none">
+              <button class="sidebar-btn sidebar-btn--primary" onclick="openAuthModal('signin')">Sign In</button>
+              <button class="sidebar-btn sidebar-btn--ghost" onclick="openAuthModal('signup')">Create Account</button>
             </div>
-            <div id="sidebar-signed-in" style="display:none">
-              <div id="sidebar-user-email"
-                style="font-size:0.75rem;color:var(--gray-600);margin-bottom:0.5rem;
-                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-mono)"></div>
-              <button onclick="handleSignOut()"
-                style="width:100%;padding:0.5rem;background:transparent;color:var(--gray-600);
-                       border:1px solid var(--border);border-radius:8px;font-family:var(--font-body);
-                       font-size:0.8rem;cursor:pointer;transition:all 0.2s"
-                onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
-                onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--gray-600)'">Sign Out</button>
+            <div id="sidebar-signed-in" class="sidebar-auth-group" style="display:none">
+              <div class="sidebar-account">
+                <div class="sidebar-avatar" id="sidebar-avatar"></div>
+                <div class="sidebar-account-text">
+                  <div class="sidebar-account-name" id="sidebar-account-name"></div>
+                  <div class="sidebar-account-email" id="sidebar-user-email"></div>
+                </div>
+              </div>
+              <button class="sidebar-btn sidebar-btn--danger" onclick="handleSignOut()">Sign Out</button>
             </div>
           </div>
-          <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme"
-            style="width:100%;justify-content:center;gap:0.5rem;font-size:0.85rem;font-family:var(--font-body)">
+          <button class="sidebar-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
             ${document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode'}
           </button>
         </div>
@@ -354,16 +342,33 @@ window.buildNav = buildNav;
 window.updateAuthUI = function(user) {
   const signedOut = document.getElementById('sidebar-signed-out');
   const signedIn  = document.getElementById('sidebar-signed-in');
-  const emailEl   = document.getElementById('sidebar-user-email');
   if (!signedOut || !signedIn) return;
-  if (user) {
-    signedOut.style.display = 'none';
-    signedIn.style.display  = 'block';
-    if (emailEl) emailEl.textContent = user.email;
-  } else {
-    signedOut.style.display = 'block';
+
+  if (!user) {
+    signedOut.style.display = 'flex';
     signedIn.style.display  = 'none';
+    return;
   }
+
+  signedOut.style.display = 'none';
+  signedIn.style.display  = 'flex';
+
+  const name  = (user.displayName || '').trim();
+  const email = user.email || '';
+  const photo = user.photoURL || '';
+  const initial = ((name || email || '?').match(/[a-z0-9]/i) || ['?'])[0];
+
+  const avatarEl = document.getElementById('sidebar-avatar');
+  const nameEl   = document.getElementById('sidebar-account-name');
+  const emailEl  = document.getElementById('sidebar-user-email');
+
+  if (avatarEl) {
+    avatarEl.innerHTML = photo
+      ? `<img src="${photo}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.textContent='${initial}'">`
+      : initial;
+  }
+  if (nameEl)  { nameEl.textContent = name; nameEl.hidden = !name; }
+  if (emailEl) emailEl.textContent = email;
 };
 
 window.handleSignOut = async function() {
