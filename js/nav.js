@@ -300,6 +300,11 @@ function buildNav(activePage = '') {
         </div>
       </div>
     `;
+
+    // Show the signed-out CTA by default. Pages that wire up Firebase auth
+    // call updateAuthUI again once the auth state resolves; pages that don't
+    // (e.g. About Us) still get the Sign In / Create Account buttons.
+    if (window.updateAuthUI) window.updateAuthUI(window.currentUser || null);
   }
 
   buildDisclaimer();
