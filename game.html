@@ -534,5 +534,14 @@
 
     loadGame();
   </script>
+
+  <!-- Firebase auth so the sidebar reflects the signed-in state here too -->
+  <script type="module">
+    import { onAuthChange } from './js/firebase.js';
+    onAuthChange(user => {
+      window.currentUser = user;
+      if (window.updateAuthUI) window.updateAuthUI(user);
+    });
+  </script>
 </body>
 </html>

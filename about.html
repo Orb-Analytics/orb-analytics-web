@@ -530,5 +530,14 @@
 
   <script src="js/nav.js?v=20260907e"></script>
   <script>buildNav('about.html');</script>
+
+  <!-- Firebase auth so the sidebar reflects the signed-in state here too -->
+  <script type="module">
+    import { onAuthChange } from './js/firebase.js';
+    onAuthChange(user => {
+      window.currentUser = user;
+      if (window.updateAuthUI) window.updateAuthUI(user);
+    });
+  </script>
 </body>
 </html>
