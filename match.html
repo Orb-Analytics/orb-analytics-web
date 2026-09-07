@@ -47,7 +47,10 @@
     .mh-status.live { color: #FCA5A5; display: flex; align-items: center; gap: 0.35rem; }
     .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #FCA5A5; animation: pulse-dot 1.4s infinite; }
     @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .mh-meta { text-align: center; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 1.5rem; }
+    .mh-meta { text-align: center; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 1.5rem; line-height: 1.75; }
+    .mh-meta-title { font-size: 0.8125rem; font-weight: 700; color: var(--text); }
+    .mh-meta-title .mh-meta-tier { color: var(--purple-600); font-weight: 700; }
+    body.dark .mh-meta-title .mh-meta-tier { color: var(--purple-300); }
 
     /* ── Section card ──────────────────────────────────────────── */
     .section-card {
@@ -68,10 +71,8 @@
     }
     .score-table th.st-player { text-align: left; width: 100%; }
     .score-table td { padding: 0.7rem 0.5rem; vertical-align: middle; }
-    .score-table td.st-player {
-      text-align: left; font-size: 0.9375rem; font-weight: 600; color: var(--text);
-      display: flex; align-items: center; gap: 0.5rem;
-    }
+    .score-table td.st-player { text-align: left; font-size: 0.9375rem; font-weight: 600; color: var(--text); }
+    .score-table td.st-player .st-player-inner { display: inline-flex; align-items: center; gap: 0.5rem; }
     .score-table td.st-player .lost { color: var(--gray-400); font-weight: 500; }
     .score-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
     .st-flag { width: 22px; height: 15px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
@@ -233,7 +234,7 @@
               <div class="${cls}-fallback" style="display:none">${code}</div>`;
     }
 
-    function headerPlayer(p, final) {
+    function headerPlayer(p, final, tourLabel) {
       const a    = p.athlete || {};
       const name = a.fullName || a.displayName || a.shortName || 'TBD';
       const won  = final && p.winner === true;
@@ -243,7 +244,7 @@
       const link = (a.links || []).find(l => (l.rel || []).includes('playercard'))?.href;
       const sub  = [];
       if (seed) sub.push(`<span class="mh-seed">Seed ${seed}</span>`);
-      if (!seed && rank) sub.push(`<span>ATP/WTA No. ${rank}</span>`);
+      if (!seed && rank) sub.push(`<span>${tourLabel} No. ${rank}</span>`);
       if (a.flag?.alt) sub.push(`<span>${a.flag.alt}</span>`);
       if (p.possession) sub.push(`<span class="mh-serve" title="Serving"></span>`);
       return `<div class="mh-player">
@@ -282,14 +283,20 @@
         statusHTML = `<span class="mh-status">${d.toLocaleString('en-US', opts)}${timeTBD ? ' · TBD' : ''}</span>`;
       }
 
-      // Meta line: tournament · tier · round · court · date
+      // ATP for the men's tour, WTA for the women's.
+      const tourLabel = m.tour === 'wta' ? 'WTA' : 'ATP';
+
+      // Meta, grouped onto three lines instead of one long dot-joined string:
+      //   1. what event      2. format          3. where & when
       const tier   = tournamentTier(m.tournament, m.major, m.tour);
       const round  = c.round?.displayName || m.grouping || '';
       const discipline = c.type?.text || m.grouping || '';
       const court  = c.venue?.court || '';
       const dateStr = new Date(c.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const bestOf = c.format?.regulation?.periods ? `Best of ${c.format.regulation.periods}` : '';
-      const metaBits = [m.tournament, TIER_LABEL[tier], discipline, round, court, bestOf, dateStr].filter(Boolean);
+      const metaTitle = [m.tournament, TIER_LABEL[tier] && `<span class="mh-meta-tier">${TIER_LABEL[tier]}</span>`].filter(Boolean).join(' · ');
+      const metaFormat = [discipline, round, bestOf].filter(Boolean).join(' · ');
+      const metaWhere  = [court, dateStr].filter(Boolean).join(' · ');
 
       // Set-by-set
       const s1 = (p1.linescores || []).map(s => s);
@@ -313,25 +320,28 @@
           return `<td class="st-set ${wonSet ? 'won' : ''}">${myV != null ? Math.round(myV) : '—'}${tb}</td>`;
         }).join('');
         return `<tr>
-          <td class="st-player">
+          <td class="st-player"><span class="st-player-inner">
             ${flagHTML('st-flag', a)}
             <span class="${lost ? 'lost' : ''}">${name}</span>
             ${serving ? '<span class="mh-serve" title="Serving"></span>' : ''}
-          </td>
+          </span></td>
           ${cells}
         </tr>`;
       }
 
-      const summary = (c.notes || []).map(n => n.text).find(Boolean);
       const broadcast = c.broadcasts?.[0]?.names?.join('/') || c.geoBroadcasts?.[0]?.media?.shortName || '';
 
       const html = `
         <div class="match-header">
-          ${headerPlayer(p1, final)}
+          ${headerPlayer(p1, final, tourLabel)}
           <div class="mh-center">${statusHTML}</div>
-          ${headerPlayer(p2, final)}
+          ${headerPlayer(p2, final, tourLabel)}
         </div>
-        <div class="mh-meta">${metaBits.join(' · ')}</div>
+        <div class="mh-meta">
+          <div class="mh-meta-title">${metaTitle}</div>
+          ${metaFormat ? `<div>${metaFormat}</div>` : ''}
+          ${metaWhere ? `<div>${metaWhere}</div>` : ''}
+        </div>
 
         <div class="section-card">
           <h2>${final ? 'Result' : live ? 'Live Score' : 'Set by Set'}</h2>
@@ -342,7 +352,6 @@
               ${scoreRow(p2, s2, s1, final)}
             </tbody>
           </table>
-          ${summary ? `<p class="muted-note" style="text-align:left;padding:0.9rem 0 0">${summary}</p>` : ''}
         </div>
 
         ${broadcast ? `<div class="section-card">
