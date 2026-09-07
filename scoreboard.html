@@ -728,7 +728,8 @@
           for (const c of g.competitions || []) {
             if (!c.id || seen.has(c.id)) continue;
             seen.add(c.id);
-            matches.push({ tournament: ev.name, tier, round: g.grouping?.displayName, comp: c });
+            matches.push({ tournament: ev.name, tier, round: g.grouping?.displayName,
+                           eventId: ev.id, tour: ev._tour, comp: c });
           }
         }
       }
@@ -811,8 +812,10 @@
 
       // Same shell as the team-sport cards (padded .game-card + .card-footer)
       // so the footer divider is inset to match, not edge-to-edge.
+      const matchUrl = `match.html?comp=${m.comp.id}&event=${encodeURIComponent(m.eventId || '')}&tour=${m.tour || ''}`;
+
       return `
-        <div class="game-card ${live ? 'live' : ''}">
+        <div class="game-card ${live ? 'live' : ''}" onclick="goToGame('${matchUrl}')" style="cursor:pointer">
           <div class="card-header">
             ${statusBadge}
             ${tennisBroadcast

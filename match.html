@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Match · Orb Analytics</title>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="stylesheet" href="css/style.css?v=20260815" />
+  <style>
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600);
+      text-decoration: none; margin: 1.5rem 0 1rem; transition: var(--transition);
+    }
+    .back-link:hover { color: var(--text); }
+    .back-link svg { width: 14px; height: 14px; }
+
+    /* ── Match header ──────────────────────────────────────────── */
+    .match-header {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.5rem 1.25rem; display: flex; align-items: center; justify-content: space-between;
+      gap: 0.75rem; margin-bottom: 1rem;
+    }
+    .mh-player { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; min-width: 0; }
+    .mh-flag { width: 44px; height: 30px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+    .mh-flag-fallback {
+      width: 44px; height: 30px; border-radius: 3px; background: var(--gray-100);
+      align-items: center; justify-content: center; font-family: var(--font-mono);
+      font-size: 0.7rem; font-weight: 700; color: var(--gray-600);
+    }
+    .mh-name {
+      font-family: var(--font-display); font-size: 1.0625rem; font-weight: 800; text-align: center;
+      line-height: 1.25; overflow-wrap: anywhere;
+    }
+    .mh-name.lost { color: var(--gray-400); font-weight: 700; }
+    .mh-sub { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; justify-content: center; }
+    .mh-seed { background: var(--purple-100); color: var(--purple-600); border-radius: 3px; padding: 0.05rem 0.35rem; font-weight: 700; }
+    body.dark .mh-seed { background: rgba(154,41,233,0.20); color: var(--purple-300); }
+    .mh-win { color: var(--purple-600); font-weight: 800; }
+    body.dark .mh-win { color: var(--purple-300); }
+    .mh-serve {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: #16A34A; flex-shrink: 0;
+    }
+    .mh-center { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 0.5rem 0.75rem 0; }
+    .mh-status { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--gray-600); white-space: nowrap; text-align: center; }
+    .mh-status.live { color: #FCA5A5; display: flex; align-items: center; gap: 0.35rem; }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #FCA5A5; animation: pulse-dot 1.4s infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .mh-meta { text-align: center; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 1.5rem; }
+
+    /* ── Section card ──────────────────────────────────────────── */
+    .section-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.25rem 1.25rem 1.5rem; margin-bottom: 1.25rem;
+    }
+    .section-card h2 {
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--gray-600); margin: 0 0 1rem;
+    }
+    .muted-note { color: var(--gray-600); font-size: 0.8125rem; text-align: center; padding: 1rem 0; margin: 0; }
+
+    /* ── Set-by-set score table ───────────────────────────────── */
+    .score-table { width: 100%; border-collapse: collapse; }
+    .score-table th {
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600);
+      letter-spacing: 0.06em; text-align: center; padding: 0 0.5rem 0.6rem; font-weight: 600;
+    }
+    .score-table th.st-player { text-align: left; width: 100%; }
+    .score-table td { padding: 0.7rem 0.5rem; vertical-align: middle; }
+    .score-table td.st-player {
+      text-align: left; font-size: 0.9375rem; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .score-table td.st-player .lost { color: var(--gray-400); font-weight: 500; }
+    .score-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+    .st-flag { width: 22px; height: 15px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
+    .st-set {
+      text-align: center; font-family: var(--font-mono); font-size: 1.125rem; font-weight: 500;
+      color: var(--gray-400); position: relative;
+    }
+    .st-set.won { font-weight: 800; color: var(--purple-600); }
+    body.dark .st-set.won { color: var(--purple-300); }
+    .st-tb { font-size: 0.6875rem; vertical-align: super; color: var(--gray-600); margin-left: 1px; }
+
+    .player-link {
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple-600);
+      text-decoration: none;
+    }
+    body.dark .player-link { color: var(--purple-300); }
+    .player-link:hover { text-decoration: underline; }
+
+    @media (max-width: 580px) {
+      .match-header { padding: 1.1rem 0.75rem; }
+      .mh-flag, .mh-flag-fallback { width: 38px; height: 26px; }
+      .mh-name { font-size: 0.9375rem; }
+      .score-table td.st-player { font-size: 0.875rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- App layout -->
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="sidebar-content">
+  <main class="page">
+    <div class="container" style="max-width: 900px;">
+      <a class="back-link" href="scoreboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Scoreboard
+      </a>
+      <div id="match-root"><div class="loading-state"><div class="spinner"></div> Loading match...</div></div>
+      <div id="site-disclaimer"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Scores via ESPN API · © 2026 Orb Analytics</p>
+  </footer>
+
+    </div><!-- end sidebar-content -->
+  </div><!-- end app-layout -->
+
+  <script src="js/nav.js?v=20260813"></script>
+  <script>
+    buildNav('scoreboard.html');
+
+    // ── URL params ──────────────────────────────────────────────
+    const params  = new URLSearchParams(location.search);
+    const compId  = params.get('comp');
+    const eventId = params.get('event');
+    let   tour    = (params.get('tour') || '').toLowerCase();
+    if (tour !== 'atp' && tour !== 'wta') tour = null; // unknown -> search both
+
+    // ── Tournament tier (mirrors scoreboard.html) ──────────────
+    const TIER = { SLAM: 0, MASTERS: 1, FIVE: 2, TWO_FIFTY: 3 };
+    const TIER_LABEL = ['Grand Slam', 'Masters 1000', '500', '250'];
+    const MASTERS_1000 = [
+      'indian wells', 'miami', 'monte-carlo', 'monte carlo', 'madrid',
+      'rome', 'italian', 'internazionali', 'canadian', 'canada masters',
+      'toronto', 'montreal', 'national bank', 'cincinnati', 'shanghai',
+      'paris masters', 'rolex paris', 'wuhan',
+    ];
+    const TOUR_500 = [
+      'rotterdam', 'abn amro', 'rio de janeiro', 'rio open', 'acapulco',
+      'abierto mexicano', 'barcelona', 'queen', 'cinch', 'halle',
+      'terra wortmann', 'hamburg', 'washington', 'citi open', 'tokyo',
+      'kinoshita', 'japan open', 'vienna', 'erste bank', 'basel',
+      'swiss indoors', 'adelaide', 'brisbane', 'stuttgart', 'charleston',
+      'berlin', 'bett1', 'eastbourne', 'san diego', 'ningbo', 'abu dhabi',
+      'strasbourg',
+    ];
+    function tournamentTier(name, major, tr) {
+      if (major) return TIER.SLAM;
+      const n = (name || '').toLowerCase();
+      const wta = tr === 'wta';
+      if (n.includes('dubai'))       return wta ? TIER.MASTERS : TIER.FIVE;
+      if (n.includes('china open') || n.includes('beijing')) return wta ? TIER.MASTERS : TIER.FIVE;
+      if (n.includes('qatar') || n.includes('doha'))         return wta ? TIER.MASTERS : TIER.TWO_FIFTY;
+      if (n.includes('guadalajara')) return wta ? TIER.MASTERS : TIER.TWO_FIFTY;
+      if (MASTERS_1000.some(k => n.includes(k))) return TIER.MASTERS;
+      if (TOUR_500.some(k => n.includes(k)))     return TIER.FIVE;
+      return TIER.TWO_FIFTY;
+    }
+
+    let refreshTimer = null;
+
+    function showEmpty(msg) {
+      document.getElementById('match-root').innerHTML = `<div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        <p>${msg}</p>
+      </div>`;
+    }
+
+    const isTBD = n => !n || n.trim().toUpperCase() === 'TBD';
+
+    async function fetchTour(tr) {
+      return fetch(`https://site.api.espn.com/apis/site/v2/sports/tennis/${tr}/scoreboard`)
+        .then(r => r.json()).catch(() => ({ events: [] }));
+    }
+
+    // Find the one competition by id. ESPN competition ids are unique across a
+    // tour's board, so `eventId` is only a hint we don't need to filter on.
+    function locate(data, tr, out) {
+      for (const ev of data.events || []) {
+        for (const g of ev.groupings || []) {
+          for (const c of g.competitions || []) {
+            if (String(c.id) === String(compId)) {
+              out.match = { comp: c, tournament: ev.name, major: !!ev.major, tour: tr,
+                            grouping: g.grouping?.displayName };
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    async function loadMatch() {
+      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+      if (!compId) { showEmpty("This match link is missing its id."); return; }
+      try {
+        const tours = tour ? [tour] : ['atp', 'wta'];
+        const out = {};
+        for (const tr of tours) {
+          const data = await fetchTour(tr);
+          if (locate(data, tr, out)) break;
+        }
+        if (!out.match) { showEmpty("Couldn't find this match. It may have dropped off the ESPN board."); return; }
+        render(out.match);
+        const st = out.match.comp.status?.type;
+        if (st?.state === 'in') {
+          refreshTimer = setInterval(() => { loadMatch().catch(() => {}); }, 20000);
+        }
+      } catch (e) {
+        showEmpty('Could not load match data.');
+      }
+    }
+
+    // ── Rendering ─────────────────────────────────────────────────
+    function flagHTML(cls, athlete) {
+      const href = athlete?.flag?.href;
+      const alt  = athlete?.flag?.alt || '';
+      const code = (athlete?.flag?.href || '').match(/\/([a-z]{2,3})\.png$/i)?.[1]?.toUpperCase() || '';
+      if (!href) return `<div class="${cls}-fallback" style="display:flex">${code}</div>`;
+      return `<img class="${cls}" src="${href}" alt="${alt}" title="${alt}"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+              <div class="${cls}-fallback" style="display:none">${code}</div>`;
+    }
+
+    function headerPlayer(p, final) {
+      const a    = p.athlete || {};
+      const name = a.fullName || a.displayName || a.shortName || 'TBD';
+      const won  = final && p.winner === true;
+      const lost = final && p.winner === false;
+      const seed = p.seed > 0 ? p.seed : null;
+      const rank = p.rank || p.curatedRank?.current || null;
+      const link = (a.links || []).find(l => (l.rel || []).includes('playercard'))?.href;
+      const sub  = [];
+      if (seed) sub.push(`<span class="mh-seed">Seed ${seed}</span>`);
+      if (!seed && rank) sub.push(`<span>ATP/WTA No. ${rank}</span>`);
+      if (a.flag?.alt) sub.push(`<span>${a.flag.alt}</span>`);
+      if (p.possession) sub.push(`<span class="mh-serve" title="Serving"></span>`);
+      return `<div class="mh-player">
+        ${flagHTML('mh-flag', a)}
+        <div class="mh-name ${lost ? 'lost' : ''}">${name}${won ? ' <span class="mh-win" title="Winner">✓</span>' : ''}</div>
+        ${sub.length ? `<div class="mh-sub">${sub.join('')}</div>` : ''}
+        ${link ? `<a class="player-link" href="${link}" target="_blank" rel="noopener">Player card ↗</a>` : ''}
+      </div>`;
+    }
+
+    function render(m) {
+      const c      = m.comp;
+      const status = c.status?.type;
+      const live   = status?.state === 'in' || status?.name === 'STATUS_IN_PROGRESS';
+      const final  = status?.state === 'post' || ['STATUS_FINAL','STATUS_RETIRED','STATUS_WALKOVER'].includes(status?.name);
+      const comps  = c.competitors || [];
+      const p1 = comps.find(x => x.homeAway === 'away') || comps[0];
+      const p2 = comps.find(x => x.homeAway === 'home') || comps[1];
+      if (!p1 || !p2) { showEmpty('Could not load match data.'); return; }
+
+      const a1n = p1.athlete?.displayName, a2n = p2.athlete?.displayName;
+      if (isTBD(a1n) && isTBD(a2n)) { showEmpty('This match is not set yet.'); return; }
+
+      // Status / time
+      let statusHTML;
+      if (live) {
+        statusHTML = `<span class="mh-status live"><span class="live-dot"></span>${status?.detail || 'Live'}</span>`;
+      } else if (final) {
+        statusHTML = `<span class="mh-status">${status?.detail || 'Final'}</span>`;
+      } else {
+        const d = new Date(c.date);
+        const timeTBD = d.getHours() === 0 && d.getMinutes() === 0;
+        const opts = timeTBD
+          ? { weekday: 'short', month: 'short', day: 'numeric' }
+          : { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+        statusHTML = `<span class="mh-status">${d.toLocaleString('en-US', opts)}${timeTBD ? ' · TBD' : ''}</span>`;
+      }
+
+      // Meta line: tournament · tier · round · court · date
+      const tier   = tournamentTier(m.tournament, m.major, m.tour);
+      const round  = c.round?.displayName || m.grouping || '';
+      const discipline = c.type?.text || m.grouping || '';
+      const court  = c.venue?.court || '';
+      const dateStr = new Date(c.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const bestOf = c.format?.regulation?.periods ? `Best of ${c.format.regulation.periods}` : '';
+      const metaBits = [m.tournament, TIER_LABEL[tier], discipline, round, court, bestOf, dateStr].filter(Boolean);
+
+      // Set-by-set
+      const s1 = (p1.linescores || []).map(s => s);
+      const s2 = (p2.linescores || []).map(s => s);
+      const numSets = Math.max(s1.length, s2.length, 1);
+      const setHead = Array.from({ length: numSets }, (_, i) => `<th>S${i + 1}</th>`).join('');
+
+      function scoreRow(p, mine, opp, final) {
+        const a    = p.athlete || {};
+        const name = a.shortName || a.displayName || 'TBD';
+        const lost = final && p.winner === false;
+        const serving = p.possession;
+        const cells = Array.from({ length: numSets }, (_, i) => {
+          const my  = mine[i], ot = opp[i];
+          const myV = my?.value, otV = ot?.value;
+          // Only mark a set won once ESPN flags it complete (`winner`);
+          // an in-progress set that's merely ahead on games is not "won".
+          const wonSet = my?.winner === true
+            || (my?.winner == null && ot?.winner == null && myV != null && otV != null && final && myV > otV);
+          const tb = my?.tiebreak != null ? `<span class="st-tb">${my.tiebreak}</span>` : '';
+          return `<td class="st-set ${wonSet ? 'won' : ''}">${myV != null ? Math.round(myV) : '—'}${tb}</td>`;
+        }).join('');
+        return `<tr>
+          <td class="st-player">
+            ${flagHTML('st-flag', a)}
+            <span class="${lost ? 'lost' : ''}">${name}</span>
+            ${serving ? '<span class="mh-serve" title="Serving"></span>' : ''}
+          </td>
+          ${cells}
+        </tr>`;
+      }
+
+      const summary = (c.notes || []).map(n => n.text).find(Boolean);
+      const broadcast = c.broadcasts?.[0]?.names?.join('/') || c.geoBroadcasts?.[0]?.media?.shortName || '';
+
+      const html = `
+        <div class="match-header">
+          ${headerPlayer(p1, final)}
+          <div class="mh-center">${statusHTML}</div>
+          ${headerPlayer(p2, final)}
+        </div>
+        <div class="mh-meta">${metaBits.join(' · ')}</div>
+
+        <div class="section-card">
+          <h2>${final ? 'Result' : live ? 'Live Score' : 'Set by Set'}</h2>
+          <table class="score-table">
+            <thead><tr><th class="st-player">Player</th>${setHead}</tr></thead>
+            <tbody>
+              ${scoreRow(p1, s1, s2, final)}
+              ${scoreRow(p2, s2, s1, final)}
+            </tbody>
+          </table>
+          ${summary ? `<p class="muted-note" style="text-align:left;padding:0.9rem 0 0">${summary}</p>` : ''}
+        </div>
+
+        ${broadcast ? `<div class="section-card">
+          <h2>Broadcast</h2>
+          <p class="muted-note" style="text-align:left;padding:0">${broadcast}</p>
+        </div>` : ''}
+      `;
+
+      document.getElementById('match-root').innerHTML = html;
+    }
+
+    loadMatch();
+  </script>
+</body>
+</html>
