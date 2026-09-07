@@ -641,10 +641,58 @@
     // ── Tennis (ATP/WTA) rendering ─────────────────────────────────
     // ESPN hands back the whole tournament draw in one payload, so we split
     // it into Live / Upcoming (next few days) / Recent results and rank each
-    // list by the better-ranked player, so marquee matchups and show-court
-    // matches float to the top instead of drowning in qualifiers.
+    // list by tournament tier first (Grand Slam > Masters 1000 > Tour 500 >
+    // Tour 250), then by the better-ranked player -- so the marquee event in
+    // progress (e.g. the US Open) floats to the top and a stray 250 like the
+    // Montreux Nestlé Open sinks, instead of everything sorting purely on
+    // player ranking regardless of which trophy is on the line.
     const TENNIS_UPCOMING_DAYS = 4;   // how far ahead scheduled matches show
     const TENNIS_RESULT_HOURS  = 48;  // how long finished matches stay up
+
+    // ── Tournament tier ───────────────────────────────────────────
+    // ESPN only flags Grand Slams (`ev.major`); it exposes no field for the
+    // 1000 / 500 / 250 tiers and reports `purse` as 0, so we classify by
+    // tournament name. Sponsor prefixes change yearly ("BNP Paribas", "Mutua",
+    // "Nestlé"...), so we match on the city / historic name. A handful of
+    // events share a name across tours at different tiers (Dubai, China Open,
+    // Qatar) -- those are resolved by `tour` first. Unknown events fall to the
+    // 250 bucket. THIS TABLE IS THE MAINTENANCE POINT when the calendar shifts.
+    const TIER = { SLAM: 0, MASTERS: 1, FIVE: 2, TWO_FIFTY: 3 };
+    const TIER_LABEL = ['Grand Slam', 'Masters 1000', 'Tour 500', 'Tour 250'];
+
+    // Combined & single-tour Masters 1000 / WTA 1000 events.
+    const MASTERS_1000 = [
+      'indian wells', 'miami', 'monte-carlo', 'monte carlo', 'madrid',
+      'rome', 'italian', 'internazionali', 'canadian', 'canada masters',
+      'toronto', 'montreal', 'national bank', 'cincinnati', 'shanghai',
+      'paris masters', 'rolex paris', 'wuhan',
+    ];
+    // ATP 500 + WTA 500 events.
+    const TOUR_500 = [
+      'rotterdam', 'abn amro', 'rio de janeiro', 'rio open', 'acapulco',
+      'abierto mexicano', 'barcelona', "queen", 'cinch', 'halle',
+      'terra wortmann', 'hamburg', 'washington', 'citi open', 'tokyo',
+      'kinoshita', 'japan open', 'vienna', 'erste bank', 'basel',
+      'swiss indoors', 'adelaide', 'brisbane', 'stuttgart', 'charleston',
+      'berlin', 'bett1', 'eastbourne', 'san diego', 'ningbo', 'abu dhabi',
+      'strasbourg',
+    ];
+
+    function tournamentTier(m) {
+      if (m.major) return TIER.SLAM;
+      const n = (m.tournament || '').toLowerCase();
+      const wta = m.tour === 'wta';
+      // Same name, different tier depending on tour:
+      if (n.includes('dubai'))       return wta ? TIER.MASTERS : TIER.FIVE;
+      if (n.includes('china open') || n.includes('beijing'))
+                                     return wta ? TIER.MASTERS : TIER.FIVE;
+      if (n.includes('qatar') || n.includes('doha'))
+                                     return wta ? TIER.MASTERS : TIER.TWO_FIFTY;
+      if (n.includes('guadalajara')) return wta ? TIER.MASTERS : TIER.TWO_FIFTY;
+      if (MASTERS_1000.some(k => n.includes(k))) return TIER.MASTERS;
+      if (TOUR_500.some(k => n.includes(k)))     return TIER.FIVE;
+      return TIER.TWO_FIFTY;
+    }
 
     const isTBD = n => !n || n.trim().toUpperCase() === 'TBD';
 
@@ -662,9 +710,11 @@
     };
     const courtRank = comp => SHOW_COURTS[comp.venue?.court] ?? 5;
 
-    // Biggest match first: better world ranking, then show court, then sooner.
+    // Biggest match first: higher tournament tier, then better world ranking,
+    // then show court, then sooner.
     function tennisSort(a, b) {
-      return (matchRank(a.comp) - matchRank(b.comp))
+      return (a.tier - b.tier)
+        || (matchRank(a.comp) - matchRank(b.comp))
         || (courtRank(a.comp) - courtRank(b.comp))
         || (new Date(a.comp.date) - new Date(b.comp.date));
     }
@@ -673,11 +723,12 @@
       const matches = [];
       const seen = new Set();
       for (const ev of events) {
+        const tier = tournamentTier({ tournament: ev.name, major: ev.major, tour: ev._tour });
         for (const g of ev.groupings || []) {
           for (const c of g.competitions || []) {
             if (!c.id || seen.has(c.id)) continue;
             seen.add(c.id);
-            matches.push({ tournament: ev.name, round: g.grouping?.displayName, comp: c });
+            matches.push({ tournament: ev.name, tier, round: g.grouping?.displayName, comp: c });
           }
         }
       }
@@ -751,6 +802,8 @@
       const dateStr    = new Date(c.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
       const tennisBroadcast = c.broadcasts?.[0]?.names?.join('/') || c.geoBroadcasts?.[0]?.media?.shortName || '';
       const footerLeft = m.tournament || c.venue?.court || '';
+      // Tier tag so the tournament-priority sort is legible on the card.
+      const tierTag = m.tier != null ? `<span style="font-family:var(--font-mono);font-size:0.625rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:0.05rem 0.35rem;border-radius:3px;${m.tier === TIER.SLAM ? 'color:var(--purple-600);background:var(--purple-100)' : 'color:var(--gray-600);background:var(--gray-100)'}">${TIER_LABEL[m.tier]}</span>` : '';
 
       // Same shell as the team-sport cards (padded .game-card + .card-footer)
       // so the footer divider is inset to match, not edge-to-edge.
@@ -773,7 +826,7 @@
             </tbody>
           </table>
           ${footerLeft ? `<div class="card-footer">
-            <span class="card-venue">${footerLeft}</span>
+            <span class="card-venue" style="display:flex;align-items:center;gap:0.4rem">${tierTag}${footerLeft}</span>
             <span class="card-time">${dateStr}</span>
           </div>` : ''}
         </div>`;
@@ -806,10 +859,13 @@
 
       live.sort(tennisSort);
       upcoming.sort(tennisSort);
-      // Results: newest day first, then biggest match within the day.
+      // Results: highest tier first (Slam finals stay on top while the event
+      // runs), then newest day, then biggest match within the day.
       results.sort((a, b) => {
+        if (a.tier !== b.tier) return a.tier - b.tier;
         const da = new Date(a.comp.date), db = new Date(b.comp.date);
-        return da.toDateString() === db.toDateString() ? tennisSort(a, b) : db - da;
+        if (da.toDateString() !== db.toDateString()) return db - da;
+        return tennisSort(a, b);
       });
       const recentResults = results.slice(0, 40);
 
@@ -989,7 +1045,10 @@
               fetch('https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard').then(r => r.json()).catch(() => ({ events: [] })),
               fetch('https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard').then(r => r.json()).catch(() => ({ events: [] })),
             ]);
-            events = [...(atpData.events || []), ...(wtaData.events || [])];
+            const atpEv = atpData.events || [], wtaEv = wtaData.events || [];
+            atpEv.forEach(e => { e._tour = 'atp'; });   // tag tour for tier lookup
+            wtaEv.forEach(e => { e._tour = 'wta'; });
+            events = [...atpEv, ...wtaEv];
             cache[cacheKey] = events;
           }
           renderTennisOutput(events, leagueId);
@@ -1079,7 +1138,10 @@
               fetch('https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard').then(r => r.json()).catch(() => ({ events: [] })),
               fetch('https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard').then(r => r.json()).catch(() => ({ events: [] })),
             ]);
-            const events = [...(atpData.events || []), ...(wtaData.events || [])];
+            const atpEv = atpData.events || [], wtaEv = wtaData.events || [];
+            atpEv.forEach(e => { e._tour = 'atp'; });   // tag tour for tier lookup
+            wtaEv.forEach(e => { e._tour = 'wta'; });
+            const events = [...atpEv, ...wtaEv];
             cache[cacheKey] = events;
             const liveCount = flattenTennisMatches(events).filter(m => m.comp.status?.type?.name === 'STATUS_IN_PROGRESS').length;
             updateLiveBadge(l.id, liveCount);
