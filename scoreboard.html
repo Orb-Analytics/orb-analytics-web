@@ -232,6 +232,17 @@
     .card-venue { font-size: 0.75rem; color: var(--gray-600); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
     .card-time  { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); flex-shrink: 0; }
 
+    /* Tournament tier tag (Grand Slam / Masters 1000 / 500 / 250) */
+    .tier-tag {
+      flex-shrink: 0;
+      font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.05rem 0.35rem; border-radius: 3px;
+      background: var(--gray-100); color: var(--gray-600);
+    }
+    .tier-tag--slam { background: var(--purple-100); color: var(--purple-600); }
+    body.dark .tier-tag--slam { background: rgba(154,41,233,0.20); color: var(--purple-300); }
+
     /* Refresh */
     .refresh-btn {
       display: flex; align-items: center; gap: 0.4rem;
@@ -803,7 +814,9 @@
       const tennisBroadcast = c.broadcasts?.[0]?.names?.join('/') || c.geoBroadcasts?.[0]?.media?.shortName || '';
       const footerLeft = m.tournament || c.venue?.court || '';
       // Tier tag so the tournament-priority sort is legible on the card.
-      const tierTag = m.tier != null ? `<span style="font-family:var(--font-mono);font-size:0.625rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:0.05rem 0.35rem;border-radius:3px;${m.tier === TIER.SLAM ? 'color:var(--purple-600);background:var(--purple-100)' : 'color:var(--gray-600);background:var(--gray-100)'}">${TIER_LABEL[m.tier]}</span>` : '';
+      const tierTag = m.tier != null
+        ? `<span class="tier-tag${m.tier === TIER.SLAM ? ' tier-tag--slam' : ''}">${TIER_LABEL[m.tier]}</span>`
+        : '';
 
       // Same shell as the team-sport cards (padded .game-card + .card-footer)
       // so the footer divider is inset to match, not edge-to-edge.
