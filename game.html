@@ -183,9 +183,13 @@
     Chart.defaults.color = '#9CA3AF';
     Chart.defaults.font  = { family: "'Inter', sans-serif", size: 11 };
 
-    function logoHTML(abbr) {
-      const a = (abbr || '?').toLowerCase();
-      const url = `https://a.espncdn.com/i/teamlogos/${slug}/500/${a}.png`;
+    function logoHTML(team, abbr) {
+      // Prefer the logo URL the summary API hands us. College teams' logos are
+      // keyed by team id (ncaa/500/<id>.png), not abbreviation, so the
+      // abbr-built URL 404s for them -- only use it as a last-resort fallback.
+      const direct = team?.logo || team?.logos?.[0]?.href;
+      const a   = (abbr || '?').toLowerCase();
+      const url = direct || `https://a.espncdn.com/i/teamlogos/${slug}/500/${a}.png`;
       return `<img class="gh-logo" src="${url}" alt="${abbr}"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
               <div class="gh-logo-fallback" style="display:none">${(abbr || '?').slice(0, 3).toUpperCase()}</div>`;
@@ -342,7 +346,7 @@
       const headerHTML = `
         <div class="game-header">
           <div class="gh-team">
-            ${logoHTML(awayAbbr)}
+            ${logoHTML(awayComp.team, awayAbbr)}
             <div class="gh-abbr">${awayAbbr}</div>
             <div class="gh-name">${awayComp.team?.displayName || ''}</div>
           </div>
@@ -351,7 +355,7 @@
             <div class="gh-status ${isLive ? 'live' : ''}">${isLive ? '<span class="live-dot"></span>' : ''}${status?.type?.detail || status?.type?.description || ''}</div>
           </div>
           <div class="gh-team">
-            ${logoHTML(homeAbbr)}
+            ${logoHTML(homeComp.team, homeAbbr)}
             <div class="gh-abbr">${homeAbbr}</div>
             <div class="gh-name">${homeComp.team?.displayName || ''}</div>
           </div>
