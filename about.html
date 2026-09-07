@@ -300,7 +300,7 @@
 
         <!-- ── Hero ─────────────────────────────────────────────── -->
         <div class="about-eyebrow">Orb Analytics Limited</div>
-        <h1 class="about-headline">Rebalance the Odds with Proprietary Data</h1>
+        <h1 class="about-headline">Rebalance the Odds with Proprietary Models</h1>
         <div class="about-divider"></div>
 
         <!-- ── Mission & Value proposition ─────────────────────────── -->
@@ -310,8 +310,8 @@
             <div class="mission-card">
               <p>
                 Our mission is to bring <strong>transparency to the sports gambling market</strong>.
-                Using Python-powered predictive models, Orb delivers data-driven betting insights
-                across the NFL, NBA, and MLB. <strong>Every pick, win, loss, and unit is tracked publicly.</strong>
+                Using Python-powered predictive models, Orb delivers betting insights grounded in
+                probability and market edges across the NFL, NBA, and MLB. <strong>Every pick, win, loss, and unit is tracked publicly.</strong>
               </p>
             </div>
           </div>
@@ -528,7 +528,16 @@
     </div><!-- end sidebar-content -->
   </div><!-- end app-layout -->
 
-  <script src="js/nav.js?v=20260813"></script>
+  <script src="js/nav.js?v=20260907e"></script>
   <script>buildNav('about.html');</script>
+
+  <!-- Firebase auth so the sidebar reflects the signed-in state here too -->
+  <script type="module">
+    import { onAuthChange } from './js/firebase.js';
+    onAuthChange(user => {
+      window.currentUser = user;
+      if (window.updateAuthUI) window.updateAuthUI(user);
+    });
+  </script>
 </body>
 </html>
