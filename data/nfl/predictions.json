@@ -1,6 +1,6 @@
 {
   "model": "NFL",
-  "generated_at": "2026-09-08T20:01:15Z",
+  "generated_at": "2026-09-08T20:30:04Z",
   "version": "v3.1-2model-raw-edge-symmetric-1pct-ewma10",
   "picks": [
     {
@@ -73,15 +73,15 @@
       "away_team": "SF",
       "pick": "SF",
       "has_pick": true,
-      "confidence": 0.5007,
+      "confidence": 0.5038,
       "spread": 3.5,
-      "home_odds": -111,
-      "away_odds": 106,
-      "line": 106,
-      "market_implied": 0.4854,
-      "edge": 1.52,
+      "home_odds": -108,
+      "away_odds": 104,
+      "line": 104,
+      "market_implied": 0.4902,
+      "edge": 1.36,
       "is_favorite": false,
-      "notes": "2-model avg (logit+xgb), edge +1.52% (underdog)"
+      "notes": "2-model avg (logit+xgb), edge +1.36% (underdog)"
     },
     {
       "game_id": "2026_01_GB_MIN",
@@ -89,15 +89,15 @@
       "away_team": "GB",
       "pick": "GB",
       "has_pick": true,
-      "confidence": 0.5222,
+      "confidence": 0.519,
       "spread": 1.5,
       "home_odds": 100,
-      "away_odds": -104,
-      "line": -104,
-      "market_implied": 0.5098,
-      "edge": 1.24,
+      "away_odds": -102,
+      "line": -102,
+      "market_implied": 0.505,
+      "edge": 1.41,
       "is_favorite": false,
-      "notes": "2-model avg (logit+xgb), edge +1.24% (underdog)"
+      "notes": "2-model avg (logit+xgb), edge +1.41% (underdog)"
     },
     {
       "game_id": "2026_01_WAS_PHI",
@@ -105,15 +105,15 @@
       "away_team": "WAS",
       "pick": "WAS",
       "has_pick": true,
-      "confidence": 0.5247,
+      "confidence": 0.5216,
       "spread": 5.5,
-      "home_odds": 104,
-      "away_odds": -106,
-      "line": -106,
-      "market_implied": 0.5146,
-      "edge": 1.01,
+      "home_odds": 102,
+      "away_odds": -104,
+      "line": -104,
+      "market_implied": 0.5098,
+      "edge": 1.18,
       "is_favorite": false,
-      "notes": "2-model avg (logit+xgb), edge +1.01% (underdog)"
+      "notes": "2-model avg (logit+xgb), edge +1.18% (underdog)"
     },
     {
       "game_id": "2026_01_ATL_PIT",
