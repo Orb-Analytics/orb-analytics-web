@@ -1,6 +1,6 @@
 {
   "model": "NFL",
-  "generated_at": "2026-09-08T17:14:16Z",
+  "generated_at": "2026-09-08T20:01:15Z",
   "version": "v3.1-2model-raw-edge-symmetric-1pct-ewma10",
   "picks": [
     {
@@ -43,7 +43,7 @@
       "has_pick": true,
       "confidence": 0.5153,
       "spread": -1.5,
-      "home_odds": -108,
+      "home_odds": -106,
       "away_odds": 104,
       "line": 104,
       "market_implied": 0.4902,
@@ -75,7 +75,7 @@
       "has_pick": true,
       "confidence": 0.5007,
       "spread": 3.5,
-      "home_odds": -108,
+      "home_odds": -111,
       "away_odds": 106,
       "line": 106,
       "market_implied": 0.4854,
@@ -121,15 +121,15 @@
       "away_team": "ATL",
       "pick": "ATL",
       "has_pick": true,
-      "confidence": 0.5207,
+      "confidence": 0.5176,
       "spread": 3.5,
-      "home_odds": 102,
-      "away_odds": -104,
-      "line": -104,
-      "market_implied": 0.5098,
-      "edge": 1.09,
+      "home_odds": 100,
+      "away_odds": -102,
+      "line": -102,
+      "market_implied": 0.505,
+      "edge": 1.26,
       "is_favorite": false,
-      "notes": "2-model avg (logit+xgb), edge +1.09% (underdog)"
+      "notes": "2-model avg (logit+xgb), edge +1.26% (underdog)"
     },
     {
       "game_id": "2026_01_NYJ_TEN",
