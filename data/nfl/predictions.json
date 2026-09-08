@@ -1,6 +1,6 @@
 {
   "model": "NFL",
-  "generated_at": "2026-09-08T20:30:04Z",
+  "generated_at": "2026-09-08T20:34:04Z",
   "version": "v3.1-2model-raw-edge-symmetric-1pct-ewma10",
   "picks": [
     {
@@ -66,22 +66,6 @@
       "edge": 1.2,
       "is_favorite": false,
       "notes": "2-model avg (logit+xgb), edge +1.20% (underdog)"
-    },
-    {
-      "game_id": "2026_01_SF_LA",
-      "home_team": "LA",
-      "away_team": "SF",
-      "pick": "SF",
-      "has_pick": true,
-      "confidence": 0.5038,
-      "spread": 3.5,
-      "home_odds": -108,
-      "away_odds": 104,
-      "line": 104,
-      "market_implied": 0.4902,
-      "edge": 1.36,
-      "is_favorite": false,
-      "notes": "2-model avg (logit+xgb), edge +1.36% (underdog)"
     },
     {
       "game_id": "2026_01_GB_MIN",
