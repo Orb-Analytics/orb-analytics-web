@@ -243,13 +243,17 @@ function buildNav(activePage = '') {
   const topNav = document.getElementById('main-nav');
   if (topNav) {
     topNav.innerHTML = `
-      <a class="nav-logo-link" href="predictions.html" aria-label="Orb Analytics Home">
+      <!-- Left: logo icon -->
+      <a class="nav-logo-link" href="predictions.html" aria-label="Orb Analytics Home" style="flex-shrink:0;z-index:1">
         <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img" />
       </a>
-      <a class="nav-logo-center" href="predictions.html" aria-label="Orb Analytics Home">
+      <!-- Center: brand name (absolutely centered so it doesn't compete with left/right) -->
+      <a class="nav-logo-center" href="predictions.html" aria-label="Orb Analytics Home"
+         style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;z-index:0">
         <span class="nav-logo-text">orbanalytics<span class="nav-logo-accent">.limited</span></span>
       </a>
-      <div style="display:flex;align-items:center;gap:0.5rem;margin-left:auto">
+      <!-- Right: social + theme toggle -->
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-left:auto;flex-shrink:0;z-index:1">
         <div class="nav-social">
           ${SOCIAL_LINKS.map(s => `
             <a href="${s.href}" target="_blank" rel="noopener noreferrer" aria-label="${s.label}" title="${s.label}">${s.svg}</a>
