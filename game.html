@@ -248,7 +248,7 @@
       const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${slug}/summary?event=${id}`);
       if (!r.ok) throw new Error('bad response');
       const data = await r.json();
-      render(data);
+      await render(data);
       return data;
     }
 
@@ -311,6 +311,45 @@
       return { name: ath.athlete?.shortName || ath.athlete?.displayName || 'TBD', map };
     }
 
+    // ── Fetch season stats for a pitcher by MLB Stats API ID ─────
+    async function fetchPitcherSeasonStats(personId) {
+      try {
+        const r = await fetch(`https://statsapi.mlb.com/api/v1/people/${personId}?hydrate=stats(group=pitching,type=season)`);
+        const d = await r.json();
+        const s = d.people?.[0]?.stats?.[0]?.splits?.[0]?.stat;
+        if (!s) return null;
+        return {
+          era:   s.era   ?? '—',
+          whip:  s.whip  ?? '—',
+          wins:  s.wins  ?? 0,
+          losses:s.losses?? 0,
+          ip:    s.inningsPitched ?? '—',
+          so:    s.strikeOuts ?? '—',
+          bb:    s.baseOnBalls ?? '—',
+        };
+      } catch { return null; }
+    }
+
+    // ── Fetch probable pitchers for a date from MLB Stats API ─────
+    async function fetchProbablePitchers(venueName, awayAbbr, homeAbbr) {
+      try {
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+        const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher,venue`);
+        const d = await r.json();
+        for (const day of d.dates || []) {
+          for (const g of day.games || []) {
+            if (g.venue?.name === venueName) {
+              return {
+                away: g.teams?.away?.probablePitcher || null,
+                home: g.teams?.home?.probablePitcher || null,
+              };
+            }
+          }
+        }
+        return null;
+      } catch { return null; }
+    }
+
     function pitcherCardHTML(starter, abbr) {
       if (!starter) return `<div class="pitcher-card"><div class="pc-team">${abbr}</div><div class="pc-name muted-note" style="padding:0">TBD</div></div>`;
       const keys = ['IP', 'H', 'R', 'ER', 'BB', 'K', 'ERA'];
@@ -321,7 +360,25 @@
       </div>`;
     }
 
-    function render(data) {
+    function pitcherCardPreGameHTML(name, abbr, stats) {
+      if (!name) return `<div class="pitcher-card"><div class="pc-team">${abbr}</div><div class="pc-name muted-note" style="padding:0">TBD</div></div>`;
+      const wl = stats ? `${stats.wins}-${stats.losses}` : '—';
+      const rows = [
+        ['ERA',  stats?.era  ?? '—'],
+        ['WHIP', stats?.whip ?? '—'],
+        ['W-L',  wl],
+        ['IP',   stats?.ip   ?? '—'],
+        ['K',    stats?.so   ?? '—'],
+        ['BB',   stats?.bb   ?? '—'],
+      ];
+      return `<div class="pitcher-card">
+        <div class="pc-team">${abbr}</div>
+        <div class="pc-name">${name}</div>
+        <div class="pc-stats">${rows.map(([k,v]) => `<span><b>${k}</b>${v}</span>`).join('')}</div>
+      </div>`;
+    }
+
+    async function render(data) {
       const comp   = data.header?.competitions?.[0];
       const status = comp?.status;
       const competitors = comp?.competitors || [];
@@ -460,13 +517,36 @@
         const homePl = bxPlayers.find(p => p.team?.abbreviation === homeAbbr);
         const awayStarter = starterFor(awayPl);
         const homeStarter = starterFor(homePl);
-        pitchersHTML = `
-          <div class="section-card">
-            <h2>Starting Pitchers</h2>
-            ${(!awayStarter && !homeStarter)
-              ? '<p class="muted-note">Starting pitcher stats will be available once the game begins.</p>'
-              : `<div class="pitchers-row">${pitcherCardHTML(awayStarter, awayAbbr)}${pitcherCardHTML(homeStarter, homeAbbr)}</div>`}
-          </div>`;
+
+        if (isPre) {
+          // Pre-game: fetch probable pitchers + season stats from MLB Stats API
+          const venueName = venue?.fullName;
+          const probables = venueName ? await fetchProbablePitchers(venueName, awayAbbr, homeAbbr) : null;
+          let awayCard = pitcherCardPreGameHTML(null, awayAbbr, null);
+          let homeCard = pitcherCardPreGameHTML(null, homeAbbr, null);
+          if (probables) {
+            const [awayStats, homeStats] = await Promise.all([
+              probables.away?.id ? fetchPitcherSeasonStats(probables.away.id) : Promise.resolve(null),
+              probables.home?.id ? fetchPitcherSeasonStats(probables.home.id) : Promise.resolve(null),
+            ]);
+            awayCard = pitcherCardPreGameHTML(probables.away?.fullName || null, awayAbbr, awayStats);
+            homeCard = pitcherCardPreGameHTML(probables.home?.fullName || null, homeAbbr, homeStats);
+          }
+          pitchersHTML = `
+            <div class="section-card">
+              <h2>Starting Pitchers</h2>
+              <div class="pitchers-row">${awayCard}${homeCard}</div>
+            </div>`;
+        } else {
+          pitchersHTML = `
+            <div class="section-card">
+              <h2>Starting Pitchers</h2>
+              ${(!awayStarter && !homeStarter)
+                ? '<p class="muted-note">Starting pitcher stats will be available once the game begins.</p>'
+                : `<div class="pitchers-row">${pitcherCardHTML(awayStarter, awayAbbr)}${pitcherCardHTML(homeStarter, homeAbbr)}</div>`}
+            </div>`;
+        }
+      }
       }
 
       document.getElementById('game-root').innerHTML = headerHTML + liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML;
