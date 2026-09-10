@@ -127,7 +127,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Sport</label>
-                <select class="form-select" id="t-sport">
+                <select class="form-select" id="t-sport" onchange="tOnSportChange()">
                   <option value="MLB">MLB</option>
                   <option value="NFL">NFL</option>
                   <option value="NBA">NBA</option>
@@ -136,14 +136,31 @@
                 </select>
               </div>
               <div class="form-group">
+                <label class="form-label">Team <span style="color:var(--gray-600);font-weight:400">(for auto-grading)</span></label>
+                <select class="form-select" id="t-team">
+                  <option value="">— None —</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label class="form-label">Type</label>
-                <select class="form-select" id="t-type">
+                <select class="form-select" id="t-type" onchange="tOnTypeChange()">
                   <option value="Moneyline">Moneyline</option>
                   <option value="Spread">Spread</option>
                   <option value="Over/Under">Over/Under</option>
                   <option value="Prop">Prop</option>
                   <option value="Parlay">Parlay</option>
                   <option value="Futures">Futures</option>
+                </select>
+              </div>
+              <div class="form-group" id="t-line-group" style="display:none">
+                <label class="form-label" id="t-line-label">Line</label>
+                <input class="form-input" id="t-line" type="number" step="0.5" placeholder="-3.5" />
+              </div>
+              <div class="form-group" id="t-ou-group" style="display:none">
+                <label class="form-label">Over/Under</label>
+                <select class="form-select" id="t-ou-side">
+                  <option value="Over">Over</option>
+                  <option value="Under">Under</option>
                 </select>
               </div>
               <div class="form-group">
@@ -215,6 +232,7 @@
                 <option value="Push">Push</option>
                 <option value="Pending">Pending</option>
               </select>
+              <button class="btn btn-ghost btn-sm" onclick="tAutoGrade(true)">Auto-Grade Pending</button>
               <button class="btn btn-ghost btn-sm" onclick="tClearAll()">Clear All</button>
             </div>
             <div class="history-table-wrap">
@@ -254,6 +272,56 @@
 
     document.getElementById('t-date').value = new Date().toISOString().split('T')[0];
 
+    // ── Auto-grading: teams + ESPN scoreboard lookup ─────────────────
+    // Team lists use ESPN's own scoreboard abbreviations so results can be
+    // matched directly against the ESPN API response with no translation.
+    const T_TEAMS = {
+      MLB: { path: ['baseball','mlb'], teams: [
+        ['ARI','Diamondbacks'],['ATL','Braves'],['BAL','Orioles'],['BOS','Red Sox'],['CHC','Cubs'],
+        ['CWS','White Sox'],['CIN','Reds'],['CLE','Guardians'],['COL','Rockies'],['DET','Tigers'],
+        ['HOU','Astros'],['KC','Royals'],['LAA','Angels'],['LAD','Dodgers'],['MIA','Marlins'],
+        ['MIL','Brewers'],['MIN','Twins'],['NYM','Mets'],['NYY','Yankees'],['ATH','Athletics'],
+        ['PHI','Phillies'],['PIT','Pirates'],['SD','Padres'],['SF','Giants'],['SEA','Mariners'],
+        ['STL','Cardinals'],['TB','Rays'],['TEX','Rangers'],['TOR','Blue Jays'],['WSH','Nationals'],
+      ]},
+      NFL: { path: ['football','nfl'], teams: [
+        ['ARI','Cardinals'],['ATL','Falcons'],['BAL','Ravens'],['BUF','Bills'],['CAR','Panthers'],
+        ['CHI','Bears'],['CIN','Bengals'],['CLE','Browns'],['DAL','Cowboys'],['DEN','Broncos'],
+        ['DET','Lions'],['GB','Packers'],['HOU','Texans'],['IND','Colts'],['JAX','Jaguars'],
+        ['KC','Chiefs'],['LV','Raiders'],['LAC','Chargers'],['LAR','Rams'],['MIA','Dolphins'],
+        ['MIN','Vikings'],['NE','Patriots'],['NO','Saints'],['NYG','Giants'],['NYJ','Jets'],
+        ['PHI','Eagles'],['PIT','Steelers'],['SF','49ers'],['SEA','Seahawks'],['TB','Buccaneers'],
+        ['TEN','Titans'],['WSH','Commanders'],
+      ]},
+      NBA: { path: ['basketball','nba'], teams: [
+        ['ATL','Hawks'],['BOS','Celtics'],['BKN','Nets'],['CHA','Hornets'],['CHI','Bulls'],
+        ['CLE','Cavaliers'],['DAL','Mavericks'],['DEN','Nuggets'],['DET','Pistons'],['GS','Warriors'],
+        ['HOU','Rockets'],['IND','Pacers'],['LAC','Clippers'],['LAL','Lakers'],['MEM','Grizzlies'],
+        ['MIA','Heat'],['MIL','Bucks'],['MIN','Timberwolves'],['NO','Pelicans'],['NY','Knicks'],
+        ['OKC','Thunder'],['ORL','Magic'],['PHI','76ers'],['PHX','Suns'],['POR','Trail Blazers'],
+        ['SAC','Kings'],['SA','Spurs'],['TOR','Raptors'],['UTAH','Jazz'],['WSH','Wizards'],
+      ]},
+    };
+
+    function tOnSportChange() {
+      const sport = document.getElementById('t-sport').value;
+      const sel = document.getElementById('t-team');
+      const cfg = T_TEAMS[sport];
+      sel.innerHTML = '<option value="">— None —</option>' +
+        (cfg ? cfg.teams.map(([abbr,name]) => `<option value="${abbr}">${name} (${abbr})</option>`).join('') : '');
+    }
+
+    function tOnTypeChange() {
+      const type = document.getElementById('t-type').value;
+      const lineGroup = document.getElementById('t-line-group');
+      const ouGroup = document.getElementById('t-ou-group');
+      lineGroup.style.display = (type === 'Spread' || type === 'Over/Under') ? 'block' : 'none';
+      ouGroup.style.display = type === 'Over/Under' ? 'block' : 'none';
+      document.getElementById('t-line-label').textContent = type === 'Over/Under' ? 'Total' : 'Spread';
+    }
+
+    tOnSportChange();
+
     function updateOddsHint() {
       const odds = parseInt(document.getElementById('t-odds').value);
       const hint = document.getElementById('t-odds-hint');
@@ -279,6 +347,9 @@
       const pick   = document.getElementById('t-pick').value.trim();
       const sport  = document.getElementById('t-sport').value;
       const type   = document.getElementById('t-type').value;
+      const team   = document.getElementById('t-team').value || null;
+      const line   = document.getElementById('t-line').value !== '' ? parseFloat(document.getElementById('t-line').value) : null;
+      const ouSide = type === 'Over/Under' ? document.getElementById('t-ou-side').value : null;
       const odds   = document.getElementById('t-odds').value;
       const stake  = parseFloat(document.getElementById('t-stake').value);
       const date   = document.getElementById('t-date').value;
@@ -288,16 +359,80 @@
       if (!odds)  { alert('Enter odds.'); return; }
       if (!stake || stake <= 0) { alert('Enter a valid stake.'); return; }
       if (!date)  { alert('Select a date.'); return; }
-      const bet = { id: Date.now(), pick, sport, type, odds: parseInt(odds), stake, date, result, notes, pl: tCalcPL(odds, stake, result) };
+      const bet = { id: Date.now(), pick, sport, type, team, line, ouSide, odds: parseInt(odds), stake, date, result, notes, pl: tCalcPL(odds, stake, result) };
       tBets.unshift(bet);
       if (window.orbSaveBet) await window.orbSaveBet(bet);
       tRefresh();
       document.getElementById('t-pick').value = '';
+      document.getElementById('t-team').value = '';
+      document.getElementById('t-line').value = '';
       document.getElementById('t-odds').value = '';
       document.getElementById('t-stake').value = '';
       document.getElementById('t-notes').value = '';
       document.getElementById('t-result').value = 'Pending';
       document.getElementById('t-odds-hint').textContent = '';
+      if (result === 'Pending' && team) tAutoGrade();
+    }
+
+    // ── Auto-grading engine ───────────────────────────────────────────
+    // Grades Moneyline/Spread/Over-Under bets against ESPN final scores
+    // for the team + date on the bet; Prop/Parlay/Futures and sports with
+    // no team set stay manual since a box score alone can't grade them.
+    function tGradeResult(bet, teamScore, oppScore) {
+      if (bet.type === 'Spread') {
+        const diff = (teamScore - oppScore) + (bet.line || 0);
+        return diff > 0 ? 'Win' : diff < 0 ? 'Loss' : 'Push';
+      }
+      if (bet.type === 'Over/Under') {
+        const total = teamScore + oppScore;
+        const line = bet.line || 0;
+        if (total === line) return 'Push';
+        const over = total > line;
+        return (bet.ouSide === 'Over') === over ? 'Win' : 'Loss';
+      }
+      return teamScore > oppScore ? 'Win' : teamScore < oppScore ? 'Loss' : 'Push';
+    }
+
+    async function tFetchScoreboard(sport, dateStr) {
+      const cfg = T_TEAMS[sport];
+      if (!cfg) return [];
+      const ymd = dateStr.replace(/-/g, '');
+      try {
+        const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${cfg.path[0]}/${cfg.path[1]}/scoreboard?dates=${ymd}`);
+        const data = await r.json();
+        return data.events || [];
+      } catch { return []; }
+    }
+
+    async function tAutoGrade(manual) {
+      const candidates = tBets.filter(b => b.result === 'Pending' && b.team && T_TEAMS[b.sport] && new Date(b.date) <= new Date());
+      if (!candidates.length) { if (manual) alert('No auto-gradable pending bets found (needs Sport + Team set).'); return; }
+      const groups = {};
+      candidates.forEach(b => { const k = `${b.sport}|${b.date}`; (groups[k] = groups[k] || []).push(b); });
+      let graded = 0;
+      for (const key of Object.keys(groups)) {
+        const [sport, date] = key.split('|');
+        const events = await tFetchScoreboard(sport, date);
+        for (const bet of groups[key]) {
+          const ev = events.find(e => {
+            const comp = e.competitions?.[0];
+            return comp?.competitors?.some(c => c.team?.abbreviation?.toUpperCase() === bet.team);
+          });
+          if (!ev) continue;
+          if (ev.status?.type?.state !== 'post') continue;
+          const comp = ev.competitions[0];
+          const mine = comp.competitors.find(c => c.team?.abbreviation?.toUpperCase() === bet.team);
+          const opp  = comp.competitors.find(c => c.team?.abbreviation?.toUpperCase() !== bet.team);
+          const teamScore = parseInt(mine?.score ?? 0);
+          const oppScore  = parseInt(opp?.score ?? 0);
+          bet.result = tGradeResult(bet, teamScore, oppScore);
+          bet.pl = tCalcPL(bet.odds, bet.stake, bet.result);
+          if (window.orbSaveBet) await window.orbSaveBet(bet);
+          graded++;
+        }
+      }
+      if (graded) tRefresh();
+      else if (manual) alert('No final scores found yet for pending bets.');
     }
 
     function tRenderStats() {
@@ -455,6 +590,7 @@
       }
       renderAuthGate();
       tRefresh();
+      if (tBets.length) tAutoGrade();
     }
 
     loadTBets();
