@@ -253,7 +253,7 @@ function buildNav(activePage = '') {
       <!-- Center: brand name absolutely centered so it never collides with left/right -->
       <a class="nav-logo-center" href="predictions.html" aria-label="Orb Analytics Home"
          style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;z-index:0;text-decoration:none">
-        <span class="nav-logo-text">orbanalytics<span class="nav-logo-accent">.limited</span></span>
+        <span class="nav-logo-text">Orbanalytics<span class="nav-logo-accent">.limited</span></span>
       </a>
       <!-- Right: social + theme toggle, fixed width matching left so center stays true -->
       <div style="display:flex;align-items:center;gap:0.4rem;margin-left:auto;flex-shrink:0;z-index:1">
