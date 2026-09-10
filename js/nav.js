@@ -247,7 +247,7 @@ function buildNav(activePage = '') {
       <div style="display:flex;align-items:center;flex-shrink:0;width:44px">
         <a href="predictions.html" aria-label="Orb Analytics Home">
           <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img"
-               style="width:32px;height:32px;object-fit:contain;display:block" />
+               style="object-fit:contain;display:block" />
         </a>
       </div>
       <!-- Center: brand name absolutely centered so it never collides with left/right -->

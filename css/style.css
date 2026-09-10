@@ -161,7 +161,7 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   flex-shrink: 0;
 }
 
-.orb-logo-img { width: 56px; height: 56px; object-fit: contain; }
+.orb-logo-img { width: 36px; height: 36px; object-fit: contain; }
 
 .nav-logo-center {
   display: flex;
@@ -171,7 +171,7 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   flex-shrink: 0;
 }
 
-.nav-logo-text { font-family: var(--font-display); font-weight: 800; font-style: italic; letter-spacing: -0.01em; font-size: 1.3rem; color: #3F3F46; white-space: nowrap; }
+.nav-logo-text { font-family: var(--font-display); font-weight: 800; font-style: italic; letter-spacing: -0.01em; font-size: 1.45rem; color: #3F3F46; white-space: nowrap; }
 body.dark .nav-logo-text { color: var(--text); }
 .nav-logo-accent { color: var(--purple-600); }
 
@@ -642,8 +642,8 @@ body.dark .disclaimer-block { background: var(--gray-100); }
   .nav-links { display: none; }
   .container { padding: 0 1rem; }
   .section-title { font-size: 1.5rem; }
-  .nav-logo-text { font-size: 0.85rem; }
-  .orb-logo-img { width: 28px; height: 28px; }
+  .nav-logo-text { font-size: 0.95rem; }
+  .orb-logo-img { width: 32px; height: 32px; }
   .nav-social { display: none; }
   .nav-theme-toggle { display: flex; }
   .sidebar-footer { display: none; }
