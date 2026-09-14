@@ -1,5 +1,22 @@
 // ─── Orb Analytics Shared Nav ─────────────────────────────────────
 
+// Sends mobile visitors straight to the platform app store (which opens the
+// already-installed app's page or offers the install); desktop still goes
+// to novig.com. No custom URL scheme is registered for Novig, so this can't
+// deep-link directly into an already-installed app.
+window.openNovigLink = function(event) {
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  if (!isIOS && !isAndroid) return true;
+  event.preventDefault();
+  const url = isIOS
+    ? 'https://apps.apple.com/us/app/novig-prediction-market/id6443958997'
+    : 'https://play.google.com/store/apps/details?id=us.novig.app&hl=en-US&pli=1';
+  window.open(url, '_blank', 'noopener,noreferrer');
+  return false;
+};
+
 const SIDEBAR_LINKS = [
   { href: 'predictions.html', label: 'Predictions', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>` },
   { href: 'scoreboard.html',  label: 'Scoreboard',  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>` },
