@@ -8,20 +8,111 @@
   <link rel="stylesheet" href="css/style.css?v=20260914" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
-    .t-form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem; margin-bottom: 1.25rem; }
-    .t-form-title { font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.85rem; color: var(--text); }
-    .t-form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.65rem; align-items: end; }
-    .t-full { grid-column: 1 / -1; }
-    .t-odds-hint { font-size: 0.8125rem; color: var(--gray-600); margin-top: 0.18rem; font-family: var(--font-mono); }
+    /* ── Two-column layout (mirrors predictions.html) ──────────── */
+    .page-split {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      height: calc(100vh - var(--nav-height));
+      padding: 0;
+      overflow: hidden;
+    }
 
+    /* Left: stats + chart, independently scrollable */
+    .tracker-main-col {
+      height: calc(100vh - var(--nav-height));
+      overflow-y: auto;
+      padding: 0 0 2rem 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--purple-600) transparent;
+    }
+    .tracker-main-col::-webkit-scrollbar { width: 4px; }
+    .tracker-main-col::-webkit-scrollbar-thumb { background: var(--purple-600); border-radius: 2px; }
+
+    /* Right: log + history, independently scrollable */
+    .tracker-col {
+      height: calc(100vh - var(--nav-height));
+      overflow-y: auto;
+      padding: 1.75rem 0 2rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--purple-600) transparent;
+    }
+    .tracker-col::-webkit-scrollbar { width: 4px; }
+    .tracker-col::-webkit-scrollbar-thumb { background: var(--purple-600); border-radius: 2px; }
+
+    /* ── Mobile tab switcher (hidden on desktop) ─────────────── */
+    .mobile-page-tabs {
+      display: none;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 0;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .mobile-page-tab {
+      flex: 1;
+      padding: 0.75rem 0.5rem;
+      border: none;
+      background: transparent;
+      color: var(--gray-600);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: var(--transition);
+    }
+    .mobile-page-tab.active { color: var(--purple-600); border-bottom-color: var(--purple-600); }
+
+    /* ── Tracker header ──────────────────────────────────────── */
+    .tracker-header {
+      padding: 1.75rem 0 1.75rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .tracker-header .section-label {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+    }
+    .tracker-header .section-title {
+      font-weight: 900;
+    }
+    @media (min-width: 769px) {
+      .tracker-header .section-title { font-size: clamp(2rem, 3.5vw, 2.75rem); }
+    }
+    .tracker-toggle-btn {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--gray-600); font-size: 0.75rem; font-family: var(--font-body);
+      padding: 0.4rem 0.8rem; cursor: pointer; transition: var(--transition);
+    }
+    .tracker-toggle-btn:hover { color: var(--text); border-color: var(--hover-border); background: var(--hover-tint); }
+    .tracker-toggle-btn svg { width: 13px; height: 13px; }
+
+    /* ── Collapsed tracker: main col takes full width ──────────── */
+    .page-split.tracker-collapsed { grid-template-columns: 1fr; }
+    .page-split.tracker-collapsed .tracker-col { display: none; }
+
+    /* ── Stats + chart (hero content) ────────────────────────── */
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
     .summary-grid .stat-card { min-width: 0; }
-    .summary-grid .stat-card .stat-value { font-size: 2.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .summary-grid .stat-card .stat-value { font-size: clamp(1.6rem, 3vw, 2.75rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem; margin-bottom: 1.25rem; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; }
     .chart-card-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
     .chart-card-title { font-family: var(--font-mono); font-size: 1.125rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; }
-    .chart-wrap { position: relative; height: 220px; }
+    .chart-wrap { position: relative; height: 320px; }
 
     .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
     .split-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
@@ -35,17 +126,26 @@
     .split-winrate.good, .split-winrate.ok { color: var(--green); }
     .split-winrate.bad  { color: var(--red); }
 
-    .history-controls { display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 0.85rem; }
+    /* ── Sidebar: log + history ───────────────────────────────── */
+    .tracker-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.5rem; padding-top: 0.25rem; }
+    .t-form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .t-form-title { font-family: 'DM Sans', sans-serif; font-size: 0.9375rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text); }
+    .t-form-grid { flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 0.55rem; row-gap: 0.55rem; align-content: space-evenly; align-items: start; }
+    .t-full { grid-column: 1 / -1; }
+    .t-odds-hint { font-size: 0.8125rem; color: var(--gray-600); margin-top: 0.18rem; font-family: var(--font-mono); }
+
+    .t-history-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .t-history-header { padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: var(--gray-50); gap: 0.4rem; flex-wrap: wrap; }
+    .t-history-title { font-family: var(--font-mono); font-size: 1.125rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; }
     .filter-select {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text);
-      font-size: 0.875rem; padding: 0.35rem 1.75rem 0.35rem 0.65rem; font-family: var(--font-body); outline: none; cursor: pointer;
+      font-size: 0.8125rem; padding: 0.25rem 1.6rem 0.25rem 0.55rem; font-family: var(--font-body); outline: none; cursor: pointer;
       appearance: none; -webkit-appearance: none; -moz-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 0.55rem center; background-size: 12px;
+      background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 11px;
     }
     body.dark .filter-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A1A1AA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
     .filter-select:focus { border-color: var(--purple-500); }
-    .history-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 2rem; }
     .t-del-btn { background: none; border: none; color: var(--gray-600); cursor: pointer; padding: 0.12rem 0.3rem; border-radius: var(--radius-sm); font-size: 0.75rem; transition: var(--transition); }
     .t-del-btn:hover { color: var(--red); background: #FEF2F2; }
     .t-profit-pos { color: var(--green); font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; }
@@ -56,20 +156,36 @@
     .signed-out-gate p { color: var(--gray-600); font-size: 0.9rem; max-width: 26rem; }
 
     @media (max-width: 900px) {
-      .t-form-grid { grid-template-columns: repeat(2, 1fr); }
       .summary-grid { grid-template-columns: repeat(2, 1fr); }
       .splits-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
+      .mobile-page-tabs { display: flex; }
+
+      .page-split {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow-x: hidden;
+        overflow-y: visible;
+        gap: 0;
+        max-width: 100%;
+      }
+      .tracker-main-col {
+        height: auto; overflow-x: hidden; overflow-y: visible;
+        padding: 1rem 1rem 1.5rem; max-width: 100%; box-sizing: border-box;
+      }
+      .tracker-col {
+        height: auto; overflow-x: hidden; overflow-y: visible;
+        padding: 1rem 1rem 1.5rem; max-width: 100%; box-sizing: border-box;
+      }
+      .tracker-main-col.mobile-hidden, .tracker-col.mobile-hidden { display: none; }
+      .tracker-toggle-btn { display: none; }
+
       .t-form-card, .chart-card { padding: 0.85rem; }
       .summary-grid { gap: 0.5rem; }
       .summary-grid .stat-card { padding: 0.75rem; }
       .summary-grid .stat-card .stat-value { font-size: 1.5rem; }
-      .chart-wrap { height: 170px; }
-
-      .history-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-      .history-controls .filter-select { width: 100%; }
-      .history-controls .btn { grid-column: 1 / -1; width: 100%; justify-content: center; }
+      .chart-wrap { height: 220px; }
 
       #t-table thead { display: none; }
       #t-table, #t-table tbody, #t-table tr { display: block; width: 100%; }
@@ -105,160 +221,187 @@
     <aside class="sidebar" id="sidebar"></aside>
 
     <div class="sidebar-content">
-      <main class="page">
-        <div class="container" style="padding-top:1.75rem;padding-bottom:3rem">
-          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem">
-            <button class="sidebar-toggle" id="sidebar-toggle">
-              <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-            <div>
-              <div class="section-label">Performance</div>
-              <div class="section-title">Bet Tracker</div>
-            </div>
-          </div>
-
-          <!-- Log a Bet -->
-          <div class="t-form-card">
-            <div class="t-form-title">＋ Log a Bet</div>
-            <div class="t-form-grid">
-              <div class="form-group t-full">
-                <label class="form-label">Pick</label>
-                <input class="form-input" id="t-pick" type="text" placeholder="e.g. Dodgers ML" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Sport</label>
-                <select class="form-select" id="t-sport" onchange="tOnSportChange()">
-                  <option value="MLB">MLB</option>
-                  <option value="NFL">NFL</option>
-                  <option value="NBA">NBA</option>
-                  <option value="NHL">NHL</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Team <span style="color:var(--gray-600);font-weight:400">(for auto-grading)</span></label>
-                <select class="form-select" id="t-team">
-                  <option value="">— None —</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Type</label>
-                <select class="form-select" id="t-type" onchange="tOnTypeChange()">
-                  <option value="Moneyline">Moneyline</option>
-                  <option value="Spread">Spread</option>
-                  <option value="Over/Under">Over/Under</option>
-                  <option value="Prop">Prop</option>
-                  <option value="Parlay">Parlay</option>
-                  <option value="Futures">Futures</option>
-                </select>
-              </div>
-              <div class="form-group" id="t-line-group" style="display:none">
-                <label class="form-label" id="t-line-label">Line</label>
-                <input class="form-input" id="t-line" type="number" step="0.5" placeholder="-3.5" />
-              </div>
-              <div class="form-group" id="t-ou-group" style="display:none">
-                <label class="form-label">Over/Under</label>
-                <select class="form-select" id="t-ou-side">
-                  <option value="Over">Over</option>
-                  <option value="Under">Under</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Odds</label>
-                <input class="form-input" id="t-odds" type="number" placeholder="-110" oninput="updateOddsHint()" />
-                <div class="t-odds-hint" id="t-odds-hint"></div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Stake ($)</label>
-                <input class="form-input" id="t-stake" type="number" placeholder="100" min="0" step="0.01" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Date</label>
-                <input class="form-input" id="t-date" type="date" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Result</label>
-                <select class="form-select" id="t-result">
-                  <option value="Pending">Pending</option>
-                  <option value="Win">Win</option>
-                  <option value="Loss">Loss</option>
-                  <option value="Push">Push</option>
-                </select>
-              </div>
-              <div class="form-group t-full">
-                <label class="form-label">Notes</label>
-                <input class="form-input" id="t-notes" type="text" placeholder="Optional notes" />
-              </div>
-              <div class="t-full">
-                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="tAddBet()">Log Bet</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="tracker-body">
-            <!-- Summary -->
-            <div class="summary-grid">
-              <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value" id="tp-record" style="color:var(--text)">—</div></div>
-              <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="tp-winrate" style="color:var(--muted)">—</div></div>
-              <div class="stat-card"><div class="stat-label">Net P/L</div><div class="stat-value" id="tp-pl" style="color:var(--muted)">$0.00</div></div>
-              <div class="stat-card"><div class="stat-label">ROI</div><div class="stat-value" id="tp-roi" style="color:var(--muted)">0%</div></div>
-            </div>
-
-            <!-- Chart -->
-            <div class="chart-card">
-              <div class="chart-card-header">
-                <div class="chart-card-title">Cumulative P/L</div>
-              </div>
-              <div class="chart-wrap"><canvas id="tracker-chart"></canvas></div>
-            </div>
-
-            <!-- Splits -->
-            <div class="splits-grid" id="tracker-splits-grid"></div>
-
-            <!-- History -->
-            <div class="history-controls">
-              <select class="filter-select" id="t-filter-sport" onchange="tRenderTable()">
-                <option value="all">All Sports</option>
-                <option value="MLB">MLB</option>
-                <option value="NFL">NFL</option>
-                <option value="NBA">NBA</option>
-                <option value="NHL">NHL</option>
-                <option value="Other">Other</option>
-              </select>
-              <select class="filter-select" id="t-filter-result" onchange="tRenderTable()">
-                <option value="all">All Results</option>
-                <option value="Win">Win</option>
-                <option value="Loss">Loss</option>
-                <option value="Push">Push</option>
-                <option value="Pending">Pending</option>
-              </select>
-              <button class="btn btn-ghost btn-sm" onclick="tAutoGrade(true)">Auto-Grade Pending</button>
-              <button class="btn btn-ghost btn-sm" onclick="tClearAll()">Clear All</button>
-            </div>
-            <div class="history-table-wrap">
-              <div style="overflow-x:auto">
-                <div class="empty-state" id="t-empty">
-                  <p>No bets logged yet.</p>
-                </div>
-                <table class="data-table" id="t-table" style="display:none">
-                  <thead><tr>
-                    <th>Date</th><th>Sport</th><th>Pick</th><th>Odds</th><th>Stake</th><th>P/L</th><th>Result</th><th></th>
-                  </tr></thead>
-                  <tbody id="t-tbody"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Signed-out gate (shown instead of tracker-body when logged out) -->
-          <div class="signed-out-gate card" id="signed-out-gate" style="display:none">
-            <p style="font-weight:600;color:var(--text);font-size:1rem">Sign up to track your bets</p>
-            <p>Create a free account to log bets, sync your history across devices, and see your record, ROI, and performance trends.</p>
-            <button class="btn btn-primary" onclick="openAuthModal('signup')">Sign Up Free</button>
-          </div>
+      <main class="page" style="overflow:hidden">
+        <!-- Mobile tab switcher -->
+        <div class="mobile-page-tabs">
+          <button class="sidebar-toggle" id="sidebar-toggle" style="margin:0.5rem">
+            <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <button class="mobile-page-tab active" onclick="switchMobileTab('stats')">Stats</button>
+          <button class="mobile-page-tab" onclick="switchMobileTab('tracker')">Manage Bets</button>
         </div>
-        <div class="container"><div id="site-disclaimer"></div></div>
+
+        <div class="container" id="main-container" style="height:calc(100vh - var(--nav-height));padding-top:0;padding-bottom:0">
+          <div class="page-split tracker-collapsed" id="page-split">
+
+            <!-- ══ LEFT: STATS + CHART (hero content) ══════════════ -->
+            <div class="tracker-main-col">
+              <div class="tracker-header">
+                <div>
+                  <div class="section-label">Performance</div>
+                  <div class="section-title">Bet Tracker</div>
+                </div>
+                <button class="tracker-toggle-btn" id="tracker-toggle-btn" onclick="toggleTracker()" aria-expanded="false" aria-controls="tracker-col">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                  <span id="tracker-toggle-label">Show Tracker</span>
+                </button>
+              </div>
+
+              <div id="tracker-body">
+                <!-- Summary -->
+                <div class="summary-grid">
+                  <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value" id="tp-record" style="color:var(--text)">—</div></div>
+                  <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="tp-winrate" style="color:var(--muted)">—</div></div>
+                  <div class="stat-card"><div class="stat-label">Net P/L</div><div class="stat-value" id="tp-pl" style="color:var(--muted)">$0.00</div></div>
+                  <div class="stat-card"><div class="stat-label">ROI</div><div class="stat-value" id="tp-roi" style="color:var(--muted)">0%</div></div>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-card">
+                  <div class="chart-card-header">
+                    <div class="chart-card-title">Cumulative P/L</div>
+                  </div>
+                  <div class="chart-wrap"><canvas id="tracker-chart"></canvas></div>
+                </div>
+
+                <!-- Splits -->
+                <div class="splits-grid" id="tracker-splits-grid"></div>
+
+                <!-- History -->
+                <div class="t-history-card">
+                  <div class="t-history-header">
+                    <span class="t-history-title">History</span>
+                    <div style="display:flex;gap:0.35rem;align-items:center;flex-wrap:wrap">
+                      <select class="filter-select" id="t-filter-sport" onchange="tRenderTable()">
+                        <option value="all">All</option>
+                        <option value="MLB">MLB</option>
+                        <option value="NFL">NFL</option>
+                        <option value="NBA">NBA</option>
+                        <option value="NHL">NHL</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <select class="filter-select" id="t-filter-result" onchange="tRenderTable()">
+                        <option value="all">All</option>
+                        <option value="Win">W</option>
+                        <option value="Loss">L</option>
+                        <option value="Push">Push</option>
+                        <option value="Pending">Pending</option>
+                      </select>
+                      <button class="btn btn-ghost btn-sm" onclick="tAutoGrade(true)">Auto-Grade Pending</button>
+                      <button class="btn btn-ghost btn-sm" onclick="tClearAll()">Clear All</button>
+                    </div>
+                  </div>
+                  <div style="overflow-x:auto">
+                    <div class="empty-state" id="t-empty" style="padding:1.5rem">
+                      <p>No bets logged yet.</p>
+                    </div>
+                    <table class="data-table" id="t-table" style="display:none">
+                      <thead><tr>
+                        <th>Date</th><th>Sport</th><th>Pick</th><th>Odds</th><th>Stake</th><th>P/L</th><th>Result</th><th></th>
+                      </tr></thead>
+                      <tbody id="t-tbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Signed-out gate (shown instead of tracker-body when logged out) -->
+              <div class="signed-out-gate card" id="signed-out-gate" style="display:none">
+                <p style="font-weight:600;color:var(--text);font-size:1rem">Sign up to track your bets</p>
+                <p>Create a free account to log bets, sync your history across devices, and see your record, ROI, and performance trends.</p>
+                <button class="btn btn-primary" onclick="openAuthModal('signup')">Sign Up Free</button>
+              </div>
+            </div><!-- end tracker-main-col -->
+
+            <!-- ══ RIGHT: LOG A BET + HISTORY (collapsed by default) ══ -->
+            <div class="tracker-col" id="tracker-col">
+              <div class="tracker-title">Manage Bets</div>
+
+              <!-- Log a Bet -->
+              <div class="t-form-card">
+                <div class="t-form-title">＋ Log a Bet</div>
+                <div class="t-form-grid">
+                  <div class="form-group t-full">
+                    <label class="form-label">Pick</label>
+                    <input class="form-input" id="t-pick" type="text" placeholder="e.g. Dodgers ML" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Sport</label>
+                    <select class="form-select" id="t-sport" onchange="tOnSportChange()">
+                      <option value="MLB">MLB</option>
+                      <option value="NFL">NFL</option>
+                      <option value="NBA">NBA</option>
+                      <option value="NHL">NHL</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select class="form-select" id="t-type" onchange="tOnTypeChange()">
+                      <option value="Moneyline">Moneyline</option>
+                      <option value="Spread">Spread</option>
+                      <option value="Over/Under">Over/Under</option>
+                      <option value="Prop">Prop</option>
+                      <option value="Parlay">Parlay</option>
+                      <option value="Futures">Futures</option>
+                    </select>
+                  </div>
+                  <div class="form-group t-full">
+                    <label class="form-label">Team <span style="color:var(--gray-600);font-weight:400">(for auto-grading)</span></label>
+                    <select class="form-select" id="t-team">
+                      <option value="">— None —</option>
+                    </select>
+                  </div>
+                  <div class="form-group" id="t-line-group" style="display:none">
+                    <label class="form-label" id="t-line-label">Line</label>
+                    <input class="form-input" id="t-line" type="number" step="0.5" placeholder="-3.5" />
+                  </div>
+                  <div class="form-group" id="t-ou-group" style="display:none">
+                    <label class="form-label">Over/Under</label>
+                    <select class="form-select" id="t-ou-side">
+                      <option value="Over">Over</option>
+                      <option value="Under">Under</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Odds</label>
+                    <input class="form-input" id="t-odds" type="number" placeholder="-110" oninput="updateOddsHint()" />
+                    <div class="t-odds-hint" id="t-odds-hint"></div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Stake ($)</label>
+                    <input class="form-input" id="t-stake" type="number" placeholder="100" min="0" step="0.01" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input class="form-input" id="t-date" type="date" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Result</label>
+                    <select class="form-select" id="t-result">
+                      <option value="Pending">Pending</option>
+                      <option value="Win">Win</option>
+                      <option value="Loss">Loss</option>
+                      <option value="Push">Push</option>
+                    </select>
+                  </div>
+                  <div class="form-group t-full">
+                    <label class="form-label">Notes</label>
+                    <input class="form-input" id="t-notes" type="text" placeholder="Optional notes" />
+                  </div>
+                  <div class="t-full">
+                    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="tAddBet()">Log Bet</button>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- end tracker-col -->
+
+          </div><!-- end page-split -->
+        </div><!-- end container -->
       </main>
+
+      <div class="container"><div id="site-disclaimer"></div></div>
     </div>
   </div>
 
@@ -457,6 +600,9 @@
       let cum = 0;
       const labels = [], values = [];
       settled.forEach(b => { cum += (b.pl||0); labels.push(b.date); values.push(parseFloat(cum.toFixed(2))); });
+      // A single settled bet has nothing to draw a line between — anchor it
+      // at a zero starting point so the chart actually renders a visible trend.
+      if (values.length === 1) { labels.unshift('Start'); values.unshift(0); }
       const finalVal = values[values.length-1] || 0;
       const color = finalVal >= 0 ? '#10B981' : '#EF4444';
       const segColor = (ctx, posColor, negColor) => ((ctx.p0.parsed.y + ctx.p1.parsed.y) / 2 >= 0 ? posColor : negColor);
@@ -473,7 +619,7 @@
               backgroundColor: ctx => segColor(ctx, 'rgba(16,185,129,0.1)', 'rgba(239,68,68,0.1)'),
             },
             fill: { target: { value: 0 } },
-            tension: 0.3, pointRadius: 0, borderWidth: 2,
+            tension: 0.3, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: color, pointBorderColor: color, borderWidth: 2,
           },
           { data: values.map(() => 0), borderColor: '#EF4444', borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false }
         ] },
@@ -591,6 +737,32 @@
       renderAuthGate();
       tRefresh();
       if (tBets.length) tAutoGrade();
+    }
+
+    // ── Mobile tab switching ──────────────────────────────────────
+    function switchMobileTab(tab) {
+      const mainCol    = document.querySelector('.tracker-main-col');
+      const trackerCol = document.querySelector('.tracker-col');
+      document.querySelectorAll('.mobile-page-tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'stats') || (i === 1 && tab === 'tracker'));
+      });
+      if (tab === 'stats') {
+        mainCol.classList.remove('mobile-hidden');
+        trackerCol.classList.add('mobile-hidden');
+      } else {
+        mainCol.classList.add('mobile-hidden');
+        trackerCol.classList.remove('mobile-hidden');
+      }
+    }
+
+    // ── Desktop tracker toggle ──────────────────────────────────────
+    function toggleTracker() {
+      const pageSplit = document.getElementById('page-split');
+      const btn       = document.getElementById('tracker-toggle-btn');
+      const label     = document.getElementById('tracker-toggle-label');
+      const collapsed = pageSplit.classList.toggle('tracker-collapsed');
+      btn.setAttribute('aria-expanded', String(!collapsed));
+      label.textContent = collapsed ? 'Show Tracker' : 'Hide Tracker';
     }
 
     loadTBets();

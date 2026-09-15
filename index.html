@@ -886,6 +886,15 @@
       }
     }
 
+    // Reorders parallel pick/live-info arrays so covering/won picks lead,
+    // in-progress-with-no-signal-yet or not-yet-started picks sit in the
+    // middle, and not-covering/lost picks fall to the back. Stable sort
+    // (guaranteed since ES2019) keeps each group's original relative order.
+    function coverageSortOrder(liveArr, len) {
+      const rank = li => li?.isCorrect === true ? 0 : (li?.isCorrect === false ? 2 : 1);
+      return Array.from({ length: len }, (_, i) => i).sort((a, b) => rank(liveArr[a]) - rank(liveArr[b]));
+    }
+
     function renderTodayPicksNFL(picks, liveInfoAll = []) {
       const container = document.getElementById('picks-container-nfl');
 
@@ -895,6 +904,10 @@
           <p>No picks for this week yet — check back after lines are posted.</p></div>`;
         return;
       }
+
+      const order = coverageSortOrder(liveInfoAll, picks.length);
+      picks = order.map(i => picks[i]);
+      liveInfoAll = order.map(i => liveInfoAll[i]);
 
       container.innerHTML = picks.map((pick, i) => {
         const conf    = pick.confidence || 0.5;
@@ -1196,9 +1209,9 @@
 
     function renderTodayPicks(picks, pitcherDetails = [], liveInfoAll = []) {
       const container = document.getElementById('picks-container');
-      const filteredPicks   = picks.filter(p => p.has_pick === true);
-      const filteredDetails = pitcherDetails.filter((_, i) => picks[i]?.has_pick === true);
-      const filteredLive    = liveInfoAll.filter((_, i) => picks[i]?.has_pick === true);
+      let filteredPicks   = picks.filter(p => p.has_pick === true);
+      let filteredDetails = pitcherDetails.filter((_, i) => picks[i]?.has_pick === true);
+      let filteredLive    = liveInfoAll.filter((_, i) => picks[i]?.has_pick === true);
 
       if (!filteredPicks.length) {
         container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
@@ -1206,6 +1219,11 @@
           <p>No picks for today yet — check back after 9 AM ET.</p></div>`;
         return;
       }
+
+      const order = coverageSortOrder(filteredLive, filteredPicks.length);
+      filteredPicks   = order.map(i => filteredPicks[i]);
+      filteredDetails = order.map(i => filteredDetails[i]);
+      filteredLive    = order.map(i => filteredLive[i]);
 
       container.innerHTML = filteredPicks.map((pick, i) => {
         const conf    = pick.confidence || 0.5;

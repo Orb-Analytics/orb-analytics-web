@@ -1,5 +1,5 @@
 /* ─── Orb Analytics – Design System (Light Theme) ────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,400;1,700&family=Roboto+Slab:wght@100..900&family=Inter:wght@300;400;500;600&family=Audiowide&family=DM+Sans:ital,wght@0,400;0,700;0,800;1,700;1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,400;1,700&family=Roboto+Slab:wght@100..900&family=Inter:wght@300;400;500;600&family=Audiowide&family=DM+Sans:ital,wght@0,400;0,700;0,800;0,900;1,700;1,800&display=swap');
 
 :root {
   --purple-950: #0B0019;
@@ -163,7 +163,7 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   flex-shrink: 0;
 }
 
-.orb-logo-img { width: 36px; height: 36px; object-fit: contain; }
+.orb-logo-img { width: 40px; height: 40px; object-fit: contain; }
 
 .nav-logo-center {
   display: flex;
@@ -466,7 +466,7 @@ body.dark .badge-live { background: rgba(239,68,68,0.18);  color: #FCA5A5; borde
 
 /* ─── Section heading ────────────────────────────────────────────── */
 .section-label { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; color: var(--purple-600); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
-.section-title { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1.15; letter-spacing: -0.01em; }
+.section-title { font-size: 2rem; font-weight: 900; color: var(--text); line-height: 1.15; letter-spacing: -0.01em; }
 
 /* ─── Forms ──────────────────────────────────────────────────────── */
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -645,7 +645,7 @@ body.dark .disclaimer-block { background: var(--gray-100); }
   .container { padding: 0 1rem; }
   .section-title { font-size: 1.5rem; }
   .nav-logo-text { font-size: 0.95rem; }
-  .orb-logo-img { width: 32px; height: 32px; }
+  .orb-logo-img { width: 36px; height: 36px; }
   .nav-social { display: none; }
   .nav-theme-toggle { display: flex; }
   .sidebar-footer { display: none; }

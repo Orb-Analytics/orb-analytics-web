@@ -128,51 +128,66 @@
     /* ── Team grid ───────────────────────────────────────────────── */
     .team-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      margin-top: 1.25rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      margin-top: 1.5rem;
     }
-    @media (max-width: 760px) { .team-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 420px) { .team-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; } }
+    @media (max-width: 760px) { .team-grid { grid-template-columns: 1fr; } }
 
+    /* Card shell + header row — same pattern as .pick-card / .pick-card-header */
     .member-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 1.25rem 1rem 1rem;
+      padding: 1rem 1.25rem;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      text-align: center;
-      gap: 0.5rem;
+      justify-content: space-between;
+      gap: 1rem;
       transition: border-color var(--transition), box-shadow var(--transition);
+      position: relative;
+      overflow: hidden;
     }
     .member-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
 
+    .member-actions { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+
+    @media (max-width: 480px) {
+      .member-card { flex-wrap: wrap; }
+    }
+
+    /* Hero row — same pattern as .pick-team-hero (logo + big name) */
+    .member-hero { display: flex; align-items: center; gap: 0.85rem; }
+
+    @media (max-width: 480px) {
+      .member-hero { gap: 0.65rem; }
+    }
+
     .member-photo-wrap {
       position: relative;
-      width: 72px;
-      height: 72px;
+      width: 64px;
+      height: 64px;
       flex-shrink: 0;
     }
     .member-photo {
-      width: 72px;
-      height: 72px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--border);
       display: block;
     }
     .member-avatar {
-      width: 72px;
-      height: 72px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--purple-600), var(--purple-400));
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: var(--font-display);
-      font-size: 1.375rem;
+      font-size: 1.25rem;
       font-weight: 900;
       color: white;
     }
@@ -190,27 +205,34 @@
       border: 2px solid var(--surface);
     }
 
+    .member-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      min-width: 0;
+    }
+
     .member-name {
       font-family: var(--font-display);
-      font-size: 1.125rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: var(--text);
       line-height: 1.2;
-      margin-top: 0.15rem;
     }
     .member-handle {
       font-family: var(--font-mono);
       font-size: 0.8125rem;
-      color: var(--purple-600);
-      font-weight: 600;
-    }
-    .member-bio {
-      font-size: 0.8125rem;
       color: var(--gray-600);
-      line-height: 1.45;
-      flex: 1;
+      letter-spacing: 0.02em;
     }
+
+    /* Role badge — sits inline beside the Follow button, both top-right */
     .member-role-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.25rem;
+      box-sizing: border-box;
       font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -218,35 +240,35 @@
       background: var(--gray-100);
       color: var(--gray-600);
       border: 1px solid var(--border);
-      border-radius: var(--radius-pill);
-      padding: 0.15rem 0.55rem;
+      border-radius: var(--radius-sm);
+      padding: 0 0.85rem;
     }
 
-    /* Substack follow button */
+    /* Substack follow button — sits inline beside the role badge, both top-right */
     .substack-btn {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.4rem 0.85rem;
-      background: #FF6719;
-      color: white;
-      border: none;
-      border-radius: var(--radius-pill);
-      font-family: var(--font-body);
-      font-size: 0.75rem;
-      font-weight: 700;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      background: #FFF1E7;
+      color: #FF6719;
+      border: 1px solid #FF6719;
+      border-radius: var(--radius-sm);
       text-decoration: none;
-      transition: opacity var(--transition), transform var(--transition);
-      margin-top: 0.25rem;
+      flex-shrink: 0;
+      transition: background var(--transition), transform var(--transition);
     }
-    .substack-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-    .substack-btn svg { width: 12px; height: 12px; fill: white; flex-shrink: 0; }
+    .substack-btn:hover { background: #FFE4D1; transform: translateY(-1px); }
+    .substack-btn svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
 
     .about-section { margin-top: 2.5rem; }
 
     /* ── Subscribe CTA ───────────────────────────────────────────── */
     .subscribe-banner {
-      background: linear-gradient(135deg, var(--purple-600) 0%, #FF6719 100%);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 2rem 2rem;
       display: flex;
@@ -255,36 +277,41 @@
       gap: 1.5rem;
       margin-top: 2.5rem;
       flex-wrap: wrap;
+      transition: border-color var(--transition), box-shadow var(--transition);
     }
+    .subscribe-banner:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
     .subscribe-banner-text h3 {
       font-family: var(--font-display);
       font-size: 1.375rem;
       font-weight: 900;
-      color: white;
+      color: var(--text);
       margin-bottom: 0.3rem;
     }
     .subscribe-banner-text p {
       font-size: 0.875rem;
-      color: rgba(255,255,255,0.82);
+      color: var(--gray-600);
       margin: 0;
     }
+    /* Same light-fill / orange-stroke treatment as .substack-btn */
     .subscribe-banner-btn {
+      box-sizing: border-box;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
       padding: 0.7rem 1.5rem;
-      background: white;
-      color: var(--purple-600);
+      background: #FFF1E7;
+      color: #FF6719;
+      border: 1px solid #FF6719;
       border-radius: var(--radius-pill);
       font-family: var(--font-body);
       font-size: 0.875rem;
       font-weight: 700;
       text-decoration: none;
-      transition: opacity var(--transition), transform var(--transition);
+      transition: background var(--transition), transform var(--transition);
       flex-shrink: 0;
     }
-    .subscribe-banner-btn:hover { opacity: 0.92; transform: translateY(-1px); }
-    .subscribe-banner-btn svg { width: 15px; height: 15px; fill: #FF6719; }
+    .subscribe-banner-btn:hover { background: #FFE4D1; transform: translateY(-1px); }
+    .subscribe-banner-btn svg { width: 15px; height: 15px; fill: currentColor; }
   </style>
 </head>
 <body>
@@ -356,147 +383,179 @@
           <div class="team-grid">
 
             <div class="member-card">
-              <div class="member-photo-wrap">
+              <div class="member-hero">
+                <div class="member-photo-wrap">
                 <img class="member-photo"
                   src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F5b4aaffa-89c5-4f25-a2cc-9dcf4fb182a5_1688x950.jpeg"
                   alt="Orb Wizard"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <div class="member-avatar" style="display:none">OW</div>
+                </div>
+                <div class="member-info">
+                  <div class="member-name">Orb Wizard</div>
+                  <div class="member-handle">@orbwizard522575</div>
+                </div>
               </div>
-              <div class="member-name">Orb Wizard</div>
-              <div class="member-handle">@orbwizard522575</div>
-              <div class="member-role-badge">CEO · CTO</div>
-              <div class="member-bio">Founder &amp; Orb Scryer. The mind behind the model.</div>
-              <a class="substack-btn" href="https://substack.com/@orbwizard522575" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                Follow
-              </a>
+              <div class="member-actions">
+                <div class="member-role-badge">CEO · CTO</div>
+                <a class="substack-btn" aria-label="Follow on Substack" href="https://substack.com/@orbwizard522575" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+              </div>
             </div>
 
             <div class="member-card">
-              <div class="member-photo-wrap">
+              <div class="member-hero">
+                <div class="member-photo-wrap">
                 <img class="member-photo"
                   src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4881feb5-2756-45cc-b442-8c1888fd298c_1080x1080.png"
                   alt="Andres Benites"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <div class="member-avatar" style="display:none">AB</div>
+                </div>
+                <div class="member-info">
+                  <div class="member-name">Andres Benites</div>
+                  <div class="member-handle">@orbanalytics</div>
+                </div>
               </div>
-              <div class="member-name">Andres Benites</div>
-              <div class="member-handle">@orbanalytics</div>
-              <div class="member-role-badge">COO</div>
-              <div class="member-bio">Chief Operating Officer. Building the Orb brand from the ground up.</div>
-              <a class="substack-btn" href="https://substack.com/@orbanalytics" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                Follow
-              </a>
+              <div class="member-actions">
+                <div class="member-role-badge">COO</div>
+                <a class="substack-btn" aria-label="Follow on Substack" href="https://substack.com/@orbanalytics" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+              </div>
             </div>
 
             <div class="member-card">
-              <div class="member-photo-wrap">
+              <div class="member-hero">
+                <div class="member-photo-wrap">
                 <img class="member-photo"
                   src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F3b5d87c0-46f2-41f3-bec8-163c5f3c310d_1170x1170.png"
                   alt="Orb Apprentice"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <div class="member-avatar" style="display:none">OA</div>
+                </div>
+                <div class="member-info">
+                  <div class="member-name">Orb Apprentice</div>
+                  <div class="member-handle">@lpchaitin</div>
+                </div>
               </div>
-              <div class="member-name">Orb Apprentice</div>
-              <div class="member-handle">@lpchaitin</div>
-              <div class="member-role-badge">Analytics</div>
-              <div class="member-bio">Data Analyst &amp; Seattle Sports Advocate.</div>
-              <a class="substack-btn" href="https://substack.com/@lpchaitin" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                Follow
-              </a>
+              <div class="member-actions">
+                <div class="member-role-badge">Product</div>
+                <a class="substack-btn" aria-label="Follow on Substack" href="https://substack.com/@lpchaitin" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+              </div>
             </div>
 
             <div class="member-card">
-              <div class="member-photo-wrap">
+              <div class="member-hero">
+                <div class="member-photo-wrap">
                 <img class="member-photo"
                   src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdadaf71d-b14e-46f3-9e85-befe83d3507f_983x983.png"
                   alt="Dev Dart"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <div class="member-avatar" style="display:none">DD</div>
+                </div>
+                <div class="member-info">
+                  <div class="member-name">Dev Dart</div>
+                  <div class="member-handle">@devdarts</div>
+                </div>
               </div>
-              <div class="member-name">Dev Dart</div>
-              <div class="member-handle">@devdarts</div>
-              <div class="member-role-badge">Engineering</div>
-              <div class="member-bio">Platform engineering. Do you believe in miracles?</div>
-              <a class="substack-btn" href="https://substack.com/@devdarts" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                Follow
-              </a>
+              <div class="member-actions">
+                <div class="member-role-badge">Promotion</div>
+                <a class="substack-btn" aria-label="Follow on Substack" href="https://substack.com/@devdarts" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+              </div>
             </div>
 
             <div class="member-card">
-              <div class="member-photo-wrap">
+              <div class="member-hero">
+                <div class="member-photo-wrap">
                 <img class="member-photo"
                   src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdffa70c3-7203-4ca4-b824-0f2abf3266c6_1101x821.png"
                   alt="Mickey Swish"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <div class="member-avatar" style="display:none">MS</div>
+                </div>
+                <div class="member-info">
+                  <div class="member-name">Mickey Swish</div>
+                  <div class="member-handle">@mickeyswish</div>
+                </div>
               </div>
-              <div class="member-name">Mickey Swish</div>
-              <div class="member-handle">@mickeyswish</div>
-              <div class="member-role-badge">Editorial</div>
-              <div class="member-bio">NBA Writer for Orb Analytics.</div>
-              <a class="substack-btn" href="https://substack.com/@mickeyswish" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                Follow
-              </a>
+              <div class="member-actions">
+                <div class="member-role-badge">Editor in Chief</div>
+                <a class="substack-btn" aria-label="Follow on Substack" href="https://substack.com/@mickeyswish" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+              </div>
             </div>
 
             <div class="member-card">
-              <div class="member-photo-wrap">
+              <div class="member-hero">
+                <div class="member-photo-wrap">
                 <img class="member-photo"
                   src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F578c2d60-de01-4836-b899-990db2df3753_260x262.png"
                   alt="Vibe Navigator"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <div class="member-avatar" style="display:none">VN</div>
+                </div>
+                <div class="member-info">
+                  <div class="member-name">Vibe Navigator</div>
+                  <div class="member-handle">@thevibenavigator</div>
+                </div>
               </div>
-              <div class="member-name">Vibe Navigator</div>
-              <div class="member-handle">@thevibenavigator</div>
-              <div class="member-role-badge">Editorial</div>
-              <div class="member-bio">NBA Writer for Orb Analytics.</div>
-              <a class="substack-btn" href="https://substack.com/@thevibenavigator" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                Follow
-              </a>
+              <div class="member-actions">
+                <div class="member-role-badge">Content</div>
+                <a class="substack-btn" aria-label="Follow on Substack" href="https://substack.com/@thevibenavigator" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+              </div>
             </div>
 
             <div class="member-card">
-              <div class="member-photo-wrap">
+              <div class="member-hero">
+                <div class="member-photo-wrap">
                 <img class="member-photo"
                   src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1fd3b571-dc89-4585-813e-f78a97254048_643x629.jpeg"
                   alt="Fairway Phantom"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <div class="member-avatar" style="display:none">FP</div>
+                </div>
+                <div class="member-info">
+                  <div class="member-name">Fairway Phantom</div>
+                  <div class="member-handle">@fairwayphantom</div>
+                </div>
               </div>
-              <div class="member-name">Fairway Phantom</div>
-              <div class="member-handle">@fairwayphantom</div>
-              <div class="member-role-badge">Editorial</div>
-              <div class="member-bio">Golf contributor &amp; course-side analyst.</div>
-              <a class="substack-btn" href="https://substack.com/@fairwayphantom" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                Follow
-              </a>
+              <div class="member-actions">
+                <div class="member-role-badge">Content</div>
+                <a class="substack-btn" aria-label="Follow on Substack" href="https://substack.com/@fairwayphantom" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+              </div>
             </div>
 
             <div class="member-card">
-              <div class="member-photo-wrap">
+              <div class="member-hero">
+                <div class="member-photo-wrap">
                 <img class="member-photo"
                   src="https://substackcdn.com/image/fetch/w_200,h_200,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fcdb0ac35-fb75-4447-bf0a-6d5ec5711846_729x729.jpeg"
                   alt="Ari Podcasts"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                 <div class="member-avatar" style="display:none">AP</div>
+                </div>
+                <div class="member-info">
+                  <div class="member-name">Ari Podcasts</div>
+                  <div class="member-handle">@aripodcasts</div>
+                </div>
               </div>
-              <div class="member-name">Ari Podcasts</div>
-              <div class="member-handle">@aripodcasts</div>
-              <div class="member-role-badge">Media</div>
-              <div class="member-bio">Podcast host. Bringing the audio layer to Orb.</div>
-              <a class="substack-btn" href="https://substack.com/@aripodcasts" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
-                Follow
-              </a>
+              <div class="member-actions">
+                <div class="member-role-badge">Production</div>
+                <a class="substack-btn" aria-label="Follow on Substack" href="https://substack.com/@aripodcasts" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+              </div>
             </div>
 
           </div>
