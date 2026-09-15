@@ -1047,8 +1047,35 @@
         if (el) el.style.display = s === sport ? 'block' : 'none';
       });
       document.querySelector('.section-title').textContent = sport.toUpperCase() + ' Predictions';
+      updateHistoryTimeframeOptions();
       updateLastUpdatedLabel();
       if (activeView === 'history') loadHistory();
+    }
+
+    function updateHistoryTimeframeOptions() {
+      const select = document.getElementById('filter-date');
+      const current = select.value;
+      const isNFL = activeSport === 'nfl';
+      if (isNFL) {
+        const weeks = [...new Map(historyData
+          .filter(p => p.week != null)
+          .map(p => {
+            const season = p.season ?? new Date(p.date).getFullYear();
+            return [`${season}:${p.week}`, { season, week: Number(p.week) }];
+          }))].map(([, value]) => value)
+          .sort((a, b) => b.season - a.season || b.week - a.week);
+        select.innerHTML = `<option value="all">All Weeks</option>` +
+          weeks.map(({ season, week }) => `<option value="week:${season}:${week}">${season} Week ${week}</option>`).join('') +
+          `<option value="season">Season to Date</option>`;
+      } else {
+        select.innerHTML = `<option value="all">All Time</option>
+           <option value="1">Last 1 Day</option>
+           <option value="7">Last 7 Days</option>
+           <option value="31">Last 31 Days</option>
+           <option value="season">Season to Date</option>`;
+      }
+      if ([...select.options].some(option => option.value === current)) select.value = current;
+      else select.value = 'all';
     }
 
     function switchView(view) {
@@ -1356,6 +1383,7 @@
         if (activeSport === 'nba') {
           historyData = historyData.map(p => ({ ...p, edge: parseFloat((Math.abs(p.edge) * 100).toFixed(4)) }));
         }
+        updateHistoryTimeframeOptions();
         applyHistoryFilters();
       } catch(e) {
         document.getElementById('summary-grid').innerHTML =
@@ -1382,13 +1410,19 @@
         let cutoff;
         if (dateVal === 'season') {
           cutoff = getSeasonStartDate().getTime();
+        } else if (activeSport === 'nfl' && dateVal.startsWith('week:')) {
+          const [, season, week] = dateVal.split(':');
+          filtered = filtered.filter(p =>
+            String(p.season ?? new Date(p.date).getFullYear()) === season && String(p.week) === week
+          );
+          cutoff = null;
         } else {
           const days = parseInt(dateVal, 10);
           const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
           // -1 so "days" counts inclusively (e.g. "Last 1 Day" = just the latest day)
           cutoff = maxDate - (days - 1) * 24 * 60 * 60 * 1000;
         }
-        filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
+        if (cutoff != null) filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
       }
       if (categoryVal === 'home')      filtered = filtered.filter(p => p.pick === p.home_team);
       else if (categoryVal === 'away') filtered = filtered.filter(p => p.pick === p.away_team);
