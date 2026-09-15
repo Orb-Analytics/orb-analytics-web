@@ -127,7 +127,7 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
 .nav {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
   background: #FFFFFF;
   border-bottom: 1px solid var(--border);
   padding: 0 1.5rem;
@@ -228,7 +228,7 @@ body.dark .nav-social a:hover { color: var(--purple-500); background: var(--hove
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  z-index: 50;
+  z-index: 150;
   transition: transform 0.25s ease;
 }
 
@@ -381,7 +381,7 @@ body.dark .sidebar-link { color: var(--text); }
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.4);
-  z-index: 49;
+  z-index: 149;
 }
 
 .sidebar-overlay.open { display: block; }
@@ -659,7 +659,7 @@ body.dark .disclaimer-block { background: var(--gray-100); }
     left: 0;
     height: calc(100vh - 68px);
     transform: translateX(-100%);
-    z-index: 50;
+    z-index: 150;
     box-shadow: 4px 0 20px rgba(0,0,0,0.15);
   }
 
