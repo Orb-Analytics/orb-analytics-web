@@ -784,9 +784,31 @@
       return Number.isFinite(week) ? week : null;
     }
 
-    async function fetchNFLScoreboard() {
+    // No-params scoreboard defaults to "today's games" -- useless for a
+    // week's slate published days before it airs (predictions.json comes
+    // out Tuesday, games run Thu-Mon). Ask ESPN for the specific week
+    // instead, derived from the first pick's game_id (e.g.
+    // "2026_02_SEA_ARI" -> season 2026, week 2). ESPN's own dates=range
+    // param (confirmed by direct request) 400s on this endpoint, so a
+    // year/seasontype/week query is the only working way to ask for
+    // anything other than "today". nflverse numbers weeks 1-18 as the
+    // regular season (ESPN seasontype 2) and continues 19+ for the
+    // postseason (ESPN seasontype 3, which restarts its own week at 1)
+    // rather than resetting, so that's translated here too. Falls back to
+    // the bare (today-only) endpoint if no pick has a parseable game_id.
+    async function fetchNFLScoreboard(picks) {
       try {
-        const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard');
+        const firstId = (picks || []).map(p => p.game_id).find(Boolean) || '';
+        const [seasonStr, weekStr] = firstId.split('_');
+        const season  = parseInt(seasonStr, 10);
+        const rawWeek = parseInt(weekStr, 10);
+        let url = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
+        if (Number.isFinite(season) && Number.isFinite(rawWeek)) {
+          const seasontype = rawWeek > 18 ? 3 : 2;
+          const week       = rawWeek > 18 ? rawWeek - 18 : rawWeek;
+          url += `?year=${season}&seasontype=${seasontype}&week=${week}`;
+        }
+        const r = await fetch(url);
         const data = await r.json();
         return data.events || [];
       } catch { return []; }
@@ -869,10 +891,11 @@
       if (nflTodayRefreshTimer) { clearTimeout(nflTodayRefreshTimer); nflTodayRefreshTimer = null; }
       const container = document.getElementById('picks-container-nfl');
       try {
-        const [picksData, scoreboardEvents] = await Promise.all([
-          fetch(NFL_PREDICTIONS_URL).then(r => r.json()),
-          fetchNFLScoreboard()
-        ]);
+        // fetchNFLScoreboard needs a pick's game_id to know which week to
+        // ask ESPN for (it can't run in parallel with the predictions
+        // fetch the way it used to -- there's nothing to derive the week
+        // from until picksData resolves).
+        const picksData = await fetch(NFL_PREDICTIONS_URL).then(r => r.json());
 
         if (picksData.generated_at) {
           generatedAtBySport.nfl = picksData.generated_at;
@@ -890,6 +913,7 @@
         const picks = (picksData.picks || [])
           .filter(p => p.has_pick === true)
           .map(p => p.edge != null ? { ...p, edge: Math.abs(p.edge) } : p);
+        const scoreboardEvents = await fetchNFLScoreboard(picks);
         const liveInfo = await buildLiveInfoNFL(picks, scoreboardEvents);
         renderTodayPicksNFL(picks, liveInfo);
 
@@ -946,11 +970,15 @@
         else if (oddsLine > 0) impliedPct = ((100 / (oddsLine + 100)) * 100).toFixed(1);
 
         const li = liveInfoAll[i];
-        // isCorrect is null for BOTH "no result yet" (shouldn't reach here,
-        // isLive/isFinal gates that) and a genuine spread push -- badge it
-        // explicitly as Push rather than rendering nothing, since a push is
-        // a real, non-rare outcome for a spread pick (unlike MLB moneyline).
-        const coverBadgeHTML = li.isPush
+        // li is null whenever buildLiveInfoNFL couldn't match this pick to
+        // an ESPN event yet -- a normal, expected state (ESPN hasn't
+        // posted the event, an abbreviation didn't match, or the
+        // scoreboard API hiccuped), not an error. isCorrect is null for
+        // BOTH "no result yet" (shouldn't reach here, isLive/isFinal gates
+        // that) and a genuine spread push -- badge it explicitly as Push
+        // rather than rendering nothing, since a push is a real, non-rare
+        // outcome for a spread pick (unlike MLB moneyline).
+        const coverBadgeHTML = !li ? '' : li.isPush
           ? `<span class="badge badge-push">Push</span>`
           : (li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'Covering' : 'Not Covering')}</span>`);
         const liveBarHTML = (li && (li.isLive || li.isFinal)) ? `
