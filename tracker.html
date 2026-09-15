@@ -514,7 +514,7 @@
       document.getElementById('t-notes').value = '';
       document.getElementById('t-result').value = 'Pending';
       document.getElementById('t-odds-hint').textContent = '';
-      if (result === 'Pending' && team) tAutoGrade();
+      if (result === 'Pending') tAutoGrade();
     }
 
     // ── Auto-grading engine ───────────────────────────────────────────
@@ -547,25 +547,41 @@
       } catch { return []; }
     }
 
+    // Bets logged before the Team dropdown existed (or where a user just
+    // typed the Pick field) have no bet.team -- fall back to matching the
+    // team's abbreviation or full name as a whole word inside the free-text
+    // Pick, so old/untagged bets still get auto-graded instead of sitting
+    // as Pending forever.
+    function tGuessTeam(sport, pickText) {
+      const cfg = T_TEAMS[sport];
+      if (!cfg || !pickText) return null;
+      const text = pickText.toUpperCase();
+      const hit = cfg.teams.find(([abbr, name]) =>
+        new RegExp(`\\b${abbr}\\b`).test(text) || text.includes(name.toUpperCase()));
+      return hit ? hit[0] : null;
+    }
+
     async function tAutoGrade(manual) {
-      const candidates = tBets.filter(b => b.result === 'Pending' && b.team && T_TEAMS[b.sport] && new Date(b.date) <= new Date());
-      if (!candidates.length) { if (manual) alert('No auto-gradable pending bets found (needs Sport + Team set).'); return; }
+      const candidates = tBets
+        .map(b => ({ bet: b, team: b.team || tGuessTeam(b.sport, b.pick) }))
+        .filter(({ bet, team }) => bet.result === 'Pending' && team && T_TEAMS[bet.sport] && new Date(bet.date) <= new Date());
+      if (!candidates.length) { if (manual) alert('No auto-gradable pending bets found (needs a recognizable team name in Sport + Pick).'); return; }
       const groups = {};
-      candidates.forEach(b => { const k = `${b.sport}|${b.date}`; (groups[k] = groups[k] || []).push(b); });
+      candidates.forEach(c => { const k = `${c.bet.sport}|${c.bet.date}`; (groups[k] = groups[k] || []).push(c); });
       let graded = 0;
       for (const key of Object.keys(groups)) {
         const [sport, date] = key.split('|');
         const events = await tFetchScoreboard(sport, date);
-        for (const bet of groups[key]) {
+        for (const { bet, team } of groups[key]) {
           const ev = events.find(e => {
             const comp = e.competitions?.[0];
-            return comp?.competitors?.some(c => c.team?.abbreviation?.toUpperCase() === bet.team);
+            return comp?.competitors?.some(c => c.team?.abbreviation?.toUpperCase() === team);
           });
           if (!ev) continue;
           if (ev.status?.type?.state !== 'post') continue;
           const comp = ev.competitions[0];
-          const mine = comp.competitors.find(c => c.team?.abbreviation?.toUpperCase() === bet.team);
-          const opp  = comp.competitors.find(c => c.team?.abbreviation?.toUpperCase() !== bet.team);
+          const mine = comp.competitors.find(c => c.team?.abbreviation?.toUpperCase() === team);
+          const opp  = comp.competitors.find(c => c.team?.abbreviation?.toUpperCase() !== team);
           const teamScore = parseInt(mine?.score ?? 0);
           const oppScore  = parseInt(opp?.score ?? 0);
           bet.result = tGradeResult(bet, teamScore, oppScore);
