@@ -803,9 +803,16 @@
       }) || null;
     }
 
-    // Same shape/logic as buildLiveInfo (MLB) -- for each pick, find its
-    // live ESPN game (if any) and pull status, score, and (for
-    // in-progress games only) the picked team's live win probability.
+    // Deliberately NOT shared with buildLiveInfo (MLB): MLB is moneyline,
+    // where "isCorrect" is just "did the picked team win" -- comparing raw
+    // scores is correct there. NFL is a spread sport: pick.spread is the
+    // PICKED team's own posted spread (e.g. +6.5 for an underdog, -6.5 for
+    // a favorite -- see 26_write_predictions_json.py), and a pick is graded
+    // against pickScore + spread vs oppScore, not raw score vs raw score.
+    // Comparing raw scores here (the MLB check, copy-pasted) graded picks as
+    // if they were moneyline bets: an underdog getting points (e.g. NO
+    // +6.5, losing 30-31) was marked Lost/"Not Covering" even though the
+    // spread-adjusted score (30 + 6.5 = 36.5 > 31) covers.
     async function buildLiveInfoNFL(picks, events) {
       return Promise.all(picks.map(async pick => {
         const ev = matchEspnEventNFL(events, pick);
@@ -823,10 +830,17 @@
         const homeScore = parseInt(home?.score ?? 0);
         const pickScore = isPickHome ? homeScore : awayScore;
         const oppScore  = isPickHome ? awayScore : homeScore;
+        // pick.spread is already the PICKED side's own spread (not the home
+        // team's), so no home/away branching is needed here -- just add it
+        // to that side's own score before comparing.
+        const spread        = pick.spread ?? 0;
+        const adjustedScore = pickScore + spread;
+        const isPush        = adjustedScore === oppScore;
 
         const info = {
           isLive, isFinal, awayScore, homeScore,
-          isCorrect: pickScore === oppScore ? null : pickScore > oppScore,
+          isCorrect: isPush ? null : adjustedScore > oppScore,
+          isPush,
           statusText: status?.type?.detail || status?.type?.shortDetail || (isFinal ? 'Final' : ''),
           winPct: null,
         };
@@ -930,11 +944,18 @@
         else if (oddsLine > 0) impliedPct = ((100 / (oddsLine + 100)) * 100).toFixed(1);
 
         const li = liveInfoAll[i];
+        // isCorrect is null for BOTH "no result yet" (shouldn't reach here,
+        // isLive/isFinal gates that) and a genuine spread push -- badge it
+        // explicitly as Push rather than rendering nothing, since a push is
+        // a real, non-rare outcome for a spread pick (unlike MLB moneyline).
+        const coverBadgeHTML = li.isPush
+          ? `<span class="badge badge-push">Push</span>`
+          : (li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'Covering' : 'Not Covering')}</span>`);
         const liveBarHTML = (li && (li.isLive || li.isFinal)) ? `
           <div class="live-status-bar">
             <div class="live-status-row">
               <span class="live-score">${pick.away_team} ${li.awayScore} – ${pick.home_team} ${li.homeScore}</span>
-              ${li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'Covering' : 'Not Covering')}</span>`}
+              ${coverBadgeHTML}
             </div>
             ${li.isLive && li.winPct != null ? `
             <div class="live-winprob-row">
