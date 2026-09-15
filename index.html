@@ -355,8 +355,8 @@
 
     /* ── Model History ────────────────────────────────────────── */
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
-    .summary-grid .stat-card { min-width: 0; }
-    .summary-grid .stat-card .stat-value { font-size: clamp(1.4rem, 2.5vw, 2.75rem); white-space: nowrap; overflow: visible; }
+    .summary-grid .stat-card { min-width: 0; overflow: hidden; }
+    .summary-grid .stat-card .stat-value { font-size: clamp(1.1rem, 2.5vw, 2.75rem); white-space: nowrap; overflow: visible; }
     @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
 
     .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
@@ -812,7 +812,9 @@
     // Comparing raw scores here (the MLB check, copy-pasted) graded picks as
     // if they were moneyline bets: an underdog getting points (e.g. NO
     // +6.5, losing 30-31) was marked Lost/"Not Covering" even though the
-    // spread-adjusted score (30 + 6.5 = 36.5 > 31) covers.
+    // spread-adjusted score (30 + 6.5 = 36.5 > 31) covers. Confirmed with
+    // NO@DET week 1 2026 (final, wrongly graded Lost) and WAS@PHI week 1
+    // 2026 (live, wrongly badged "Not Covering").
     async function buildLiveInfoNFL(picks, events) {
       return Promise.all(picks.map(async pick => {
         const ev = matchEspnEventNFL(events, pick);
@@ -833,9 +835,9 @@
         // pick.spread is already the PICKED side's own spread (not the home
         // team's), so no home/away branching is needed here -- just add it
         // to that side's own score before comparing.
-        const spread        = pick.spread ?? 0;
-        const adjustedScore = pickScore + spread;
-        const isPush        = adjustedScore === oppScore;
+        const spread         = pick.spread ?? 0;
+        const adjustedScore  = pickScore + spread;
+        const isPush          = adjustedScore === oppScore;
 
         const info = {
           isLive, isFinal, awayScore, homeScore,
