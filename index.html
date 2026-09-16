@@ -785,8 +785,37 @@
         if (el) el.style.display = s === sport ? 'block' : 'none';
       });
       document.querySelector('.section-title').textContent = sport.toUpperCase() + ' Predictions';
+      updateHistoryTimeframeOptions();
       updateLastUpdatedLabel();
       if (activeView === 'history') loadHistory();
+    }
+
+    function updateHistoryTimeframeOptions() {
+      const select = document.getElementById('filter-date');
+      const current = select.value;
+      const isNFL = activeSport === 'nfl';
+      if (isNFL) {
+        // Rolling windows instead of a flat per-week list (which only grows
+        // and never resets across seasons) -- matches the MLB pattern
+        // below. "Past N Weeks" semantics live in nflCurrentSeasonWeek()/
+        // getFilteredHistory(): relative to the latest graded week in the
+        // data, inclusive, clamped at Week 1, never crossing into a prior
+        // season.
+        select.innerHTML = `<option value="all">All Time</option>
+           <option value="season">Season to Date</option>
+           <option value="past:1">Past 1 Week</option>
+           <option value="past:3">Past 3 Weeks</option>
+           <option value="past:5">Past 5 Weeks</option>
+           <option value="past:10">Past 10 Weeks</option>`;
+      } else {
+        select.innerHTML = `<option value="all">All Time</option>
+           <option value="1">Last 1 Day</option>
+           <option value="7">Last 7 Days</option>
+           <option value="31">Last 31 Days</option>
+           <option value="season">Season to Date</option>`;
+      }
+      if ([...select.options].some(option => option.value === current)) select.value = current;
+      else select.value = 'all';
     }
 
     function switchView(view) {
@@ -1094,6 +1123,7 @@
         if (activeSport === 'nba') {
           historyData = historyData.map(p => ({ ...p, edge: parseFloat((Math.abs(p.edge) * 100).toFixed(4)) }));
         }
+        updateHistoryTimeframeOptions();
         applyHistoryFilters();
       } catch(e) {
         document.getElementById('summary-grid').innerHTML =
@@ -1111,6 +1141,21 @@
       return new Date(year, month, 1);
     }
 
+    // NFL's "current" season/week is defined by the data, not the
+    // calendar: the latest season+week that actually has graded results in
+    // historyData. A bye week or a week with zero qualifying picks still
+    // counts as having happened -- this only cares whether the week
+    // appears at all, not whether it contributed any picks.
+    function nflCurrentSeasonWeek() {
+      const withWeek = historyData.filter(p => p.week != null);
+      if (!withWeek.length) return null;
+      const season = Math.max(...withWeek.map(p => p.season ?? new Date(p.date).getFullYear()));
+      const week = Math.max(...withWeek
+        .filter(p => (p.season ?? new Date(p.date).getFullYear()) === season)
+        .map(p => Number(p.week)));
+      return { season, week };
+    }
+
     // Single set of filters (category + date range) drives stats, chart, splits and table together
     function getFilteredHistory() {
       const categoryVal = document.getElementById('filter-category').value;
@@ -1118,15 +1163,36 @@
       let filtered = historyData;
       if (dateVal !== 'all' && filtered.length) {
         let cutoff;
-        if (dateVal === 'season') {
+        if (dateVal === 'season' && activeSport === 'nfl') {
+          const cur = nflCurrentSeasonWeek();
+          filtered = cur ? filtered.filter(p => (p.season ?? new Date(p.date).getFullYear()) === cur.season) : [];
+          cutoff = null;
+        } else if (dateVal === 'season') {
           cutoff = getSeasonStartDate().getTime();
+        } else if (activeSport === 'nfl' && dateVal.startsWith('past:')) {
+          // Inclusive of the current week, counting backward, clamped at
+          // Week 1 -- never borrows weeks from a prior season to pad out
+          // the count (e.g. "Past 10 Weeks" during Week 4 shows Weeks 1-4
+          // only, not 6 weeks pulled from last season).
+          const n = parseInt(dateVal.split(':')[1], 10);
+          const cur = nflCurrentSeasonWeek();
+          if (cur) {
+            const lowWeek = Math.max(1, cur.week - n + 1);
+            filtered = filtered.filter(p =>
+              (p.season ?? new Date(p.date).getFullYear()) === cur.season &&
+              p.week != null && Number(p.week) >= lowWeek && Number(p.week) <= cur.week
+            );
+          } else {
+            filtered = [];
+          }
+          cutoff = null;
         } else {
           const days = parseInt(dateVal, 10);
           const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
           // -1 so "days" counts inclusively (e.g. "Last 1 Day" = just the latest day)
           cutoff = maxDate - (days - 1) * 24 * 60 * 60 * 1000;
         }
-        filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
+        if (cutoff != null) filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
       }
       if (categoryVal === 'home')      filtered = filtered.filter(p => p.pick === p.home_team);
       else if (categoryVal === 'away') filtered = filtered.filter(p => p.pick === p.away_team);

@@ -795,16 +795,18 @@
       const current = select.value;
       const isNFL = activeSport === 'nfl';
       if (isNFL) {
-        const weeks = [...new Map(historyData
-          .filter(p => p.week != null)
-          .map(p => {
-            const season = p.season ?? new Date(p.date).getFullYear();
-            return [`${season}:${p.week}`, { season, week: Number(p.week) }];
-          }))].map(([, value]) => value)
-          .sort((a, b) => b.season - a.season || b.week - a.week);
-        select.innerHTML = `<option value="all">All Weeks</option>` +
-          weeks.map(({ season, week }) => `<option value="week:${season}:${week}">${season} Week ${week}</option>`).join('') +
-          `<option value="season">Season to Date</option>`;
+        // Rolling windows instead of a flat per-week list (which only grows
+        // and never resets across seasons) -- matches the MLB pattern
+        // below. "Past N Weeks" semantics live in nflCurrentSeasonWeek()/
+        // getFilteredHistory(): relative to the latest graded week in the
+        // data, inclusive, clamped at Week 1, never crossing into a prior
+        // season.
+        select.innerHTML = `<option value="all">All Time</option>
+           <option value="season">Season to Date</option>
+           <option value="past:1">Past 1 Week</option>
+           <option value="past:3">Past 3 Weeks</option>
+           <option value="past:5">Past 5 Weeks</option>
+           <option value="past:10">Past 10 Weeks</option>`;
       } else {
         select.innerHTML = `<option value="all">All Time</option>
            <option value="1">Last 1 Day</option>
@@ -1139,6 +1141,21 @@
       return new Date(year, month, 1);
     }
 
+    // NFL's "current" season/week is defined by the data, not the
+    // calendar: the latest season+week that actually has graded results in
+    // historyData. A bye week or a week with zero qualifying picks still
+    // counts as having happened -- this only cares whether the week
+    // appears at all, not whether it contributed any picks.
+    function nflCurrentSeasonWeek() {
+      const withWeek = historyData.filter(p => p.week != null);
+      if (!withWeek.length) return null;
+      const season = Math.max(...withWeek.map(p => p.season ?? new Date(p.date).getFullYear()));
+      const week = Math.max(...withWeek
+        .filter(p => (p.season ?? new Date(p.date).getFullYear()) === season)
+        .map(p => Number(p.week)));
+      return { season, week };
+    }
+
     // Single set of filters (category + date range) drives stats, chart, splits and table together
     function getFilteredHistory() {
       const categoryVal = document.getElementById('filter-category').value;
@@ -1146,13 +1163,28 @@
       let filtered = historyData;
       if (dateVal !== 'all' && filtered.length) {
         let cutoff;
-        if (dateVal === 'season') {
+        if (dateVal === 'season' && activeSport === 'nfl') {
+          const cur = nflCurrentSeasonWeek();
+          filtered = cur ? filtered.filter(p => (p.season ?? new Date(p.date).getFullYear()) === cur.season) : [];
+          cutoff = null;
+        } else if (dateVal === 'season') {
           cutoff = getSeasonStartDate().getTime();
-        } else if (activeSport === 'nfl' && dateVal.startsWith('week:')) {
-          const [, season, week] = dateVal.split(':');
-          filtered = filtered.filter(p =>
-            String(p.season ?? new Date(p.date).getFullYear()) === season && String(p.week) === week
-          );
+        } else if (activeSport === 'nfl' && dateVal.startsWith('past:')) {
+          // Inclusive of the current week, counting backward, clamped at
+          // Week 1 -- never borrows weeks from a prior season to pad out
+          // the count (e.g. "Past 10 Weeks" during Week 4 shows Weeks 1-4
+          // only, not 6 weeks pulled from last season).
+          const n = parseInt(dateVal.split(':')[1], 10);
+          const cur = nflCurrentSeasonWeek();
+          if (cur) {
+            const lowWeek = Math.max(1, cur.week - n + 1);
+            filtered = filtered.filter(p =>
+              (p.season ?? new Date(p.date).getFullYear()) === cur.season &&
+              p.week != null && Number(p.week) >= lowWeek && Number(p.week) <= cur.week
+            );
+          } else {
+            filtered = [];
+          }
           cutoff = null;
         } else {
           const days = parseInt(dateVal, 10);
