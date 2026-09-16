@@ -128,7 +128,7 @@
       }
 
       .summary-grid .stat-card .stat-value {
-        font-size: 1.375rem !important;
+        font-size: 1.75rem !important;
       }
 
       .splits-grid {
@@ -154,6 +154,8 @@
       .t-full { grid-column: 1 !important; }
 
       .predictions-header .section-title { font-size: 1.375rem; }
+
+      .split-label-break { display: block; }
 
       #main-container { height: auto !important; overflow-x: hidden !important; overflow-y: visible !important; max-width: 100%; }
       main.page { overflow-x: hidden !important; overflow-y: visible !important; }
@@ -356,7 +358,8 @@
     /* ── Model History ────────────────────────────────────────── */
     .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
     .summary-grid .stat-card { min-width: 0; overflow: hidden; }
-    .summary-grid .stat-card .stat-value { font-size: clamp(1.1rem, 2.5vw, 2.75rem); white-space: nowrap; overflow: visible; }
+    .summary-grid .stat-card .stat-value { font-size: clamp(1.4rem, 3.2vw, 3.5rem); white-space: nowrap; overflow: visible; }
+    #filter-count { display: none; }
     @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
 
     .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
@@ -365,9 +368,10 @@
     .split-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
     .split-row:last-child { border-bottom: none; }
     .split-label { color: var(--gray-600); flex: 1; }
-    .split-record { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text); width: 4.5rem; text-align: right; flex-shrink: 0; }
-    .split-units { font-family: var(--font-mono); font-size: 0.8125rem; width: 4.5rem; text-align: right; flex-shrink: 0; }
-    .split-winrate { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; width: 3.5rem; text-align: right; flex-shrink: 0; }
+    .split-label-break { display: none; }
+    .split-record { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text); flex: 1; text-align: right; }
+    .split-units { font-family: var(--font-mono); font-size: 0.8125rem; flex: 1; text-align: right; }
+    .split-winrate { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; flex: 1; text-align: right; }
     .split-winrate.good,
     .split-winrate.ok   { color: var(--green); }
     .split-winrate.bad  { color: var(--red); }
@@ -523,6 +527,8 @@
                 <option value="31">Last 31 Days</option>
                 <option value="season">Season to Date</option>
               </select>
+              <select class="filter-select" id="filter-nfl-season" onchange="onNFLSeasonChange()" style="display:none"></select>
+              <select class="filter-select" id="filter-nfl-week" onchange="applyHistoryFilters()" style="display:none"></select>
             </div>
             <div class="summary-grid" id="summary-grid">
               <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading history...</div>
@@ -791,31 +797,54 @@
     }
 
     function updateHistoryTimeframeOptions() {
-      const select = document.getElementById('filter-date');
-      const current = select.value;
       const isNFL = activeSport === 'nfl';
+      document.getElementById('filter-date').style.display = isNFL ? 'none' : '';
+      document.getElementById('filter-nfl-season').style.display = isNFL ? '' : 'none';
+      document.getElementById('filter-nfl-week').style.display = isNFL ? '' : 'none';
       if (isNFL) {
-        // Rolling windows instead of a flat per-week list (which only grows
-        // and never resets across seasons) -- matches the MLB pattern
-        // below. "Past N Weeks" semantics live in nflCurrentSeasonWeek()/
-        // getFilteredHistory(): relative to the latest graded week in the
-        // data, inclusive, clamped at Week 1, never crossing into a prior
-        // season.
-        select.innerHTML = `<option value="all">All Time</option>
-           <option value="season">Season to Date</option>
-           <option value="past:1">Past 1 Week</option>
-           <option value="past:3">Past 3 Weeks</option>
-           <option value="past:5">Past 5 Weeks</option>
-           <option value="past:10">Past 10 Weeks</option>`;
+        populateNFLSeasonOptions();
       } else {
+        const select = document.getElementById('filter-date');
+        const current = select.value;
         select.innerHTML = `<option value="all">All Time</option>
            <option value="1">Last 1 Day</option>
            <option value="7">Last 7 Days</option>
            <option value="31">Last 31 Days</option>
            <option value="season">Season to Date</option>`;
+        select.value = [...select.options].some(o => o.value === current) ? current : 'all';
       }
-      if ([...select.options].some(option => option.value === current)) select.value = current;
-      else select.value = 'all';
+    }
+
+    // NFL history is filtered by two independent dropdowns -- Season (every
+    // season with graded picks) and Week (every week within the selected
+    // season) -- rather than a single combined rolling-window select, so a
+    // specific slice like "2025 Week 7" can be picked directly.
+    function populateNFLSeasonOptions() {
+      const seasonSel = document.getElementById('filter-nfl-season');
+      const current = seasonSel.value;
+      const seasons = [...new Set(historyData.map(p => p.season ?? new Date(p.date).getFullYear()))].sort((a, b) => b - a);
+      seasonSel.innerHTML = `<option value="all">All Seasons</option>` +
+        seasons.map(s => `<option value="${s}">${s}</option>`).join('');
+      seasonSel.value = [...seasonSel.options].some(o => o.value === current) ? current : 'all';
+      populateNFLWeekOptions();
+    }
+
+    function populateNFLWeekOptions() {
+      const seasonVal = document.getElementById('filter-nfl-season').value;
+      const weekSel = document.getElementById('filter-nfl-week');
+      const current = weekSel.value;
+      const pool = seasonVal === 'all'
+        ? historyData
+        : historyData.filter(p => String(p.season ?? new Date(p.date).getFullYear()) === seasonVal);
+      const weeks = [...new Set(pool.filter(p => p.week != null).map(p => Number(p.week)))].sort((a, b) => a - b);
+      weekSel.innerHTML = `<option value="all">All Weeks</option>` +
+        weeks.map(w => `<option value="${w}">Week ${w}</option>`).join('');
+      weekSel.value = [...weekSel.options].some(o => o.value === current) ? current : 'all';
+    }
+
+    function onNFLSeasonChange() {
+      populateNFLWeekOptions();
+      applyHistoryFilters();
     }
 
     function switchView(view) {
@@ -1141,58 +1170,33 @@
       return new Date(year, month, 1);
     }
 
-    // NFL's "current" season/week is defined by the data, not the
-    // calendar: the latest season+week that actually has graded results in
-    // historyData. A bye week or a week with zero qualifying picks still
-    // counts as having happened -- this only cares whether the week
-    // appears at all, not whether it contributed any picks.
-    function nflCurrentSeasonWeek() {
-      const withWeek = historyData.filter(p => p.week != null);
-      if (!withWeek.length) return null;
-      const season = Math.max(...withWeek.map(p => p.season ?? new Date(p.date).getFullYear()));
-      const week = Math.max(...withWeek
-        .filter(p => (p.season ?? new Date(p.date).getFullYear()) === season)
-        .map(p => Number(p.week)));
-      return { season, week };
-    }
-
     // Single set of filters (category + date range) drives stats, chart, splits and table together
     function getFilteredHistory() {
       const categoryVal = document.getElementById('filter-category').value;
-      const dateVal     = document.getElementById('filter-date').value;
       let filtered = historyData;
-      if (dateVal !== 'all' && filtered.length) {
-        let cutoff;
-        if (dateVal === 'season' && activeSport === 'nfl') {
-          const cur = nflCurrentSeasonWeek();
-          filtered = cur ? filtered.filter(p => (p.season ?? new Date(p.date).getFullYear()) === cur.season) : [];
-          cutoff = null;
-        } else if (dateVal === 'season') {
-          cutoff = getSeasonStartDate().getTime();
-        } else if (activeSport === 'nfl' && dateVal.startsWith('past:')) {
-          // Inclusive of the current week, counting backward, clamped at
-          // Week 1 -- never borrows weeks from a prior season to pad out
-          // the count (e.g. "Past 10 Weeks" during Week 4 shows Weeks 1-4
-          // only, not 6 weeks pulled from last season).
-          const n = parseInt(dateVal.split(':')[1], 10);
-          const cur = nflCurrentSeasonWeek();
-          if (cur) {
-            const lowWeek = Math.max(1, cur.week - n + 1);
-            filtered = filtered.filter(p =>
-              (p.season ?? new Date(p.date).getFullYear()) === cur.season &&
-              p.week != null && Number(p.week) >= lowWeek && Number(p.week) <= cur.week
-            );
-          } else {
-            filtered = [];
-          }
-          cutoff = null;
-        } else {
-          const days = parseInt(dateVal, 10);
-          const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
-          // -1 so "days" counts inclusively (e.g. "Last 1 Day" = just the latest day)
-          cutoff = maxDate - (days - 1) * 24 * 60 * 60 * 1000;
+      if (activeSport === 'nfl') {
+        const seasonVal = document.getElementById('filter-nfl-season').value;
+        const weekVal   = document.getElementById('filter-nfl-week').value;
+        if (seasonVal !== 'all') {
+          filtered = filtered.filter(p => String(p.season ?? new Date(p.date).getFullYear()) === seasonVal);
         }
-        if (cutoff != null) filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
+        if (weekVal !== 'all') {
+          filtered = filtered.filter(p => String(p.week) === weekVal);
+        }
+      } else {
+        const dateVal = document.getElementById('filter-date').value;
+        if (dateVal !== 'all' && filtered.length) {
+          let cutoff;
+          if (dateVal === 'season') {
+            cutoff = getSeasonStartDate().getTime();
+          } else {
+            const days = parseInt(dateVal, 10);
+            const maxDate = Math.max(...historyData.map(p => new Date(p.date).getTime()));
+            // -1 so "days" counts inclusively (e.g. "Last 1 Day" = just the latest day)
+            cutoff = maxDate - (days - 1) * 24 * 60 * 60 * 1000;
+          }
+          filtered = filtered.filter(p => new Date(p.date).getTime() >= cutoff);
+        }
       }
       if (categoryVal === 'home')      filtered = filtered.filter(p => p.pick === p.home_team);
       else if (categoryVal === 'away') filtered = filtered.filter(p => p.pick === p.away_team);
@@ -1374,9 +1378,9 @@
       // single misleading bucket (was already skipped for nba).
       if (activeSport !== 'nba' && activeSport !== 'nfl') {
         splits['Edge Tiers'] = [
-          ['High Edge (≥3%)', picks.filter(p=>p.edge>=3)],
-          ['Mid Edge (1–3%)', picks.filter(p=>p.edge>=1&&p.edge<3)],
-          ['Low Edge (<1%)',  picks.filter(p=>p.edge<1)],
+          ['High Edge<br class="split-label-break"> (≥3%)', picks.filter(p=>p.edge>=3)],
+          ['Mid Edge<br class="split-label-break"> (1–3%)', picks.filter(p=>p.edge>=1&&p.edge<3)],
+          ['Low Edge<br class="split-label-break"> (<1%)',  picks.filter(p=>p.edge<1)],
         ];
       }
 
