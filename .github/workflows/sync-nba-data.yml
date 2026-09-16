@@ -1,5 +1,4 @@
 name: Sync NBA model data
-
 'on':
   schedule:
     - cron: '*/30 * * * *'
