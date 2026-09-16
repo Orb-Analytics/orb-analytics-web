@@ -1,0 +1,52 @@
+[
+  {
+    "name": "2026 W1 NO@DET -- underdog covers (the original bug case)",
+    "home_team": "DET", "away_team": "NO", "pick": "NO", "spread": 6.5,
+    "home_score": 31, "away_score": 30, "expected_result": "Win"
+  },
+  {
+    "name": "2026 W1 WAS@PHI -- underdog covers (the other original bug case)",
+    "home_team": "PHI", "away_team": "WAS", "pick": "WAS", "spread": 5.5,
+    "home_score": 24, "away_score": 22, "expected_result": "Win"
+  },
+  {
+    "name": "2026 W1 CHI@CAR -- underdog pick, blowout loss",
+    "home_team": "CAR", "away_team": "CHI", "pick": "CAR", "spread": 2.5,
+    "home_score": 37, "away_score": 59, "expected_result": "Loss"
+  },
+  {
+    "name": "2026 W1 BUF@HOU -- favorite covers (negative spread)",
+    "home_team": "HOU", "away_team": "BUF", "pick": "BUF", "spread": -1.5,
+    "home_score": 31, "away_score": 36, "expected_result": "Win"
+  },
+  {
+    "name": "2026 W1 DEN@KC -- underdog pick doesn't cover",
+    "home_team": "KC", "away_team": "DEN", "pick": "DEN", "spread": 2.5,
+    "home_score": 31, "away_score": 10, "expected_result": "Loss"
+  },
+  {
+    "name": "2026 W1 GB@MIN -- underdog pick doesn't cover",
+    "home_team": "MIN", "away_team": "GB", "pick": "GB", "spread": 1.5,
+    "home_score": 39, "away_score": 22, "expected_result": "Loss"
+  },
+  {
+    "name": "2026 W1 ATL@PIT -- underdog pick doesn't cover",
+    "home_team": "PIT", "away_team": "ATL", "pick": "ATL", "spread": 3.5,
+    "home_score": 20, "away_score": 13, "expected_result": "Loss"
+  },
+  {
+    "name": "2026 W1 NYJ@TEN -- underdog covers",
+    "home_team": "TEN", "away_team": "NYJ", "pick": "NYJ", "spread": 1.5,
+    "home_score": 10, "away_score": 23, "expected_result": "Win"
+  },
+  {
+    "name": "synthetic -- favorite lands exactly on the number",
+    "home_team": "NYG", "away_team": "NYJ", "pick": "NYG", "spread": -3.0,
+    "home_score": 20, "away_score": 17, "expected_result": "Push"
+  },
+  {
+    "name": "synthetic -- underdog pick, home team, exact push",
+    "home_team": "NYG", "away_team": "NYJ", "pick": "NYJ", "spread": 3.0,
+    "home_score": 20, "away_score": 17, "expected_result": "Push"
+  }
+]

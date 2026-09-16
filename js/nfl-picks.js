@@ -117,6 +117,31 @@ function matchEspnEventNFL(events, pick) {
 // spread-adjusted score (30 + 6.5 = 36.5 > 31) covers. Confirmed with
 // NO@DET week 1 2026 (final, wrongly graded Lost) and WAS@PHI week 1
 // 2026 (live, wrongly badged "Not Covering").
+// Pure spread-cover grading -- the JS twin of NFL-Model's
+// scripts/spread_grading.py grade_pick(). Split out as its own function
+// (rather than left inline in buildLiveInfoNFL below) specifically so it
+// can be unit-tested directly: tests/spread-grading.test.js runs it
+// against tests/spread_grading_fixture.json, a byte-for-byte copy of
+// NFL-Model's tests/spread_grading_fixture.json, so the Python and JS
+// implementations of this same formula can't silently drift apart the
+// way the original grading bug did (raw-score comparison instead of
+// spread-adjusted, confirmed wrong on 2026 week 1's NO@DET/WAS@PHI).
+// `spread` is the PICKED team's own posted spread (positive = getting
+// points as an underdog, negative = giving points as a favorite) -- NOT
+// the home team's spread.
+function gradeSpreadPick(pickTeam, homeTeam, homeScore, awayScore, spread) {
+  const isPickHome    = pickTeam === homeTeam;
+  const pickScore     = isPickHome ? homeScore : awayScore;
+  const oppScore      = isPickHome ? awayScore : homeScore;
+  const adjustedScore = pickScore + (spread ?? 0);
+  if (adjustedScore === oppScore) return 'Push';
+  return adjustedScore > oppScore ? 'Win' : 'Loss';
+}
+
+// Node-only export guard for tests/spread-grading.test.js -- `module` is
+// undefined in the browser, so this is a no-op there.
+if (typeof module !== 'undefined') module.exports = { gradeSpreadPick };
+
 async function buildLiveInfoNFL(picks, events) {
   return Promise.all(picks.map(async pick => {
     const ev = matchEspnEventNFL(events, pick);
@@ -132,18 +157,12 @@ async function buildLiveInfoNFL(picks, events) {
     const away = comp?.competitors?.find(c => c.homeAway === 'away');
     const awayScore = parseInt(away?.score ?? 0);
     const homeScore = parseInt(home?.score ?? 0);
-    const pickScore = isPickHome ? homeScore : awayScore;
-    const oppScore  = isPickHome ? awayScore : homeScore;
-    // pick.spread is already the PICKED side's own spread (not the home
-    // team's), so no home/away branching is needed here -- just add it
-    // to that side's own score before comparing.
-    const spread         = pick.spread ?? 0;
-    const adjustedScore  = pickScore + spread;
-    const isPush          = adjustedScore === oppScore;
+    const result = gradeSpreadPick(pick.pick, pick.home_team, homeScore, awayScore, pick.spread);
+    const isPush = result === 'Push';
 
     const info = {
       isLive, isFinal, awayScore, homeScore,
-      isCorrect: isPush ? null : adjustedScore > oppScore,
+      isCorrect: isPush ? null : result === 'Win',
       isPush,
       statusText: status?.type?.detail || status?.type?.shortDetail || (isFinal ? 'Final' : ''),
       winPct: null,
