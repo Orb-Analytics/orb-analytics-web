@@ -1,0 +1,54 @@
+name: Sync NBA model data
+
+'on':
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out web repository
+        uses: actions/checkout@v4
+
+      - name: Download and validate NBA data
+        env:
+          NBA_MODEL_TOKEN: ${{ secrets.NBA_MODEL_REPO_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          download_file() {
+            local source_path="$1"
+            local destination="$2"
+            local temporary_file="${destination}.tmp"
+
+            curl --fail --silent --show-error --location \
+              --header "Accept: application/vnd.github.raw+json" \
+              --header "Authorization: Bearer ${NBA_MODEL_TOKEN}" \
+              "https://api.github.com/repos/Orb-Analytics/NBA-Model/contents/${source_path}?ref=main" \
+              --output "${temporary_file}"
+
+            jq empty "${temporary_file}"
+            mv "${temporary_file}" "${destination}"
+          }
+
+          download_file predictions.json data/nba/predictions.json
+          download_file predictions_history.json data/nba/predictions_history.json
+
+      - name: Commit updated NBA data
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- data/nba/predictions.json data/nba/predictions_history.json; then
+            echo "NBA data is already current."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/nba/predictions.json data/nba/predictions_history.json
+          git commit -m "Sync NBA model predictions and history"
+          git push
