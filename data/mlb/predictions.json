@@ -1,20 +1,8 @@
 {
   "model": "MLB",
-  "generated_at": "2026-09-15T17:31:52.943887+00:00",
+  "generated_at": "2026-09-16T17:41:41.722724+00:00",
   "version": "v2.1",
   "picks": [
-    {
-      "home_team": "TB",
-      "away_team": "OAK",
-      "pick": "TB",
-      "has_pick": true,
-      "confidence": 0.6883,
-      "home_odds": -213,
-      "away_odds": 208,
-      "line": -213,
-      "edge": 0.78,
-      "notes": "XGBoost edge: +0.78%"
-    },
     {
       "home_team": "CLE",
       "away_team": "CHW",
@@ -22,10 +10,58 @@
       "has_pick": false,
       "confidence": null,
       "home_odds": -141,
-      "away_odds": 138,
+      "away_odds": 135,
       "line": null,
       "edge": null,
       "notes": null
+    },
+    {
+      "home_team": "STL",
+      "away_team": "SF",
+      "pick": null,
+      "has_pick": false,
+      "confidence": null,
+      "home_odds": -170,
+      "away_odds": 125,
+      "line": null,
+      "edge": null,
+      "notes": null
+    },
+    {
+      "home_team": "MIN",
+      "away_team": "NYY",
+      "pick": "MIN",
+      "has_pick": true,
+      "confidence": 0.4084,
+      "home_odds": 163,
+      "away_odds": -167,
+      "line": 163,
+      "edge": 2.82,
+      "notes": "XGBoost edge: +2.82%"
+    },
+    {
+      "home_team": "TOR",
+      "away_team": "DET",
+      "pick": "DET",
+      "has_pick": true,
+      "confidence": 0.4814,
+      "home_odds": -120,
+      "away_odds": 117,
+      "line": 117,
+      "edge": 2.05,
+      "notes": "XGBoost edge: +2.05%"
+    },
+    {
+      "home_team": "TB",
+      "away_team": "OAK",
+      "pick": "TB",
+      "has_pick": true,
+      "confidence": 0.6541,
+      "home_odds": -170,
+      "away_odds": 167,
+      "line": -170,
+      "edge": 2.45,
+      "notes": "XGBoost edge: +2.45%"
     },
     {
       "home_team": "CIN",
@@ -33,8 +69,8 @@
       "pick": null,
       "has_pick": false,
       "confidence": null,
-      "home_odds": 212,
-      "away_odds": -217,
+      "home_odds": 194,
+      "away_odds": -199,
       "line": null,
       "edge": null,
       "notes": null
@@ -42,14 +78,14 @@
     {
       "home_team": "PIT",
       "away_team": "MIL",
-      "pick": null,
-      "has_pick": false,
-      "confidence": null,
-      "home_odds": 194,
-      "away_odds": -199,
-      "line": null,
-      "edge": null,
-      "notes": null
+      "pick": "MIL",
+      "has_pick": true,
+      "confidence": 0.5497,
+      "home_odds": 115,
+      "away_odds": -117,
+      "line": -117,
+      "edge": 1.05,
+      "notes": "XGBoost edge: +1.05%"
     },
     {
       "home_team": "WSH",
@@ -57,23 +93,11 @@
       "pick": null,
       "has_pick": false,
       "confidence": null,
-      "home_odds": 194,
-      "away_odds": -199,
+      "home_odds": 178,
+      "away_odds": -182,
       "line": null,
       "edge": null,
       "notes": null
-    },
-    {
-      "home_team": "TOR",
-      "away_team": "DET",
-      "pick": "DET",
-      "has_pick": true,
-      "confidence": 0.4621,
-      "home_odds": -130,
-      "away_odds": 127,
-      "line": 127,
-      "edge": 2.15,
-      "notes": "XGBoost edge: +2.15%"
     },
     {
       "home_team": "NYM",
@@ -82,7 +106,7 @@
       "has_pick": false,
       "confidence": null,
       "home_odds": -125,
-      "away_odds": 120,
+      "away_odds": 122,
       "line": null,
       "edge": null,
       "notes": null
@@ -90,34 +114,10 @@
     {
       "home_team": "CHC",
       "away_team": "ATL",
-      "pick": "CHC",
-      "has_pick": true,
-      "confidence": 0.5839,
-      "home_odds": -133,
-      "away_odds": 130,
-      "line": -133,
-      "edge": 1.31,
-      "notes": "XGBoost edge: +1.31%"
-    },
-    {
-      "home_team": "MIN",
-      "away_team": "NYY",
-      "pick": "MIN",
-      "has_pick": true,
-      "confidence": 0.4081,
-      "home_odds": 163,
-      "away_odds": -170,
-      "line": 163,
-      "edge": 2.79,
-      "notes": "XGBoost edge: +2.79%"
-    },
-    {
-      "home_team": "STL",
-      "away_team": "SF",
       "pick": null,
       "has_pick": false,
       "confidence": null,
-      "home_odds": -153,
+      "home_odds": -150,
       "away_odds": 147,
       "line": null,
       "edge": null,
@@ -126,14 +126,14 @@
     {
       "home_team": "TEX",
       "away_team": "BOS",
-      "pick": null,
-      "has_pick": false,
-      "confidence": null,
-      "home_odds": -111,
-      "away_odds": 106,
-      "line": null,
-      "edge": null,
-      "notes": null
+      "pick": "BOS",
+      "has_pick": true,
+      "confidence": 0.5191,
+      "home_odds": -102,
+      "away_odds": -104,
+      "line": -104,
+      "edge": 0.93,
+      "notes": "XGBoost edge: +0.93%"
     },
     {
       "home_team": "HOU",
@@ -142,7 +142,7 @@
       "has_pick": false,
       "confidence": null,
       "home_odds": -153,
-      "away_odds": 147,
+      "away_odds": 150,
       "line": null,
       "edge": null,
       "notes": null
@@ -150,26 +150,26 @@
     {
       "home_team": "COL",
       "away_team": "SD",
-      "pick": "COL",
-      "has_pick": true,
-      "confidence": 0.3975,
-      "home_odds": 170,
-      "away_odds": -174,
-      "line": 170,
-      "edge": 2.72,
-      "notes": "XGBoost edge: +2.72%"
+      "pick": null,
+      "has_pick": false,
+      "confidence": null,
+      "home_odds": 153,
+      "away_odds": -156,
+      "line": null,
+      "edge": null,
+      "notes": null
     },
     {
       "home_team": "LAA",
       "away_team": "SEA",
-      "pick": "LAA",
-      "has_pick": true,
-      "confidence": 0.4032,
-      "home_odds": 160,
-      "away_odds": -163,
-      "line": 160,
-      "edge": 1.86,
-      "notes": "XGBoost edge: +1.86%"
+      "pick": null,
+      "has_pick": false,
+      "confidence": null,
+      "home_odds": 122,
+      "away_odds": -125,
+      "line": null,
+      "edge": null,
+      "notes": null
     },
     {
       "home_team": "ARI",
@@ -177,8 +177,8 @@
       "pick": null,
       "has_pick": false,
       "confidence": null,
-      "home_odds": -141,
-      "away_odds": 135,
+      "home_odds": -125,
+      "away_odds": 122,
       "line": null,
       "edge": null,
       "notes": null
