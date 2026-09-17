@@ -777,6 +777,12 @@
     const generatedAtBySport = { mlb: null, nfl: null, nba: null };
     function updateLastUpdatedLabel() {
       const el = document.getElementById('last-updated');
+      // "All" spans multiple sports with different generated_at times, so
+      // there's no single timestamp to show -- just show today's date.
+      if (activeSport === 'all') {
+        el.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        return;
+      }
       const ts = generatedAtBySport[activeSport];
       if (!ts) { el.textContent = ''; return; }
       const d = new Date(ts);
