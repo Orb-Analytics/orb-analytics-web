@@ -372,7 +372,8 @@ body.dark .sidebar-link { color: var(--text); }
 .sidebar-content {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 /* Sidebar overlay (mobile) */

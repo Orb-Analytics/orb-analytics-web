@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260917" />
+  <link rel="stylesheet" href="css/style.css?v=20260917b" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -793,7 +793,13 @@
       ['mlb','nfl','nba'].forEach(s => {
         document.getElementById(`sport-tab-${s}`).classList.toggle('active', sport === s);
         const el = document.getElementById(`picks-${s}`);
-        if (el) el.style.display = (sport === 'all' || sport === s) ? 'block' : 'none';
+        if (!el) return;
+        // NBA has no live picks yet -- its "coming soon" placeholder only
+        // makes sense when NBA is explicitly selected, not lumped into the
+        // combined All view alongside real MLB/NFL picks.
+        el.style.display = s === 'nba'
+          ? (sport === 'nba' ? 'block' : 'none')
+          : (sport === 'all' || sport === s) ? 'block' : 'none';
       });
       document.querySelector('.section-title').textContent = sport === 'all' ? 'All Predictions' : sport.toUpperCase() + ' Predictions';
       updateHistoryTimeframeOptions();
