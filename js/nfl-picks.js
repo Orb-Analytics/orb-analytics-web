@@ -290,7 +290,7 @@ function renderTodayPicksNFL(picks, liveInfoAll = []) {
           ${week != null ? `<span class="badge badge-final">WEEK ${week}</span>` : ''}
           ${li && (li.isLive || li.isFinal) ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
           ${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}
-          ${confPct >= 63 ? `<span style="font-size:0.6rem;font-weight:700;color:#065F46;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:0.1rem 0.4rem;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap">HIGH CONF</span>` : ''}
+          ${confPct >= 63 ? `<span style="font-size:0.6rem;font-weight:700;color:#065F46;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:0.1rem 0.4rem;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap">HIGH CONFIDENCE</span>` : ''}
         </div>
         <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','NFL',${oddsLine})">＋ Log Pick</button>
       </div>
