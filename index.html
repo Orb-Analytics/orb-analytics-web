@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260911" />
+  <link rel="stylesheet" href="css/style.css?v=20260917" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -481,7 +481,8 @@
               <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>
             </div>
             <div class="main-tabs">
-              <button class="main-tab active" onclick="switchSport('mlb')" id="sport-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
+              <button class="main-tab active" onclick="switchSport('all')" id="sport-tab-all">All</button>
+              <button class="main-tab" onclick="switchSport('mlb')" id="sport-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
               <button class="main-tab" onclick="switchSport('nfl')" id="sport-tab-nfl" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" height="16" style="border-radius:2px"> NFL</button>
               <button class="main-tab" onclick="switchSport('nba')" id="sport-tab-nba" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" height="16" style="border-radius:2px"> NBA</button>
             </div>
@@ -762,8 +763,11 @@
     let filteredHistory = [];
     let equityChart = null;
     let chartMode = 'units';
-    let activeSport = localStorage.getItem('orb-active-sport') || 'mlb';
-    let activeView  = localStorage.getItem('orb-active-view') || 'today';
+    let activeSport = localStorage.getItem('orb-active-sport') || 'all';
+    // The home page is the fixed landing entry point -- always open on
+    // Today's Picks regardless of whatever view was last left active on
+    // predictions.html (they share the same localStorage keys).
+    let activeView  = 'today';
 
     // Per-sport "Updated <time>" label state. Each sport's loader stores its
     // own generated_at here instead of writing #last-updated directly --
@@ -785,12 +789,13 @@
     function switchSport(sport) {
       activeSport = sport;
       localStorage.setItem('orb-active-sport', sport);
+      document.getElementById('sport-tab-all').classList.toggle('active', sport === 'all');
       ['mlb','nfl','nba'].forEach(s => {
-        document.getElementById(`sport-tab-${s}`).classList.toggle('active', s === sport);
+        document.getElementById(`sport-tab-${s}`).classList.toggle('active', sport === s);
         const el = document.getElementById(`picks-${s}`);
-        if (el) el.style.display = s === sport ? 'block' : 'none';
+        if (el) el.style.display = (sport === 'all' || sport === s) ? 'block' : 'none';
       });
-      document.querySelector('.section-title').textContent = sport.toUpperCase() + ' Predictions';
+      document.querySelector('.section-title').textContent = sport === 'all' ? 'All Predictions' : sport.toUpperCase() + ' Predictions';
       updateHistoryTimeframeOptions();
       updateLastUpdatedLabel();
       if (activeView === 'history') loadHistory();
@@ -1135,6 +1140,14 @@
 
     // ── History ───────────────────────────────────────────────────
     async function loadHistory() {
+      if (activeSport === 'all') {
+        document.getElementById('summary-grid').innerHTML =
+          `<div style="grid-column:1/-1;text-align:center;color:var(--gray-600);padding:2rem">Select a specific sport (MLB, NFL, or NBA) to view Model History.</div>`;
+        document.getElementById('splits-grid').innerHTML = '';
+        document.getElementById('history-tbody').innerHTML = '';
+        if (equityChart) { equityChart.destroy(); equityChart = null; }
+        return;
+      }
       const url = HISTORY_URLS[activeSport];
       if (!url) {
         document.getElementById('summary-grid').innerHTML =
