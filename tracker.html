@@ -784,7 +784,36 @@
       label.textContent = collapsed ? 'Show Tracker' : 'Hide Tracker';
     }
 
+    // Predictions pages redirect here on mobile (see logPick() in
+    // index.html/predictions.html) with the bet's Pick/Sport/Odds already
+    // known -- prefill the Log a Bet form and surface it instead of
+    // requiring the user to re-enter everything.
+    function prefillFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      const pick = params.get('pick');
+      if (!pick) return;
+      document.getElementById('t-pick').value = pick;
+      const sport = params.get('sport');
+      if (sport && [...document.getElementById('t-sport').options].some(o => o.value === sport)) {
+        document.getElementById('t-sport').value = sport;
+        tOnSportChange();
+      }
+      document.getElementById('t-type').value = 'Moneyline';
+      tOnTypeChange();
+      const odds = params.get('odds');
+      if (odds) {
+        document.getElementById('t-odds').value = odds;
+        updateOddsHint();
+      }
+      const pageSplit = document.getElementById('page-split');
+      if (pageSplit && pageSplit.classList.contains('tracker-collapsed')) toggleTracker();
+      if (typeof switchMobileTab === 'function') switchMobileTab('tracker');
+      document.getElementById('t-pick').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('t-pick').focus();
+    }
+
     loadTBets();
+    prefillFromQuery();
   </script>
 
   <!-- Firebase -->

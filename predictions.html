@@ -111,6 +111,12 @@
         display: none;
       }
 
+      /* The embedded tracker sidebar is desktop-only on this page --
+         mobile users log bets via tracker.html instead (see logPick()). */
+      .tracker-col {
+        display: none !important;
+      }
+
       .picks-grid {
         grid-template-columns: 1fr !important;
       }
@@ -454,8 +460,6 @@
       <button class="sidebar-toggle" id="sidebar-toggle" style="margin:0.5rem">
         <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <button class="mobile-page-tab active" onclick="switchMobileTab('picks')">Picks</button>
-      <button class="mobile-page-tab" onclick="switchMobileTab('tracker')">Tracker</button>
     </div>
     <div class="container" id="main-container" style="height:calc(100vh - var(--nav-height));padding-top:0;padding-bottom:0">
       <div class="page-split tracker-collapsed" id="page-split">
@@ -1613,17 +1617,25 @@
     }
 
     function logPick(pick, sport, odds) {
+      // Mobile has no embedded tracker sidebar (see .tracker-col mobile
+      // rule) -- send the bet to tracker.html itself, prefilled and ready
+      // to log, instead of trying to reveal an in-page panel that isn't
+      // there.
+      const isMobile = window.matchMedia('(max-width: 768px), (max-height: 500px) and (orientation: landscape)').matches;
+      if (isMobile) {
+        const params = new URLSearchParams({ pick: pick + ' ML', sport, odds });
+        window.location.href = `tracker.html?${params.toString()}`;
+        return;
+      }
       document.getElementById('t-pick').value  = pick + ' ML';
       document.getElementById('t-sport').value = sport;
       document.getElementById('t-type').value  = 'Moneyline';
       document.getElementById('t-odds').value  = odds;
       updateOddsHint();
-      // On mobile the tracker sits in a hidden tab; on desktop it can be
-      // collapsed via the Hide/Show Tracker toggle. Un-hide it either way
-      // before scrolling the field into view.
+      // Desktop can collapse the tracker sidebar via the Hide/Show Tracker
+      // toggle -- un-hide it before scrolling the field into view.
       const pageSplit = document.getElementById('page-split');
       if (pageSplit && pageSplit.classList.contains('tracker-collapsed')) toggleTracker();
-      if (typeof switchMobileTab === 'function') switchMobileTab('tracker');
       document.getElementById('t-pick').scrollIntoView({ behavior: 'smooth', block: 'center' });
       document.getElementById('t-pick').focus();
     }
@@ -1666,22 +1678,6 @@
       // Fallback to localStorage
       tBets = JSON.parse(localStorage.getItem(T_KEY) || '[]');
       tRefresh();
-    }
-
-    // ── Mobile tab switching ──────────────────────────────────────
-    function switchMobileTab(tab) {
-      const picksCol   = document.querySelector('.predictions-col');
-      const trackerCol = document.querySelector('.tracker-col');
-      document.querySelectorAll('.mobile-page-tab').forEach((t, i) => {
-        t.classList.toggle('active', (i === 0 && tab === 'picks') || (i === 1 && tab === 'tracker'));
-      });
-      if (tab === 'picks') {
-        picksCol.classList.remove('mobile-hidden');
-        trackerCol.classList.add('mobile-hidden');
-      } else {
-        picksCol.classList.add('mobile-hidden');
-        trackerCol.classList.remove('mobile-hidden');
-      }
     }
 
     // ── Desktop tracker toggle ──────────────────────────────────────
