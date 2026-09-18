@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Bet Tracker · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260917b" />
+  <link rel="stylesheet" href="css/style.css?v=20260918" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout (mirrors predictions.html) ──────────── */
@@ -159,7 +159,7 @@
       .summary-grid { grid-template-columns: repeat(2, 1fr); }
       .splits-grid { grid-template-columns: 1fr; }
     }
-    @media (max-width: 768px) {
+    @media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
       .mobile-page-tabs { display: flex; }
 
       .page-split {

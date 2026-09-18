@@ -639,12 +639,17 @@ body.dark .disclaimer-block { background: var(--gray-100); }
   .nav {
     padding: 0 0.75rem;
     padding-top: max(0.65rem, env(safe-area-inset-top, 0px));
+    padding-left: calc(0.75rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(0.75rem + env(safe-area-inset-right, 0px));
     height: 68px;
     position: sticky;
     top: 0;
   }
   .nav-links { display: none; }
-  .container { padding: 0 1rem; }
+  .container {
+    padding-left: calc(1rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1rem + env(safe-area-inset-right, 0px));
+  }
   .section-title { font-size: 1.5rem; }
   .nav-logo-text { font-size: 0.95rem; }
   .orb-logo-img { width: 36px; height: 36px; }
@@ -654,12 +659,15 @@ body.dark .disclaimer-block { background: var(--gray-100); }
   .email-signup-form { flex-direction: column; }
   .email-signup-input { width: 100%; }
 
-  /* Sidebar mobile */
+  /* Sidebar mobile -- sits flush against the left edge, so it (and its
+     toggle button) needs its own left-edge safe-area padding on notched
+     phones in landscape, same reasoning as .nav above. */
   .sidebar {
     position: fixed;
     top: 68px;
     left: 0;
     height: calc(100vh - 68px);
+    padding-left: env(safe-area-inset-left, 0px);
     transform: translateX(-100%);
     z-index: 150;
     box-shadow: 4px 0 20px rgba(0,0,0,0.15);
