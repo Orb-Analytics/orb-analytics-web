@@ -815,9 +815,15 @@
 
     function updateHistoryTimeframeOptions() {
       const isNFL = activeSport === 'nfl';
-      document.getElementById('filter-date').style.display = isNFL ? 'none' : '';
+      const isAll = activeSport === 'all';
+      // No time-range filter for the combined All view -- picks span three
+      // different models/seasons with no single comparable date axis, so
+      // just hide all three time-range controls and leave the category
+      // filter (Home/Away/Fav/Dog/etc.) as the only one.
+      document.getElementById('filter-date').style.display = (isNFL || isAll) ? 'none' : '';
       document.getElementById('filter-nfl-season').style.display = isNFL ? '' : 'none';
       document.getElementById('filter-nfl-week').style.display = isNFL ? '' : 'none';
+      if (isAll) return;
       if (isNFL) {
         populateNFLSeasonOptions();
       } else {
@@ -1152,12 +1158,33 @@
 
     // ── History ───────────────────────────────────────────────────
     async function loadHistory() {
+      // Combined All view: merge all three models' history together so
+      // stats/chart/splits/table reflect every graded pick regardless of
+      // sport, each tagged with its own sport for the category filters
+      // (Home/Away/Fav/Dog) which are already sport-agnostic per-pick.
       if (activeSport === 'all') {
-        document.getElementById('summary-grid').innerHTML =
-          `<div style="grid-column:1/-1;text-align:center;color:var(--gray-600);padding:2rem">Select a specific sport (MLB, NFL, or NBA) to view Model History.</div>`;
-        document.getElementById('splits-grid').innerHTML = '';
-        document.getElementById('history-tbody').innerHTML = '';
-        if (equityChart) { equityChart.destroy(); equityChart = null; }
+        try {
+          const [mlbData, nflData, nbaData] = await Promise.all([
+            fetch(HISTORY_URLS.mlb).then(r => r.json()).catch(() => ({ picks: [] })),
+            fetch(HISTORY_URLS.nfl).then(r => r.json()).catch(() => ({ picks: [] })),
+            fetch(HISTORY_URLS.nba).then(r => r.json()).catch(() => ({ picks: [] })),
+          ]);
+          const mlbPicks = (mlbData.picks || []).map(p => ({ ...p, _sport: 'mlb' }));
+          const nflPicks = (nflData.picks || []).map(p => ({ ...p, _sport: 'nfl' }));
+          // NBA edge is stored as a decimal (0.06 = 6%); normalize to a
+          // percentage like MLB/NFL before merging so edge-based category
+          // filters compare like with like.
+          const nbaPicks = (nbaData.picks || []).map(p => ({
+            ...p, _sport: 'nba',
+            edge: p.edge != null ? parseFloat((Math.abs(p.edge) * 100).toFixed(4)) : null,
+          }));
+          historyData = [...mlbPicks, ...nflPicks, ...nbaPicks];
+          updateHistoryTimeframeOptions();
+          applyHistoryFilters();
+        } catch (e) {
+          document.getElementById('summary-grid').innerHTML =
+            `<div style="grid-column:1/-1;color:var(--red);font-size:0.875rem">Could not load history.</div>`;
+        }
         return;
       }
       const url = HISTORY_URLS[activeSport];
@@ -1199,7 +1226,9 @@
     function getFilteredHistory() {
       const categoryVal = document.getElementById('filter-category').value;
       let filtered = historyData;
-      if (activeSport === 'nfl') {
+      if (activeSport === 'all') {
+        // No time-range filter for the combined view -- just apply the category filter below.
+      } else if (activeSport === 'nfl') {
         const seasonVal = document.getElementById('filter-nfl-season').value;
         const weekVal   = document.getElementById('filter-nfl-week').value;
         if (seasonVal !== 'all') {
@@ -1400,8 +1429,10 @@
 
       // NFL history has no edge data yet (see renderHistoryTable) --
       // skip this tier rather than showing every NFL pick lumped into a
-      // single misleading bucket (was already skipped for nba).
-      if (activeSport !== 'nba' && activeSport !== 'nfl') {
+      // single misleading bucket (was already skipped for nba). Also skip
+      // for the combined All view -- edge isn't directly comparable across
+      // three different models' scales even after NBA's normalization.
+      if (activeSport !== 'nba' && activeSport !== 'nfl' && activeSport !== 'all') {
         splits['Edge Tiers'] = [
           ['High Edge<br class="split-label-break"> (≥3%)', picks.filter(p=>p.edge>=3)],
           ['Mid Edge<br class="split-label-break"> (1–3%)', picks.filter(p=>p.edge>=1&&p.edge<3)],
