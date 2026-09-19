@@ -8,18 +8,22 @@
   <link rel="stylesheet" href="css/style.css?v=20260919" />
   <style>
     .scoreboard-header {
-      padding: 1.75rem 0 1.75rem;
-      margin-bottom: 1.75rem;
-      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 1.75rem;
+      margin: 1.5rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .scoreboard-header-top {
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      flex-wrap: wrap;
     }
-    .scoreboard-header-inner .section-label {
+    .scoreboard-header-top .section-label {
       font-weight: 700;
       letter-spacing: 0.14em;
+      margin-bottom: 0;
     }
     @media (min-width: 769px) {
       .scoreboard-header-inner .section-title { font-size: clamp(2rem, 4vw, 3rem); }
@@ -34,25 +38,31 @@
     /* ── Tabs ──────────────────────────────────────────────────── */
     .league-tabs {
       display: flex;
-      gap: 0.35rem;
+      gap: 0.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.25rem;
       flex-wrap: nowrap;
       overflow-x: auto;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
-      padding-bottom: 4px;
     }
     .league-tabs::-webkit-scrollbar { display: none; }
+    @media (min-width: 769px) {
+      .league-tabs { width: fit-content; }
+    }
     .league-tab {
       display: flex; align-items: center; gap: 0.4rem;
       padding: 0.45rem 1.1rem;
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      background: var(--surface); color: var(--muted);
+      border: none; border-radius: var(--radius-sm);
+      background: transparent; color: var(--muted);
       font-size: 0.875rem; font-weight: 600; cursor: pointer;
       white-space: nowrap; transition: var(--transition); font-family: var(--font-body);
     }
-    .league-tab.active { background: var(--purple-600); border-color: var(--purple-600); color: white; }
-    .league-tab:hover:not(.active) { border-color: var(--hover-border); color: var(--text); background: var(--hover-tint); }
+    .league-tab.active { background: var(--purple-600); color: white; box-shadow: var(--glow); }
+    .league-tab:hover:not(.active) { color: var(--text); background: var(--hover-tint); }
     body.dark .league-tab:not(.active) { color: var(--text); }
     .tab-live-count {
       background: var(--red); color: white;
@@ -86,7 +96,8 @@
     @media (max-width: 580px), (max-height: 500px) and (orientation: landscape) { .games-grid { grid-template-columns: 1fr; } }
 
     @media (max-width: 580px), (max-height: 500px) and (orientation: landscape) {
-      .scoreboard-header { padding: 1rem 0 0.75rem; flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .scoreboard-header { padding: 1rem 0 0.75rem; }
+      .scoreboard-header-top { flex-wrap: wrap; gap: 0.75rem; }
       .league-tab { padding: 0.4rem 0.85rem; font-size: 0.875rem; }
       .team-logo { width: 30px; height: 30px; }
       .team-logo-fallback { width: 30px; height: 30px; }
@@ -183,10 +194,11 @@
     }
 
     .team-odds.pick {
-      background: var(--purple-600);
-      border-color: var(--purple-600);
-      color: white;
+      background: rgba(124,58,237,0.10);
+      border-color: var(--purple-300);
+      color: var(--purple-600);
     }
+    body.dark .team-odds.pick { background: rgba(124,58,237,0.22); border-color: rgba(167,139,250,0.45); color: #C4B5FD; }
 
     /* Mini live situation (bases + count + outs) */
     .mini-situation {
@@ -254,20 +266,22 @@
   <main class="page">
     <div class="container">
       <div class="scoreboard-header">
-        <div style="display:flex;align-items:center;gap:0.75rem">
-          <button class="sidebar-toggle" id="sidebar-toggle">
-            <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-          <div class="scoreboard-header-inner">
+        <div class="scoreboard-header-top">
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <button class="sidebar-toggle" id="sidebar-toggle">
+              <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
             <div class="section-label">Live Scores</div>
-            <div class="section-title">Scoreboard</div>
-            <div class="date-display" id="date-display"></div>
           </div>
+          <button class="refresh-btn" id="refresh-btn" onclick="doRefresh()">
+            <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            Refresh
+          </button>
         </div>
-        <button class="refresh-btn" id="refresh-btn" onclick="doRefresh()">
-          <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-          Refresh
-        </button>
+        <div class="scoreboard-header-inner">
+          <div class="section-title">Scoreboard</div>
+          <div class="date-display" id="date-display"></div>
+        </div>
       </div>
       <div class="league-tabs" id="league-tabs"></div>
       <div id="scoreboard-output"><div class="loading-state"><div class="spinner"></div> Loading games...</div></div>
@@ -437,9 +451,17 @@
       const gameDate  = event.date ? new Date(event.date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
       const gameTime  = event.date ? new Date(event.date).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
 
+      // Look up odds from predictions.json
+      const awayAbbr = away.team?.abbreviation?.toUpperCase();
+      const homeAbbr = home.team?.abbreviation?.toUpperCase();
+      const oddsKey  = `${toModelAbbr(awayAbbr)}|${toModelAbbr(homeAbbr)}`;
+      const gameOdds = leagueId === 'mlb' ? (oddsMap[oddsKey] || null) : null;
+
       // Status badge
       let statusHTML;
-      if (live) {
+      if (gameOdds) {
+        statusHTML = `<span class="badge badge-pick">Model Pick</span>`;
+      } else if (live) {
         statusHTML = `<span class="badge badge-live"><span class="live-dot"></span>${status.type?.detail || 'Live'}</span>`;
       } else if (final) {
         statusHTML = `<span class="badge badge-final">Final</span>`;
@@ -463,16 +485,10 @@
           ${logoHTML(abbr, leagueId, team.team?.logo)}
           <div class="team-abbr ${abbrClass}" style="font-weight:${abbrWeight}">${abbr}${rank >= 1 && rank <= 25 ? `<span class="team-rank">${rank}</span>` : ''}</div>
           ${record ? `<div class="team-record">${record}</div>` : ''}
-          ${oddsLine != null ? `<div class="team-odds${isPick ? ' pick' : ''}">${fmtOdds(Math.round(oddsLine))}${isPick ? (final && !isWin ? ' ✗' : ' ✓') : ''}</div>` : ''}
+          ${oddsLine != null ? `<div class="team-odds${isPick ? ' pick' : ''}">${fmtOdds(Math.round(oddsLine))}</div>` : ''}
           ${showScore ? `<div class="team-score ${scoreClass}" style="font-weight:${scoreWeight}">${score}</div>` : ''}
         </div>`;
       }
-
-      // Look up odds from predictions.json
-      const awayAbbr = away.team?.abbreviation?.toUpperCase();
-      const homeAbbr = home.team?.abbreviation?.toUpperCase();
-      const oddsKey  = `${toModelAbbr(awayAbbr)}|${toModelAbbr(homeAbbr)}`;
-      const gameOdds = leagueId === 'mlb' ? (oddsMap[oddsKey] || null) : null;
 
       // Live bases/outs (MLB only, in-progress games)
       let situationHTML = '';
@@ -598,40 +614,9 @@
       const upcoming = rest.filter(e => isPre(e.status));
       const finals   = rest.filter(e => isFinal(e.status));
 
-      let html = '';
-
-      if (picks.length) {
-        html += `<div class="section-divider">
-          <span class="sdl pick">Orb Model Picks</span>
-          <div class="sdl-line"></div>
-        </div>
-        <div class="games-grid">${picks.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
-      }
-
-      if (live.length) {
-        html += `<div class="section-divider" style="margin-top:${picks.length ? '1.5rem' : '1.25rem'}">
-          <span class="sdl live"><span class="live-dot"></span>Live Now</span>
-          <div class="sdl-line"></div>
-        </div>
-        <div class="games-grid">${live.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
-      }
-
-      if (upcoming.length) {
-        const topMargin = live.length ? '1.5rem' : (picks.length ? '1.5rem' : '0');
-        html += `<div class="games-grid" style="margin-top:${topMargin}">
-          ${upcoming.map(e => buildCard(e, leagueId, pitcherMap)).join('')}
-        </div>`;
-      }
-
-      if (finals.length) {
-        html += `<div class="section-divider" style="margin-top:1rem">
-          <span class="sdl final">Final</span>
-          <div class="sdl-line"></div>
-        </div>
-        <div class="games-grid">${finals.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
-      }
-
-      output.innerHTML = html;
+      // Single running grid: model picks first, then live, upcoming, final.
+      const ordered = [...picks, ...live, ...upcoming, ...finals];
+      output.innerHTML = `<div class="games-grid">${ordered.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
 
       // Update live count badge (all live games, including pinned picks)
       updateLiveBadge(leagueId, picks.filter(e => isLive(e.status)).length + live.length);

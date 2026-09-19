@@ -205,6 +205,16 @@ body.dark .nav-social a { color: var(--text); }
 body.dark .nav-social a:hover { color: var(--purple-500); background: var(--hover-tint); }
 .nav-social svg { width: 19px; height: 19px; fill: currentColor; }
 
+/* Substack icon — same proportions & light-fill / orange-stroke treatment as .substack-btn */
+.nav-social a.nav-substack {
+  width: 2.25rem; height: 2.25rem; padding: 0; justify-content: center;
+  color: #FF6719; background: #FFF1E7; border: 1px solid #FF6719;
+}
+.nav-social a.nav-substack svg { width: 16px; height: 16px; }
+.nav-social a.nav-substack:hover { color: #FF6719; background: #FFE4D1; }
+body.dark .nav-social a.nav-substack { color: #FF9A5C; background: rgba(255,103,25,0.18); border-color: rgba(255,103,25,0.5); }
+body.dark .nav-social a.nav-substack:hover { color: #FF9A5C; background: rgba(255,103,25,0.28); }
+
 /* ─── Page Shell ─────────────────────────────────────────────────── */
 .page { min-height: calc(100vh - var(--nav-height)); }
 
@@ -456,10 +466,19 @@ body.dark .sidebar-toggle { color: var(--text); }
 .badge-loss    { background: rgba(239,68,68,0.12);   color: #B91C1C; border: 1px solid rgba(239,68,68,0.35); min-width: 3.25rem; justify-content: center; }
 .badge-push    { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
 .badge-pending { background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--border); }
+.badge-pick    { background: rgba(124,58,237,0.10); color: var(--purple-600); border: 1px solid var(--purple-300); }
+.badge-confidence {
+  display: inline-flex; align-items: center;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 0.1rem 0.4rem; border-radius: 4px; white-space: nowrap;
+  background: rgba(16,185,129,0.12); color: #065F46; border: 1px solid rgba(16,185,129,0.35);
+}
 
 body.dark .badge-win  { background: rgba(16,185,129,0.18); color: #6EE7B7; border-color: rgba(52,211,153,0.45); }
 body.dark .badge-loss { background: rgba(239,68,68,0.18);  color: #FCA5A5; border-color: rgba(239,68,68,0.45); }
 body.dark .badge-live { background: rgba(239,68,68,0.18);  color: #FCA5A5; border-color: rgba(239,68,68,0.45); }
+body.dark .badge-pick { background: rgba(124,58,237,0.22); color: #C4B5FD; border-color: rgba(167,139,250,0.45); }
+body.dark .badge-confidence { background: rgba(16,185,129,0.18); color: #6EE7B7; border-color: rgba(52,211,153,0.45); }
 
 /* ─── Live dot ───────────────────────────────────────────────────── */
 .live-dot { display: inline-block; width: 7px; height: 7px; background: var(--red); border-radius: 50%; animation: pulse-dot 1.4s ease-in-out infinite; margin-right: 4px; }

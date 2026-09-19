@@ -229,14 +229,17 @@
 
     /* ── Predictions header ──────────────────────────────────── */
     .predictions-header {
-      padding: 1.75rem 0 1.75rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 1.75rem;
+      margin: 1.5rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .predictions-header-top {
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      flex-wrap: wrap;
     }
     .tracker-toggle-btn {
       display: flex; align-items: center; gap: 0.4rem;
@@ -256,9 +259,10 @@
     .page-split.tracker-collapsed .tracker-col { display: none; }
     .page-split.tracker-collapsed .picks-grid { grid-template-columns: repeat(3, 1fr); }
 
-    .predictions-header-inner .section-label {
+    .predictions-header-top .section-label {
       font-weight: 700;
       letter-spacing: 0.14em;
+      margin-bottom: 0;
     }
     .predictions-header-inner .section-title {
       font-weight: 900;
@@ -478,15 +482,17 @@
         <!-- ══ LEFT: PREDICTIONS ══════════════════════════════════ -->
         <div class="predictions-col">
           <div class="predictions-header">
-            <div class="predictions-header-inner">
+            <div class="predictions-header-top">
               <div class="section-label">Model vs. Market</div>
+              <button class="tracker-toggle-btn" id="tracker-toggle-btn" onclick="toggleTracker()" aria-expanded="false" aria-controls="tracker-col">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                <span id="tracker-toggle-label">Show Tracker</span>
+              </button>
+            </div>
+            <div class="predictions-header-inner">
               <div class="section-title">MLB Predictions</div>
               <p style="color:var(--gray-600);font-size:0.75rem;margin-top:0.3rem" id="last-updated"></p>
             </div>
-            <button class="tracker-toggle-btn" id="tracker-toggle-btn" onclick="toggleTracker()" aria-expanded="false" aria-controls="tracker-col">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-              <span id="tracker-toggle-label">Show Tracker</span>
-            </button>
           </div>
 
           <!-- Tabs row -->
@@ -1128,7 +1134,7 @@
             <div style="display:flex;align-items:center;gap:0.45rem">
               ${li && (li.isLive || li.isFinal) ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
               ${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}
-              ${confPct >= 63 ? `<span style="font-size:0.6rem;font-weight:700;color:#065F46;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:0.1rem 0.4rem;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap">HIGH CONFIDENCE</span>` : ''}
+              ${confPct >= 63 ? `<span class="badge-confidence">HIGH CONFIDENCE</span>` : ''}
             </div>
             <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
           </div>
