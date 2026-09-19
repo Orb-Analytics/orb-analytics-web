@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260918" />
+  <link rel="stylesheet" href="css/style.css?v=20260919" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -152,6 +152,13 @@
         font-size: 0.875rem;
         padding: 0.35rem 1.4rem 0.35rem 0.5rem;
       }
+      .history-controls.all-history-filter { grid-template-columns: 1fr !important; }
+      .history-controls.nfl-history-filters { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+      .history-controls.nfl-history-filters .filter-select {
+        min-width: 0;
+        font-size: 0.75rem;
+        padding: 0.35rem 1.1rem 0.35rem 0.4rem;
+      }
 
       .t-form-grid {
         grid-template-columns: 1fr !important;
@@ -239,6 +246,10 @@
     }
     .tracker-toggle-btn:hover { color: var(--text); border-color: var(--hover-border); background: var(--hover-tint); }
     .tracker-toggle-btn svg { width: 13px; height: 13px; }
+
+    @media (hover: none) and (pointer: coarse) {
+      .tracker-toggle-btn { display: none; }
+    }
 
     /* ── Collapsed tracker: predictions-col takes full width, grid locks to 3 columns ── */
     .page-split.tracker-collapsed { grid-template-columns: 1fr; }
@@ -820,6 +831,9 @@
     function updateHistoryTimeframeOptions() {
       const isNFL = activeSport === 'nfl';
       const isAll = activeSport === 'all';
+      const controls = document.querySelector('.history-controls');
+      controls.classList.toggle('all-history-filter', isAll);
+      controls.classList.toggle('nfl-history-filters', isNFL);
       // No time-range filter for the combined All view -- picks span three
       // different models/seasons with no single comparable date axis, so
       // just hide all three time-range controls and leave the category
@@ -1313,6 +1327,34 @@
       }
     };
 
+    const historyModelStarts = {
+      id: 'historyModelStarts',
+      afterDatasetsDraw(chart) {
+        const starts = chart.$modelStarts || [];
+        if (!starts.length) return;
+        const { ctx, chartArea, scales } = chart;
+        starts.forEach(({ index, label, shortLabel, color }) => {
+          const x = scales.x.getPixelForValue(index);
+          const compact = chart.width < 520;
+          ctx.save();
+          ctx.strokeStyle = color;
+          ctx.globalAlpha = 0.75;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          ctx.moveTo(x, chartArea.top);
+          ctx.lineTo(x, chartArea.bottom);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = color;
+          ctx.font = `600 ${compact ? 8 : 10}px 'Inter', sans-serif`;
+          ctx.textAlign = 'left';
+          ctx.fillText(compact ? shortLabel : label, x + 3, chartArea.top + (compact ? 11 : 13));
+          ctx.restore();
+        });
+      }
+    };
+
     function fmtHistoryDate(d) {
       const dt = new Date(d);
       return isNaN(dt) ? d : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1375,7 +1417,27 @@
           scales: { x: { grid: { color: 'rgba(133,32,254,0.08)' }, ticks: { maxTicksLimit: 8, color: '#6B7280' } },
                     y: { grid: { color: 'rgba(133,32,254,0.08)' }, ticks: { color: '#6B7280', callback: fmtVal } } },
         },
-        plugins: [historyCrosshair],
+        plugins: [historyModelStarts, historyCrosshair],
+      });
+      equityChart.$modelStarts = getAllModelStartMarkers(labels);
+      equityChart.update();
+    }
+
+    function getAllModelStartMarkers(labels) {
+      if (activeSport !== 'all') return [];
+      const starts = [
+        { sport: 'nba', label: 'NBA picks begin', shortLabel: 'NBA start', color: '#D97706' },
+        { sport: 'mlb', label: 'MLB picks begin', shortLabel: 'MLB start', color: '#0284C7' },
+      ];
+      return starts.flatMap(marker => {
+        const dates = historyData
+          .filter(p => p._sport === marker.sport)
+          .map(p => new Date(p.date).getTime())
+          .filter(Number.isFinite);
+        if (!dates.length) return [];
+        const start = Math.min(...dates);
+        const index = labels.findIndex(date => new Date(date).getTime() >= start);
+        return index === -1 ? [] : [{ ...marker, index }];
       });
     }
 

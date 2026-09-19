@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Bet Tracker · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260918" />
+  <link rel="stylesheet" href="css/style.css?v=20260919" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout (mirrors predictions.html) ──────────── */
@@ -99,6 +99,10 @@
     }
     .tracker-toggle-btn:hover { color: var(--text); border-color: var(--hover-border); background: var(--hover-tint); }
     .tracker-toggle-btn svg { width: 13px; height: 13px; }
+
+    @media (hover: none) and (pointer: coarse) {
+      .tracker-toggle-btn { display: none; }
+    }
 
     /* ── Collapsed tracker: main col takes full width ──────────── */
     .page-split.tracker-collapsed { grid-template-columns: 1fr; }
