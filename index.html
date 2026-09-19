@@ -1605,7 +1605,9 @@
           scoreDisplay = `<span class="score-display">${as}-${hs}</span>`;
         }
         const side = p.pick===p.home_team?'(H)':'(A)';
-        const spread = p.spread != null ? (p.spread > 0 ? `+${p.spread}` : `${p.spread}`) : '—';
+        const spread = p.spread != null
+          ? (p.spread > 0 ? `+${p.spread}` : `${p.spread}`)
+          : activeSport === 'all' ? 'ML' : '—';
         return `<tr>
           <td data-label="Date" style="font-family:var(--font-mono);font-size:0.875rem;white-space:nowrap;color:var(--gray-600)">${p.date}</td>
           <td data-label="Matchup" style="font-size:0.875rem;white-space:nowrap">${p.away_team} @ ${p.home_team}</td>
