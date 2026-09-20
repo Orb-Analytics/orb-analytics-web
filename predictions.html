@@ -322,7 +322,10 @@
     .pick-card:hover { border-color: var(--hover-border); box-shadow: var(--glow); }
     .pick-card.is-live { border-color: rgba(239,68,68,0.3); }
 
-    .pick-card-header { display: flex; align-items: center; justify-content: space-between; }
+    .pick-card-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.45rem; min-height: 1.75rem; }
+    .pick-card-status { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+    .pick-card-start-time { justify-self: center; white-space: nowrap; }
+    .pick-card-header .log-pick-btn { justify-self: end; }
     .pick-matchup-row { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
 
     .live-status-bar { display: flex; flex-direction: column; gap: 0.6rem; padding: 0.75rem 1rem; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); }
@@ -362,7 +365,10 @@
     }
     .pick-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.15rem; }
 
-    .pick-meta-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .pick-meta-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; }
+    .pick-meta-row .meta-chip:nth-child(1) { justify-self: start; }
+    .pick-meta-row .meta-chip:nth-child(2) { justify-self: center; }
+    .pick-meta-row .meta-chip:nth-child(3) { justify-self: end; }
     .meta-chip {
       background: var(--gray-100); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding: 0.18rem 0.5rem;
@@ -1132,10 +1138,10 @@
 
         return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="goToGame('game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=baseball&slug=mlb&league=mlb')" style="cursor:pointer">
           <div class="pick-card-header">
-            <div style="display:flex;align-items:center;gap:0.45rem">
+            <div class="pick-card-status">
               ${li && (li.isLive || li.isFinal) ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
-              ${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}
             </div>
+            <div class="pick-card-start-time">${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}</div>
             <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
           </div>
           <div class="pick-matchup-row">

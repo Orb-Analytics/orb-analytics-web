@@ -286,11 +286,11 @@ function renderTodayPicksNFL(picks, liveInfoAll = []) {
 
     return `<div class="pick-card${li?.isLive ? ' is-live' : ''}" onclick="goToGame('game.html?away=${encodeURIComponent(pick.away_team)}&home=${encodeURIComponent(pick.home_team)}&sport=football&slug=nfl&league=nfl')" style="cursor:pointer">
       <div class="pick-card-header">
-        <div style="display:flex;align-items:center;gap:0.45rem">
+        <div class="pick-card-status">
           ${week != null ? `<span class="badge badge-final">WEEK ${week}</span>` : ''}
           ${li && (li.isLive || li.isFinal) ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
-          ${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}
         </div>
+        <div class="pick-card-start-time">${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}</div>
         <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','NFL',${oddsLine})">＋ Log Pick</button>
       </div>
       <div class="pick-matchup-row">
