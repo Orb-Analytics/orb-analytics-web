@@ -324,8 +324,10 @@
 
     .pick-card-header { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 0.45rem; min-height: 1.75rem; }
     .pick-card-header > * { min-width: 0; width: 100%; }
-    .pick-card-status { display: flex; align-items: center; gap: 0.45rem; min-width: 0; overflow: hidden; }
+    .pick-card-status { display: flex; align-items: center; justify-content: center; gap: 0.45rem; min-width: 0; overflow: visible; }
+    .pick-card-status .badge { flex-shrink: 0; }
     .pick-card-start-time { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pick-card-start-time .badge { width: 100%; justify-content: center; }
     .pick-card-header .log-pick-btn { width: 100%; }
     .pick-matchup-row { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
 
