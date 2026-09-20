@@ -326,6 +326,8 @@
     .pick-card-header > * { min-width: 0; width: 100%; }
     .pick-card-status { display: flex; align-items: center; justify-content: center; gap: 0.45rem; min-width: 0; overflow: visible; }
     .pick-card-status .badge { flex-shrink: 0; }
+    .pick-card-status > .badge:only-child { width: 100%; justify-content: center; }
+    .pick-card-status .pick-card-upcoming { width: 100%; justify-content: center; }
     .pick-card-start-time { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pick-card-start-time .badge { width: 100%; justify-content: center; }
     .pick-card-header .log-pick-btn { width: 100%; }
@@ -1141,6 +1143,7 @@
           <div class="pick-card-header">
             <div class="pick-card-status">
               ${li && (li.isLive || li.isFinal) ? `<span class="badge ${li.isLive ? 'badge-live' : 'badge-final'}">${li.isLive ? '<span class="live-dot"></span>' : ''}${li.statusText}</span>` : ''}
+              ${(!li || (!li.isLive && !li.isFinal)) ? '<span class="badge badge-final pick-card-upcoming">Upcoming</span>' : ''}
             </div>
             <div class="pick-card-start-time">${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}</div>
             <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
