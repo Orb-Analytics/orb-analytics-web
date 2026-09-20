@@ -440,6 +440,10 @@
       const final  = isFinal(status);
       const pre    = isPre(status);
       const showScore = live || final;
+      const gameStatus = comp.status || status;
+      const inningDetail = gameStatus?.type?.detail || gameStatus?.type?.shortDetail;
+      const inning = gameStatus?.period;
+      const liveDetail = inningDetail || (inning != null ? `Inning ${inning}` : 'Live');
 
       const homeScore = parseInt(home.score ?? 0);
       const awayScore = parseInt(away.score ?? 0);
@@ -462,7 +466,7 @@
       if (gameOdds) {
         statusHTML = `<span class="badge badge-pick">Model Pick</span>`;
       } else if (live) {
-        statusHTML = `<span class="badge badge-live"><span class="live-dot"></span>${status.type?.detail || 'Live'}</span>`;
+        statusHTML = `<span class="badge badge-live"><span class="live-dot"></span>${liveDetail}</span>`;
       } else if (final) {
         statusHTML = `<span class="badge badge-final">Final</span>`;
       } else {

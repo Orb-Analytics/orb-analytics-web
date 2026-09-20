@@ -458,7 +458,7 @@ body.dark .sidebar-toggle { color: var(--text); }
 .tab-btn:hover:not(.active) { color: var(--text); background: var(--hover-tint); }
 
 /* ─── Badges ─────────────────────────────────────────────────────── */
-.badge { display: inline-flex; align-items: center; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.badge { display: inline-flex; align-items: center; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
 .badge-live    { background: rgba(239,68,68,0.12);   color: #B91C1C; border: 1px solid rgba(239,68,68,0.35); }
 .badge-final   { background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--border); }
 .badge-pre     { background: var(--gray-100); color: var(--purple-600); border: 1px solid var(--border); }
