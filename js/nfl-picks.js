@@ -270,7 +270,7 @@ function renderTodayPicksNFL(picks, liveInfoAll = []) {
     // outcome for a spread pick (unlike MLB moneyline).
     const coverBadgeHTML = !li ? '' : li.isPush
       ? `<span class="badge badge-push">Push</span>`
-      : (li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isCorrect ? '✓' : '✗'} ${li.isFinal ? (li.isCorrect ? 'Won' : 'Lost') : (li.isCorrect ? 'Covering' : 'Not Covering')}</span>`);
+      : (li.isCorrect === null ? '' : `<span class="badge ${li.isCorrect ? 'badge-win' : 'badge-loss'}">${li.isFinal ? (li.isCorrect ? '✓ Won' : '✗ Lost') : (li.isCorrect ? 'Covering' : 'Not Covering')}</span>`);
     const liveBarHTML = (li && (li.isLive || li.isFinal)) ? `
       <div class="live-status-bar">
         <div class="live-status-row">
