@@ -241,7 +241,6 @@ function renderTodayPicksNFL(picks, liveInfoAll = []) {
 
   container.innerHTML = picks.map((pick, i) => {
     const conf    = pick.confidence || 0.5;
-    const confPct = Math.round(conf * 100);
     const isHome  = pick.pick === pick.home_team;
     const side    = isHome ? 'Home' : 'Away';
     // NFL carries two related-but-different numbers per pick: the
@@ -293,10 +292,7 @@ function renderTodayPicksNFL(picks, liveInfoAll = []) {
         <div class="pick-card-start-time">${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}</div>
         <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','NFL',${oddsLine})">＋ Log Pick</button>
       </div>
-      <div class="pick-matchup-row">
-        <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
-        ${confPct >= 63 ? `<span class="badge-confidence">HIGH CONFIDENCE</span>` : ''}
-      </div>
+      <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
       <div class="pick-team-hero">
         <div style="display:flex;align-items:center;gap:0.85rem">
           ${teamLogoHTMLNFL(pick.pick, 56)}

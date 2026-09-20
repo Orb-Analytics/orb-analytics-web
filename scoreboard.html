@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Scoreboard · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260920b" />
+  <link rel="stylesheet" href="css/style.css?v=20260920c" />
   <style>
     .scoreboard-header {
       padding: 1.5rem 1.75rem;
@@ -614,16 +614,20 @@
       const picks    = sorted.filter(isPredicted);
       const rest     = sorted.filter(e => !isPredicted(e));
 
+      const picksLive     = picks.filter(e => isLive(e.status));
+      const picksUpcoming = picks.filter(e => isPre(e.status));
+      const picksFinal    = picks.filter(e => isFinal(e.status));
       const live     = rest.filter(e => isLive(e.status));
       const upcoming = rest.filter(e => isPre(e.status));
       const finals   = rest.filter(e => isFinal(e.status));
 
-      // Single running grid: model picks first, then live, upcoming, final.
-      const ordered = [...picks, ...live, ...upcoming, ...finals];
+      // Status first (live, then upcoming, then final); within each status,
+      // games we've made a prediction on lead, followed by the rest.
+      const ordered = [...picksLive, ...live, ...picksUpcoming, ...upcoming, ...picksFinal, ...finals];
       output.innerHTML = `<div class="games-grid">${ordered.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
 
-      // Update live count badge (all live games, including pinned picks)
-      updateLiveBadge(leagueId, picks.filter(e => isLive(e.status)).length + live.length);
+      // Update live count badge (all live games, including predicted ones)
+      updateLiveBadge(leagueId, picksLive.length + live.length);
     }
 
     // ── Tennis (ATP/WTA) rendering ─────────────────────────────────

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260920b" />
+  <link rel="stylesheet" href="css/style.css?v=20260920c" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -328,7 +328,6 @@
     .pick-card-start-time { min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pick-card-start-time .badge { max-width: 100%; }
     .pick-card-header .log-pick-btn { flex-shrink: 0; }
-    .pick-matchup-row { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
 
     .live-status-bar { display: flex; flex-direction: column; gap: 0.6rem; padding: 0.75rem 1rem; background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-sm); }
     .live-status-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
@@ -778,12 +777,12 @@
     // why (the two pages' inline copies had drifted and caused a crash on
     // one but not the other). MLB below is untouched, still inline.
 
-    // Reorders parallel pick/live-info arrays so covering/won picks lead,
-    // in-progress-with-no-signal-yet or not-yet-started picks sit in the
-    // middle, and not-covering/lost picks fall to the back. Stable sort
-    // (guaranteed since ES2019) keeps each group's original relative order.
+    // Reorders parallel pick/live-info arrays so live games lead regardless
+    // of coverage, completed games come next, and not-yet-started games sit
+    // at the back. Stable sort (guaranteed since ES2019) keeps each group's
+    // original relative order.
     function coverageSortOrder(liveArr, len) {
-      const rank = li => li?.isCorrect === true ? 0 : (li?.isCorrect === false ? 2 : 1);
+      const rank = li => li?.isLive ? 0 : (li?.isFinal ? 1 : 2);
       return Array.from({ length: len }, (_, i) => i).sort((a, b) => rank(liveArr[a]) - rank(liveArr[b]));
     }
 
@@ -1097,7 +1096,6 @@
 
       container.innerHTML = filteredPicks.map((pick, i) => {
         const conf    = pick.confidence || 0.5;
-        const confPct = Math.round(conf * 100);
         const isHome  = pick.pick === pick.home_team;
         const side    = isHome ? 'Home' : 'Away';
         const line    = pick.line || 0;
@@ -1145,10 +1143,7 @@
             <div class="pick-card-start-time">${(!li || (!li.isLive && !li.isFinal)) && li?.startTime ? `<span class="badge badge-final">${fmtGameTime(li.startTime)}</span>` : ''}</div>
             <button class="log-pick-btn" onclick="event.stopPropagation(); logPick('${pick.pick}','MLB',${line})">＋ Log Pick</button>
           </div>
-          <div class="pick-matchup-row">
-            <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
-            ${confPct >= 63 ? `<span class="badge-confidence">HIGH CONFIDENCE</span>` : ''}
-          </div>
+          <div class="pick-matchup">${pick.away_team} <span class="vs">@</span> ${pick.home_team}</div>
           <div class="pick-team-hero">
             <div style="display:flex;align-items:center;gap:0.85rem">
               ${teamLogoHTML(pick.pick, 48)}
