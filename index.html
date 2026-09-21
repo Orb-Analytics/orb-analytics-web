@@ -1086,6 +1086,10 @@
       let filteredLive    = liveInfoAll.filter((_, i) => picks[i]?.has_pick === true);
 
       if (!filteredPicks.length) {
+        if (activeSport === 'all') {
+          container.innerHTML = '';
+          return;
+        }
         container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
           <p>No picks for today yet — check back after 9 AM ET.</p></div>`;
