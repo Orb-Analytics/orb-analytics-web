@@ -1,14 +1,14 @@
 {
   "model": "NFL",
-  "generated_at": "2026-09-15T22:54:38.386388+00:00",
+  "generated_at": "2026-09-22T22:31:17.157867+00:00",
   "version": "v1.0-3way-consensus-low-edge-favorite",
   "summary": {
-    "wins": 144,
-    "losses": 121,
+    "wins": 147,
+    "losses": 123,
     "pushes": 7,
-    "win_rate": 54.3,
-    "total_units": 12.7,
-    "total_picks": 272
+    "win_rate": 54.4,
+    "total_units": 13.94,
+    "total_picks": 277
   },
   "picks": [
     {
@@ -4634,6 +4634,91 @@
       "units": 1.0,
       "home_score": 10,
       "away_score": 23
+    },
+    {
+      "date": "9/20/2026",
+      "season": 2026,
+      "week": 2,
+      "home_team": "ARI",
+      "away_team": "SEA",
+      "pick": "SEA",
+      "spread": -4.5,
+      "confidence": 0.4998,
+      "line": 106,
+      "edge": 1.43,
+      "is_favorite": true,
+      "result": "Win",
+      "units": 1.06,
+      "home_score": 7,
+      "away_score": 31
+    },
+    {
+      "date": "9/20/2026",
+      "season": 2026,
+      "week": 2,
+      "home_team": "CHI",
+      "away_team": "MIN",
+      "pick": "MIN",
+      "spread": 5.5,
+      "confidence": 0.5361,
+      "line": -104,
+      "edge": 2.63,
+      "is_favorite": false,
+      "result": "Win",
+      "units": 0.9615,
+      "home_score": 3,
+      "away_score": 9
+    },
+    {
+      "date": "9/20/2026",
+      "season": 2026,
+      "week": 2,
+      "home_team": "DAL",
+      "away_team": "WAS",
+      "pick": "WAS",
+      "spread": 4.5,
+      "confidence": 0.5609,
+      "line": -115,
+      "edge": 2.6,
+      "is_favorite": false,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 37,
+      "away_score": 20
+    },
+    {
+      "date": "9/20/2026",
+      "season": 2026,
+      "week": 2,
+      "home_team": "NE",
+      "away_team": "PIT",
+      "pick": "PIT",
+      "spread": 4.5,
+      "confidence": 0.5092,
+      "line": 104,
+      "edge": 1.91,
+      "is_favorite": false,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 20,
+      "away_score": 3
+    },
+    {
+      "date": "9/20/2026",
+      "season": 2026,
+      "week": 2,
+      "home_team": "TEN",
+      "away_team": "PHI",
+      "pick": "TEN",
+      "spread": 6.5,
+      "confidence": 0.4755,
+      "line": 122,
+      "edge": 2.5,
+      "is_favorite": false,
+      "result": "Win",
+      "units": 1.22,
+      "home_score": 20,
+      "away_score": 24
     }
   ]
 }
