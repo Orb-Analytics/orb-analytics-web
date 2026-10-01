@@ -527,6 +527,9 @@
                 <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
               </div>
             </div>
+            <div class="empty-state" id="all-empty-state" style="display:none;padding:3rem 1rem">
+              <p>No Active Predictions</p>
+            </div>
             <div id="picks-nba" style="display:none">
               <div class="empty-state" style="padding:3rem 1rem">
                 <p style="font-size:0.875rem;font-weight:600;color:var(--text);margin-bottom:0.3rem">NBA Model Coming Soon</p>
@@ -802,6 +805,16 @@
     // finished last would otherwise stomp the other's timestamp even when
     // that sport's tab isn't the one being viewed.
     const generatedAtBySport = { mlb: null, nfl: null, nba: null };
+    const todayModelLoadState = { mlb: 'pending', nfl: 'pending' };
+    function updateAllPredictionsEmptyState() {
+      const allEmptyState = document.getElementById('all-empty-state');
+      const mlbHasPicks = document.querySelector('#picks-container .pick-card') !== null;
+      const nflHasPicks = document.querySelector('#picks-container-nfl .pick-card') !== null;
+      const allModelsLoaded = Object.values(todayModelLoadState).every(state => state === 'loaded');
+      const showEmpty = activeSport === 'all' && allModelsLoaded && !mlbHasPicks && !nflHasPicks;
+      allEmptyState.style.display = showEmpty ? 'flex' : 'none';
+      document.getElementById('picks-mlb').style.display = activeSport === 'all' && !mlbHasPicks && todayModelLoadState.mlb === 'loaded' ? 'none' : '';
+    }
     function updateLastUpdatedLabel() {
       const el = document.getElementById('last-updated');
       // "All" spans multiple sports with different generated_at times, so
@@ -837,6 +850,7 @@
       document.querySelector('.section-title').textContent = sport === 'all' ? 'All Predictions' : sport.toUpperCase() + ' Predictions';
       updateHistoryTimeframeOptions();
       updateLastUpdatedLabel();
+      updateAllPredictionsEmptyState();
       if (activeView === 'history') loadHistory();
     }
 
@@ -1068,6 +1082,8 @@
         const liveInfo = await buildLiveInfo(picks, scoreboardEvents);
 
         renderTodayPicks(picks, pitcherDetails, liveInfo);
+        todayModelLoadState.mlb = 'loaded';
+        updateAllPredictionsEmptyState();
 
         // Keep live status/score/win-prob fresh while any pick is in progress
         if (liveInfo.some(info => info?.isLive)) {
@@ -1076,6 +1092,8 @@
       } catch(e) {
         document.getElementById('picks-container').innerHTML =
           `<div class="empty-state" style="grid-column:1/-1"><p>Could not load predictions. Try again later.</p></div>`;
+        todayModelLoadState.mlb = 'error';
+        updateAllPredictionsEmptyState();
       }
     }
 
@@ -1087,15 +1105,18 @@
 
       if (!filteredPicks.length) {
         if (activeSport === 'all') {
+          document.getElementById('picks-mlb').style.display = 'none';
           container.innerHTML = '';
           return;
         }
+        document.getElementById('picks-mlb').style.display = '';
         container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-          <p>No picks for today yet — check back after 9 AM ET.</p></div>`;
+          <p>No Active Predictions</p></div>`;
         return;
       }
 
+      document.getElementById('picks-mlb').style.display = '';
       const order = coverageSortOrder(filteredLive, filteredPicks.length);
       filteredPicks   = order.map(i => filteredPicks[i]);
       filteredDetails = order.map(i => filteredDetails[i]);

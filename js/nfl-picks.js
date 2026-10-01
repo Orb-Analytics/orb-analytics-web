@@ -215,6 +215,8 @@ async function loadTodayNFL() {
     const scoreboardEvents = await fetchNFLScoreboard(picks);
     const liveInfo = await buildLiveInfoNFL(picks, scoreboardEvents);
     renderTodayPicksNFL(picks, liveInfo);
+    todayModelLoadState.nfl = 'loaded';
+    updateAllPredictionsEmptyState();
 
     if (liveInfo.some(info => info?.isLive)) {
       nflTodayRefreshTimer = setTimeout(loadTodayNFL, 30000);
@@ -222,6 +224,8 @@ async function loadTodayNFL() {
   } catch (e) {
     container.innerHTML =
       `<div class="empty-state" style="grid-column:1/-1"><p>Could not load predictions. Try again later.</p></div>`;
+    todayModelLoadState.nfl = 'error';
+    updateAllPredictionsEmptyState();
   }
 }
 
@@ -229,9 +233,13 @@ function renderTodayPicksNFL(picks, liveInfoAll = []) {
   const container = document.getElementById('picks-container-nfl');
 
   if (!picks.length) {
+    if (activeSport === 'all') {
+      container.innerHTML = '';
+      return;
+    }
     container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-      <p>No picks for this week yet — check back after lines are posted.</p></div>`;
+      <p>No Active Predictions</p></div>`;
     return;
   }
 
