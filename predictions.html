@@ -819,7 +819,12 @@
       const allModelsLoaded = Object.values(todayModelLoadState).every(state => state === 'loaded');
       const showEmpty = activeSport === 'all' && allModelsLoaded && !mlbHasPicks && !nflHasPicks;
       allEmptyState.style.display = showEmpty ? 'flex' : 'none';
-      document.getElementById('picks-mlb').style.display = activeSport === 'all' && !mlbHasPicks && todayModelLoadState.mlb === 'loaded' ? 'none' : '';
+      // Only All combines MLB+NFL into one empty state and hides the
+      // now-redundant empty MLB section -- leave picks-mlb's visibility
+      // alone on other tabs, switchSport() already set it correctly there.
+      if (activeSport === 'all') {
+        document.getElementById('picks-mlb').style.display = !mlbHasPicks && todayModelLoadState.mlb === 'loaded' ? 'none' : '';
+      }
     }
     function updateLastUpdatedLabel() {
       const el = document.getElementById('last-updated');
@@ -1121,14 +1126,18 @@
           container.innerHTML = '';
           return;
         }
-        document.getElementById('picks-mlb').style.display = '';
+        if (activeSport === 'mlb') {
+          document.getElementById('picks-mlb').style.display = '';
+        }
         container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
           <p>No Active Predictions</p></div>`;
         return;
       }
 
-      document.getElementById('picks-mlb').style.display = '';
+      if (activeSport === 'all' || activeSport === 'mlb') {
+        document.getElementById('picks-mlb').style.display = '';
+      }
       const order = coverageSortOrder(filteredLive, filteredPicks.length);
       filteredPicks   = order.map(i => filteredPicks[i]);
       filteredDetails = order.map(i => filteredDetails[i]);
