@@ -299,6 +299,15 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
+    .playoff-notice {
+      background: var(--gray-50); border: 1px solid var(--border); border-left: 3px solid var(--purple-600);
+      border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1rem;
+      font-size: 0.8125rem; color: var(--gray-600); line-height: 1.5;
+    }
+    .playoff-notice strong { color: var(--text); }
+    .playoff-notice a { color: var(--purple-600); font-weight: 600; text-decoration: none; }
+    .playoff-notice a:hover { text-decoration: underline; }
+
     /* ── Pick cards ──────────────────────────────────────────── */
     .picks-grid {
       display: grid;
@@ -504,8 +513,8 @@
           <!-- Tabs row -->
           <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;justify-content:space-between">
             <div class="main-tabs">
-              <button class="main-tab active" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
-              <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>
+              <button class="main-tab" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
+              <button class="main-tab active" onclick="switchView('history')" id="view-tab-history">Model History</button>
             </div>
             <div class="main-tabs">
               <button class="main-tab active" onclick="switchSport('all')" id="sport-tab-all">All</button>
@@ -516,7 +525,8 @@
           </div>
 
           <!-- TODAY'S PICKS -->
-          <div class="tab-panel active" id="panel-today">
+          <div class="tab-panel" id="panel-today">
+            <div class="playoff-notice"><strong>Season update:</strong> Our models are paused for the MLB playoffs and won't generate new MLB picks until next regular season. NFL and NBA picks continue below, or browse our full <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
             <div id="picks-mlb">
               <div class="picks-grid" id="picks-container">
                 <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
@@ -538,7 +548,7 @@
           </div>
 
           <!-- MODEL HISTORY -->
-          <div class="tab-panel" id="panel-history">
+          <div class="tab-panel active" id="panel-history">
             <div class="history-controls">
               <select class="filter-select" id="filter-category" onchange="applyHistoryFilters()">
                 <option value="all">All Picks</option>
@@ -796,7 +806,7 @@
     // The home page is the fixed landing entry point -- always open on
     // Today's Picks regardless of whatever view was last left active on
     // predictions.html (they share the same localStorage keys).
-    let activeView  = 'today';
+    let activeView  = 'history'; // land on Model History by default now that the MLB season has ended
 
     // Per-sport "Updated <time>" label state. Each sport's loader stores its
     // own generated_at here instead of writing #last-updated directly --
@@ -914,6 +924,12 @@
     }
 
     function switchView(view) {
+      // Today's Picks is gated behind sign-in -- prompt Google sign-up
+      // rather than switching, so a signed-out visitor can't see live picks.
+      if (view === 'today' && !window.currentUser) {
+        window.openAuthModal('signup');
+        return;
+      }
       activeView = view;
       localStorage.setItem('orb-active-view', view);
       ['today','history'].forEach(v => {
