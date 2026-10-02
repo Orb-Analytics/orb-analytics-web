@@ -166,6 +166,7 @@ async function buildLiveInfoNFL(picks, events) {
       isPush,
       statusText: status?.type?.detail || status?.type?.shortDetail || (isFinal ? 'Final' : ''),
       winPct: null,
+      startTime: ev.date || null,
     };
 
     if (isLive) {

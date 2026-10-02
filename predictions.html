@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260920c" />
+  <link rel="stylesheet" href="css/style.css?v=20261002b" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -513,13 +513,13 @@
           <!-- Tabs row -->
           <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;justify-content:space-between">
             <div class="main-tabs">
-              <button class="main-tab" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
               <button class="main-tab active" onclick="switchView('history')" id="view-tab-history">Model History</button>
+              <button class="main-tab" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
             </div>
             <div class="main-tabs">
               <button class="main-tab active" onclick="switchSport('all')" id="sport-tab-all">All</button>
-              <button class="main-tab" onclick="switchSport('mlb')" id="sport-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
               <button class="main-tab" onclick="switchSport('nfl')" id="sport-tab-nfl" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" height="16" style="border-radius:2px"> NFL</button>
+              <button class="main-tab" onclick="switchSport('mlb')" id="sport-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
               <button class="main-tab" onclick="switchSport('nba')" id="sport-tab-nba" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" height="16" style="border-radius:2px"> NBA</button>
             </div>
           </div>
@@ -795,7 +795,24 @@
     // original relative order.
     function coverageSortOrder(liveArr, len) {
       const rank = li => li?.isLive ? 0 : (li?.isFinal ? 1 : 2);
-      return Array.from({ length: len }, (_, i) => i).sort((a, b) => rank(liveArr[a]) - rank(liveArr[b]));
+      // Within each coverage group, earliest kickoff leads (e.g. the NFL's
+      // 1pm slate before the 4:25pm slate). Picks with no known start time
+      // (ESPN hasn't matched the event yet) sort to the end of their group.
+      const time = li => li?.startTime ? new Date(li.startTime).getTime() : Infinity;
+      // Within the FINAL group specifically, wins lead, pushes/ties come
+      // next, losses trail -- doesn't apply to live/upcoming, where there's
+      // no result yet. This container only ever holds one sport's picks, so
+      // sorting it never mixes wins/losses across sports.
+      const result = li => li?.isCorrect === true ? 0 : (li?.isCorrect == null ? 1 : 2);
+      return Array.from({ length: len }, (_, i) => i).sort((a, b) => {
+        const byRank = rank(liveArr[a]) - rank(liveArr[b]);
+        if (byRank !== 0) return byRank;
+        if (rank(liveArr[a]) === 1) {
+          const byResult = result(liveArr[a]) - result(liveArr[b]);
+          if (byResult !== 0) return byResult;
+        }
+        return time(liveArr[a]) - time(liveArr[b]);
+      });
     }
 
     let historyData = [];
@@ -1048,6 +1065,7 @@
           isCorrect: pickScore === oppScore ? null : pickScore > oppScore,
           statusText: status?.type?.detail || status?.type?.shortDetail || (isFinal ? 'Final' : ''),
           winPct: null,
+          startTime: ev.date || null,
         };
 
         if (isLive) {

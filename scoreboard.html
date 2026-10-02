@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Scoreboard · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20260920c" />
+  <link rel="stylesheet" href="css/style.css?v=20261002b" />
   <style>
     .scoreboard-header {
       padding: 1.5rem 1.75rem;
@@ -621,9 +621,30 @@
       const upcoming = rest.filter(e => isPre(e.status));
       const finals   = rest.filter(e => isFinal(e.status));
 
+      // Does either team carry an AP/CFP-style curated rank (1-25)? Only
+      // populated by ESPN for college sports today (CFB), but this applies
+      // automatically to any league's response shape -- a pro league with
+      // no rankings just never matches, so this is a no-op there.
+      function isRankedMatchup(event) {
+        const comp = event.competitions?.[0];
+        if (!comp) return false;
+        return (comp.competitors || []).some(c => {
+          const r = c.curatedRank?.current;
+          return r != null && r >= 1 && r <= 25;
+        });
+      }
+      // Within a bucket, ranked matchups (e.g. a Top-25 CFB game) float
+      // above unranked ones -- stable sort keeps each half's existing order.
+      const pinRanked = arr => [...arr].sort((a, b) => (isRankedMatchup(b) ? 1 : 0) - (isRankedMatchup(a) ? 1 : 0));
+
       // Status first (live, then upcoming, then final); within each status,
-      // games we've made a prediction on lead, followed by the rest.
-      const ordered = [...picksLive, ...live, ...picksUpcoming, ...upcoming, ...picksFinal, ...finals];
+      // games we've made a prediction on lead, followed by the rest; within
+      // each of those, ranked matchups lead.
+      const ordered = [
+        ...pinRanked(picksLive), ...pinRanked(live),
+        ...pinRanked(picksUpcoming), ...pinRanked(upcoming),
+        ...pinRanked(picksFinal), ...pinRanked(finals),
+      ];
       output.innerHTML = `<div class="games-grid">${ordered.map(e => buildCard(e, leagueId, pitcherMap)).join('')}</div>`;
 
       // Update live count badge (all live games, including predicted ones)
