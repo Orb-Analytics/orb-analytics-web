@@ -799,9 +799,19 @@
       // 1pm slate before the 4:25pm slate). Picks with no known start time
       // (ESPN hasn't matched the event yet) sort to the end of their group.
       const time = li => li?.startTime ? new Date(li.startTime).getTime() : Infinity;
+      // Within the FINAL group specifically, wins lead, pushes/ties come
+      // next, losses trail -- doesn't apply to live/upcoming, where there's
+      // no result yet. This container only ever holds one sport's picks, so
+      // sorting it never mixes wins/losses across sports.
+      const result = li => li?.isCorrect === true ? 0 : (li?.isCorrect == null ? 1 : 2);
       return Array.from({ length: len }, (_, i) => i).sort((a, b) => {
         const byRank = rank(liveArr[a]) - rank(liveArr[b]);
-        return byRank !== 0 ? byRank : time(liveArr[a]) - time(liveArr[b]);
+        if (byRank !== 0) return byRank;
+        if (rank(liveArr[a]) === 1) {
+          const byResult = result(liveArr[a]) - result(liveArr[b]);
+          if (byResult !== 0) return byResult;
+        }
+        return time(liveArr[a]) - time(liveArr[b]);
       });
     }
 
