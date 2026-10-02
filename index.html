@@ -795,7 +795,14 @@
     // original relative order.
     function coverageSortOrder(liveArr, len) {
       const rank = li => li?.isLive ? 0 : (li?.isFinal ? 1 : 2);
-      return Array.from({ length: len }, (_, i) => i).sort((a, b) => rank(liveArr[a]) - rank(liveArr[b]));
+      // Within each coverage group, earliest kickoff leads (e.g. the NFL's
+      // 1pm slate before the 4:25pm slate). Picks with no known start time
+      // (ESPN hasn't matched the event yet) sort to the end of their group.
+      const time = li => li?.startTime ? new Date(li.startTime).getTime() : Infinity;
+      return Array.from({ length: len }, (_, i) => i).sort((a, b) => {
+        const byRank = rank(liveArr[a]) - rank(liveArr[b]);
+        return byRank !== 0 ? byRank : time(liveArr[a]) - time(liveArr[b]);
+      });
     }
 
     let historyData = [];
@@ -1051,6 +1058,7 @@
           isCorrect: pickScore === oppScore ? null : pickScore > oppScore,
           statusText: status?.type?.detail || status?.type?.shortDetail || (isFinal ? 'Final' : ''),
           winPct: null,
+          startTime: ev.date || null,
         };
 
         if (isLive) {
