@@ -332,6 +332,7 @@ function buildNav(activePage = '') {
   }
 
   buildDisclaimer();
+  buildPartnerLabels();
 
   const toggle = document.getElementById('sidebar-toggle');
   if (toggle) {
@@ -362,7 +363,25 @@ function buildDisclaimer() {
         <p>By accessing and using this website, you acknowledge and agree to the terms of this disclaimer, and you assume all risks and liabilities associated with your use of the information provided on this website.</p>
       </div>
     </div>
+    <div class="disclaimer-block partner-disclosure">
+      <p class="partner-disclosure-text">${PARTNER_DISCLOSURE_HTML}</p>
+    </div>
   `;
+}
+
+// ── Novig paid-partnership disclosure ───────────────────────────────
+// All partnership wording lives here. The site-wide disclosure renders
+// below the disclaimer (above); the short inline label fills every
+// [data-partner-label] element, placed next to picks, odds, and the
+// Novig promo on each page.
+const PARTNER_LABEL_TEXT = 'Paid partner: Novig';
+const PARTNER_DISCLOSURE_HTML = '<strong>Paid partnership:</strong> Orb Analytics has a paid partnership with Novig. We may receive compensation when you sign up for or use Novig through our links. Our model\'s picks are generated independently by our own model.';
+
+function buildPartnerLabels() {
+  document.querySelectorAll('[data-partner-label]').forEach(el => {
+    el.classList.add('partner-label');
+    el.textContent = PARTNER_LABEL_TEXT;
+  });
 }
 
 window.buildNav = buildNav;

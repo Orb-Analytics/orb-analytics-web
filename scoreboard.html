@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Scoreboard · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261002b" />
+  <link rel="stylesheet" href="css/style.css?v=20261013" />
   <style>
     .scoreboard-header {
       padding: 1.5rem 1.75rem;
@@ -292,6 +292,7 @@
         <div class="scoreboard-header-inner">
           <div class="section-title">Scoreboard</div>
           <div class="date-display" id="date-display"></div>
+          <div class="partner-label-row"><span data-partner-label></span></div>
         </div>
       </div>
       <div class="league-tabs" id="league-tabs"></div>
@@ -303,9 +304,10 @@
   <div class="container">
     <div class="email-signup">
       <div class="email-signup-sponsor">
-        <a href="https://novig.com/" target="_blank" rel="noopener noreferrer" onclick="return openNovigLink(event)">
+        <a href="https://novig.com/" target="_blank" rel="sponsored noopener noreferrer" onclick="return openNovigLink(event)">
           <img src="assets/novig-promo.png" alt="Novig — Spend $5 Get $50 with code ORB" />
         </a>
+        <span data-partner-label></span>
       </div>
       <div class="email-signup-cta">
         <div class="email-signup-eyebrow">Free Daily Picks</div>
@@ -328,7 +330,7 @@
     </div><!-- end sidebar-content -->
   </div><!-- end app-layout -->
 
-  <script src="js/nav.js?v=20260910"></script>
+  <script src="js/nav.js?v=20261013"></script>
   <script>
     buildNav('scoreboard.html');
 
