@@ -607,6 +607,9 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
 .email-signup-sponsor > a { flex: 1 1 auto; min-height: 0; display: block; }
 .email-signup-sponsor .partner-label { align-self: flex-start; margin: 0.6rem 0.75rem; }
 
+/* ─── Pick card odds source ("Odds via DraftKings") ──────────────── */
+.odds-source { font-size: 0.75rem; color: var(--gray-600); text-align: center; margin-top: -0.25rem; }
+
 /* ─── Email Signup ───────────────────────────────────────────────── */
 .email-signup {
   display: grid;

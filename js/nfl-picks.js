@@ -16,6 +16,8 @@
 // only because this script tag loads before the inline <script> block
 // that defines them and calls loadTodayNFL() -- see the <script src>
 // placement note in both HTML files.
+//
+// oddsSourceHTML() comes from js/odds-source.js, loaded before this file.
 
 // ── NFL ───────────────────────────────────────────────────────
 // Kept fully separate from the MLB functions above rather than
@@ -327,6 +329,7 @@ function renderTodayPicksNFL(picks, liveInfoAll = []) {
           <div class="meta-chip">Odds: <span>${fmtOdds(oddsLine)}</span></div>
           <div class="meta-chip">${side}</div>
         </div>
+        ${oddsSourceHTML(pick)}
         <div class="confidence-row">
           <div class="confidence-header">
             <span class="confidence-label">Model vs Market Edge</span>

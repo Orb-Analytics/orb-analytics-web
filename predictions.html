@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261013" />
+  <link rel="stylesheet" href="css/style.css?v=20261014" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -759,7 +759,8 @@
   </div><!-- end app-layout -->
 
   <script src="js/nav.js?v=20261013"></script>
-  <script src="js/nfl-picks.js?v=20260916"></script>
+  <script src="js/odds-source.js?v=20261014"></script>
+  <script src="js/nfl-picks.js?v=20261014"></script>
   <script>
     buildNav('predictions.html');
 
@@ -1258,6 +1259,7 @@
               <div class="meta-chip">Line: <span>${fmtOdds(line)}</span></div>
               <div class="meta-chip">${side}</div>
             </div>
+            ${oddsSourceHTML(pick)}
             <div class="confidence-row">
               <div class="confidence-header">
                 <span class="confidence-label">Model vs Market Edge</span>
