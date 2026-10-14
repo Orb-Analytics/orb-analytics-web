@@ -582,6 +582,31 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
 .disclaimer-text { font-size: 0.8125rem; line-height: 1.65; color: var(--gray-600); }
 .disclaimer-text p + p { margin-top: 0.75rem; }
 
+/* ─── Novig paid-partnership disclosure ──────────────────────────── */
+.disclaimer-block.partner-disclosure { margin-top: 0.75rem; }
+.partner-disclosure-text { font-size: 0.875rem; line-height: 1.65; color: var(--text); }
+.partner-disclosure-text strong { font-weight: 700; }
+.partner-label {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  white-space: nowrap;
+}
+.partner-label-row { margin-top: 0.5rem; }
+/* Promo card: label gets its own strip under the image so it never covers the ad */
+.email-signup-sponsor { display: flex; flex-direction: column; }
+.email-signup-sponsor > a { flex: 1 1 auto; min-height: 0; display: block; }
+.email-signup-sponsor .partner-label { align-self: flex-start; margin: 0.6rem 0.75rem; }
+
 /* ─── Email Signup ───────────────────────────────────────────────── */
 .email-signup {
   display: grid;
