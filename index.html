@@ -384,6 +384,13 @@
 
     .pick-meta-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; }
     .pick-meta-row .meta-chip { width: 100%; min-width: 0; box-sizing: border-box; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 768px) {
+      /* Narrow cards: never clip chip text. Chips still split the row into
+         equal thirds when they fit, a longer chip takes the room it needs,
+         and the row wraps to a second line when all three can't fit. */
+      .pick-meta-row { display: flex; flex-wrap: wrap; }
+      .pick-meta-row .meta-chip { flex: 1 1 0; width: auto; min-width: max-content; }
+    }
     .meta-chip {
       background: var(--gray-100); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding: 0.18rem 0.5rem;
