@@ -537,7 +537,7 @@
 
           <!-- TODAY'S PICKS -->
           <div class="tab-panel" id="panel-today">
-            <div class="playoff-notice"><strong>Season update:</strong> Our models are paused for the MLB playoffs and won't generate new MLB picks until next regular season. NFL picks continue below, and our NBA model will begin once the NBA season tips off. Browse our full <a href="javascript:void(0)" onclick="switchView('history')">Model History</a> in the meantime.</div>
+            <div class="playoff-notice" id="notice-mlb" style="display:none"><strong>MLB model paused for the offseason.</strong> Our MLB model is on break through the playoffs and offseason and will return with daily picks at the start of next regular season. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
             <div id="picks-mlb">
               <div class="picks-grid" id="picks-container">
                 <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
@@ -552,9 +552,8 @@
               <p>No Active Predictions</p>
             </div>
             <div id="picks-nba" style="display:none">
-              <div class="empty-state" style="padding:3rem 1rem">
-                <p>No Active Predictions</p>
-              </div>
+              <div class="playoff-notice" id="notice-nba"><strong>NBA picks coming soon.</strong> The NBA season is underway, but our model needs a few weeks of games before its picks are reliable, since every team's stats start fresh on opening night. We're testing the model now and will begin publishing NBA picks here once testing is complete. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
+              <div class="picks-grid" id="picks-container-nba"></div>
             </div>
           </div>
 
@@ -857,6 +856,13 @@
         document.getElementById('picks-mlb').style.display = !mlbHasPicks && todayModelLoadState.mlb === 'loaded' ? 'none' : '';
       }
     }
+    // NBA has no pick cards yet, so the "coming soon" notice always shows.
+    // Once an NBA loader renders cards into #picks-container-nba, call this
+    // after rendering and the notice will hide itself whenever picks exist.
+    function updateNBANotice() {
+      const nbaHasPicks = document.querySelector('#picks-container-nba .pick-card') !== null;
+      document.getElementById('notice-nba').style.display = nbaHasPicks ? 'none' : '';
+    }
     function updateLastUpdatedLabel() {
       const el = document.getElementById('last-updated');
       // "All" spans multiple sports with different generated_at times, so
@@ -889,10 +895,12 @@
           ? (sport === 'nba' ? 'block' : 'none')
           : (sport === 'all' || sport === s) ? 'block' : 'none';
       });
+      document.getElementById('notice-mlb').style.display = sport === 'mlb' ? '' : 'none';
       document.querySelector('.section-title').textContent = sport === 'all' ? 'All Predictions' : sport.toUpperCase() + ' Predictions';
       updateHistoryTimeframeOptions();
       updateLastUpdatedLabel();
       updateAllPredictionsEmptyState();
+      updateNBANotice();
       if (activeView === 'history') loadHistory();
     }
 
