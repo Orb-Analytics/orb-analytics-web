@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Game · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261013" />
+  <link rel="stylesheet" href="css/style.css?v=20261014" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     .back-link {
@@ -37,15 +37,19 @@
       font-size: 0.75rem; font-weight: 700; color: var(--gray-600);
     }
     .gh-abbr { font-family: var(--font-display); font-size: 1.125rem; font-weight: 800; }
-    .gh-name { font-size: 0.8125rem; color: var(--gray-600); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-    .gh-center { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0 0.75rem; }
+    .gh-record { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); }
+    .gh-line { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; color: var(--text); white-space: nowrap; }
+    .gh-center { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0 0.75rem; text-align: center; }
     .gh-score { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; line-height: 1; }
-    .gh-time { font-family: var(--font-mono); font-size: 1rem; color: var(--gray-600); }
+    .gh-time { font-family: var(--font-mono); font-size: 1rem; color: var(--text); }
+    .gh-time span { white-space: nowrap; }
+    .gh-network { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); }
     .gh-status { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); white-space: nowrap; }
     .gh-status.live { color: #FCA5A5; display: flex; align-items: center; gap: 0.3rem; }
     .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #FCA5A5; animation: pulse-dot 1.4s infinite; }
     @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
     .gh-meta { text-align: center; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 1.5rem; }
+    .gh-meta div + div { margin-top: 0.2rem; }
 
     /* ── Section card ──────────────────────────────────────────── */
     .section-card {
@@ -115,11 +119,74 @@
     .wp-pct { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; }
     .wp-chart-wrap { position: relative; height: 180px; }
 
+    /* ── NFL: league rankings ──────────────────────────────────── */
+    /* Bar colors come in per theme as inline custom properties (picked
+       for contrast against each theme's surface in rankColorVars()). */
+    .rankings { --away-bar: var(--away-light); --home-bar: var(--home-light); }
+    body.dark .rankings { --away-bar: var(--away-dark); --home-bar: var(--home-dark); }
+    .rank-legend { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+    .rank-legend span { display: inline-flex; align-items: center; gap: 0.35rem; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--text); }
+    .rank-legend i { width: 9px; height: 9px; border-radius: 50%; }
+    .rank-row { padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
+    .rank-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .rank-head { display: grid; grid-template-columns: 4.25rem 1fr 4.25rem; align-items: center; gap: 0.5rem; }
+    .rank-side { display: flex; flex-direction: column; gap: 0.1rem; font-family: var(--font-mono); }
+    .rank-side.home { align-items: flex-end; text-align: right; }
+    .rank-val { font-size: 0.9375rem; font-weight: 700; color: var(--text); }
+    .rank-ord { font-size: 0.75rem; color: var(--gray-600); white-space: nowrap; }
+    .rank-label { text-align: center; font-size: 0.8125rem; font-weight: 600; color: var(--text); }
+    .rank-bar { display: flex; gap: 3px; height: 6px; margin-top: 0.5rem; }
+    .rank-bar span { min-width: 6px; border-radius: 3px; }
+    .rank-bar .away { background: var(--away-bar); }
+    .rank-bar .home { background: var(--home-bar); }
+
+    /* ── NFL: last 5 / injuries (two team columns) ─────────────── */
+    .team-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .team-col-title { display: flex; align-items: center; gap: 0.4rem; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+    .team-col-title img { width: 20px; height: 20px; object-fit: contain; }
+    .l5-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); }
+    .l5-row:last-child { border-bottom: none; }
+    .l5-res { width: 1.4rem; flex-shrink: 0; text-align: center; font-weight: 700; border-radius: 4px; padding: 0.05rem 0; }
+    .l5-res.W { color: #16A34A; background: rgba(22, 163, 74, 0.12); }
+    .l5-res.L { color: #DC2626; background: rgba(220, 38, 38, 0.1); }
+    .l5-res.T { color: var(--gray-600); background: var(--gray-100); }
+    body.dark .l5-res.W { color: #4ADE80; }
+    body.dark .l5-res.L { color: #F87171; }
+    .l5-score { color: var(--text); font-weight: 600; }
+    .inj-row { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; padding: 0.35rem 0; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
+    .inj-row:last-child { border-bottom: none; }
+    .inj-name { color: var(--text); min-width: 0; overflow-wrap: anywhere; }
+    .inj-pos { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); margin-left: 0.25rem; }
+    .inj-status { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); white-space: nowrap; flex-shrink: 0; }
+    .inj-status.out { color: #DC2626; }
+    body.dark .inj-status.out { color: #F87171; }
+
+    /* ── NFL: our model's pick (compact pick card) ─────────────── */
+    .gp-pick { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .gp-pick img { width: 40px; height: 40px; object-fit: contain; }
+    .gp-pick-team { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--text); }
+    .gp-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+    .gp-chip {
+      background: var(--gray-100); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.18rem 0.5rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); white-space: nowrap;
+    }
+    .gp-chip span { color: var(--text); font-weight: 600; }
+    .gp-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .gp-footer .odds-source { margin: 0; text-align: left; }
+    .gp-link { font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple-600); font-weight: 600; text-decoration: none; }
+    .gp-link:hover { text-decoration: underline; }
+    .gp-signup { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; font-size: 0.8125rem; color: var(--gray-600); }
+    .gp-signup button { font: inherit; font-weight: 600; color: #fff; background: var(--purple-600); border: none; border-radius: var(--radius-sm); padding: 0.45rem 0.9rem; cursor: pointer; }
+
     @media (max-width: 580px), (max-height: 500px) and (orientation: landscape) {
       .game-header { padding: 1.1rem 0.75rem; }
       .gh-logo, .gh-logo-fallback { width: 42px; height: 42px; }
       .gh-score { font-size: 1.75rem; }
-      .gh-name { max-width: 90px; }
+      .gh-center { padding: 0 0.25rem; }
+      .gh-time { font-size: 0.875rem; }
+      .gh-time span { display: block; }
+      .gh-time .gh-sep { display: none; }
+      .inj-cols { grid-template-columns: 1fr; gap: 1.1rem; }
       .live-panel { gap: 1.5rem; }
       .wp-current { gap: 0.5rem; }
       .wp-abbr { font-size: 0.75rem; gap: 0.22rem; }
@@ -161,6 +228,8 @@
   </div><!-- end app-layout -->
 
   <script src="js/nav.js?v=20261013"></script>
+  <script src="js/odds-source.js?v=20261014"></script>
+  <script src="js/nfl-picks.js?v=20261014"></script>
   <script>
     buildNav('scoreboard.html');
 
@@ -177,7 +246,10 @@
     // directly (matching the model), so only the Athletics OAK/ATH rename still needs this.
     const ESPN_TO_MODEL = { 'ATH': 'OAK' };
     const MODEL_TO_ESPN = Object.fromEntries(Object.entries(ESPN_TO_MODEL).map(([e, m]) => [m, e]));
-    const toEspnAbbr = a => (MODEL_TO_ESPN[a] || a || '').toUpperCase();
+    // NFL pick cards link here with the NFL model's abbreviations (LA, WAS),
+    // which need nfl-picks.js's NFL mapping rather than the MLB one above.
+    const toEspnAbbr = a => sport === 'football' ? toEspnAbbrNFL(a) : (MODEL_TO_ESPN[a] || a || '').toUpperCase();
+    const isNFL = sport === 'football' && slug === 'nfl';
 
     // Curated stat allowlist per sport/category so the page stays readable.
     // Sports without an entry fall back to showing a handful of raw stats.
@@ -187,6 +259,10 @@
         pitching: ['strikeouts', 'walks', 'hits', 'earnedRuns', 'homeRuns', 'ERA', 'WHIP'],
         fielding: ['errors', 'doublePlays'],
       },
+    };
+    // Football box scores are a flat stat list rather than categories.
+    const FLAT_KEY_STATS = {
+      football: ['firstDowns', 'totalYards', 'netPassingYards', 'rushingYards', 'thirdDownEff', 'redZoneAttempts', 'turnovers', 'totalPenaltiesYards', 'possessionTime'],
     };
 
     let refreshTimer = null;
@@ -228,6 +304,285 @@
       const r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
+
+    // ── Header helpers ──────────────────────────────────────────
+    // Kickoff in the viewer's own time zone, e.g. "Sun, Oct 18 · 10:00 AM PDT".
+    // Replaces ESPN's status.type.detail for pre-game, which repeated the
+    // same time in Eastern ("Sun, October 18th at 1:00 PM EDT").
+    function kickoffHTML(iso, timeValid = true) {
+      const d = new Date(iso);
+      if (isNaN(d)) return '';
+      const day  = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const time = timeValid === false ? 'Time TBD'
+        : d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+      return `<div class="gh-time"><span>${day}</span><span class="gh-sep"> · </span><span>${time}</span></div>`;
+    }
+
+    // National broadcasts when ESPN flags them (MLB lists every local
+    // network too), capped at two so the header stays short.
+    function networkText(comp) {
+      const all = comp?.broadcasts || [];
+      const national = all.filter(b => b.isNational || b.market?.type === 'National');
+      const names = [...new Set((national.length ? national : all).map(b => b.media?.shortName).filter(Boolean))].slice(0, 2);
+      return names.length ? `on ${names.join(' / ')}` : '';
+    }
+
+    const recordOf = c => (c.record || []).find(r => r.type === 'total')?.summary || c.record?.[0]?.summary || '';
+
+    // Spread under the favorite, total under the other team. ESPN's
+    // pickcenter spread is from the home side (-7.5 = home favored).
+    function headerLines(data) {
+      const pc = data.pickcenter?.[0];
+      if (!pc) return { away: '', home: '' };
+      const total  = pc.overUnder != null ? `O/U ${pc.overUnder}` : '';
+      const spread = Number(pc.spread);
+      if (pc.spread == null || !Number.isFinite(spread)) return { away: '', home: total };
+      if (spread === 0) return { away: total, home: 'PK' };
+      const homeFav = pc.homeTeamOdds?.favorite ?? spread < 0;
+      const favLine = `-${Math.abs(spread)}`;
+      return homeFav ? { away: total, home: favLine } : { away: favLine, home: total };
+    }
+
+    const fmtSigned = n => (n > 0 ? `+${n}` : `${n}`);
+
+    // ── NFL: league rankings ────────────────────────────────────
+    // Team values + league ranks come from ESPN's core API (rank 1 = most);
+    // "allowed" values + ranks come from the site API's opponent block
+    // (rank 1 = fewest allowed). Two requests per team instead of pulling
+    // all 32 teams, cached in sessionStorage for the visit.
+    const NFL_RANK_ROWS = [
+      { label: 'Points/G',         src: 'team', stat: 'totalPointsPerGame' },
+      { label: 'Points/G Allowed', src: 'opp',  stat: 'totalPointsPerGame', lowerIsBetter: true },
+      { label: 'Total Yds/G',      src: 'team', stat: 'yardsPerGame' },
+      { label: 'Pass Yds/G',       src: 'team', stat: 'passingYardsPerGame' },
+      { label: 'Rush Yds/G',       src: 'team', stat: 'rushingYardsPerGame' },
+      { label: 'Yds/G Allowed',    src: 'opp',  stat: 'yardsPerGame', lowerIsBetter: true },
+      { label: 'Turnover Diff',    src: 'team', stat: 'turnOverDifferential', signed: true },
+    ];
+    const RANKS_TTL_MS = 6 * 60 * 60 * 1000;
+    const ranksMemo = {};
+
+    function fetchNFLTeamRanks(teamId, season) {
+      const key = `orb-nfl-ranks-v1:${season}:${teamId}`;
+      return ranksMemo[key] ||= (async () => {
+        try {
+          const hit = JSON.parse(sessionStorage.getItem(key));
+          if (hit && Date.now() - hit.at < RANKS_TTL_MS) return hit.data;
+        } catch {}
+        const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+        const [core, site] = await Promise.all([
+          getJSON(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${season}/types/2/teams/${teamId}/statistics`),
+          // The site API always returns the current season (it ignores a season param).
+          getJSON(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${teamId}/statistics`),
+        ]);
+        const pluck = (cats, src) => {
+          const out = {};
+          for (const row of NFL_RANK_ROWS.filter(r => r.src === src)) {
+            for (const c of cats || []) {
+              const s = c.stats?.find(s => s.name === row.stat);
+              if (s && Number.isFinite(s.value)) { out[row.stat] = { value: s.value, rank: s.rank ?? null, rankText: s.rankDisplayValue || null }; break; }
+            }
+          }
+          return out;
+        };
+        const data = { team: pluck(core.splits?.categories, 'team'), opp: pluck(site.results?.opponent, 'opp') };
+        try { sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), data })); } catch {}
+        return data;
+      })().catch(e => { delete ranksMemo[key]; throw e; });
+    }
+
+    function ordinal(n) {
+      const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+    const rankLabel = s => s?.rankText ? s.rankText.replace(/^Tied-/, 'T-') : (s?.rank ? ordinal(s.rank) : '—');
+
+    // WCAG contrast, used to keep each team's bar color visible on the
+    // card in both themes (3:1 is the minimum for non-text graphics).
+    function relLuminance(hex) {
+      const n = parseInt(hex.replace('#', ''), 16);
+      const ch = [n >> 16 & 255, n >> 8 & 255, n & 255].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+      return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    }
+    function contrastRatio(a, b) {
+      const [l1, l2] = [relLuminance(a), relLuminance(b)].sort((x, y) => y - x);
+      return (l1 + 0.05) / (l2 + 0.05);
+    }
+    function rgbDistance(a, b) {
+      const p = h => { const n = parseInt(h.replace('#', ''), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+      const [x, y] = [p(a), p(b)];
+      return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
+    }
+    // Per theme: the team's primary color, else its alternate, else a
+    // neutral gray -- and if both teams land on near-identical colors,
+    // the home side moves to its next usable option.
+    function rankColorVars(awayTeam, homeTeam) {
+      const themes = {
+        light: { surface: '#FFFFFF', neutrals: ['#71717A', '#3F3F46'] },
+        dark:  { surface: '#1C1C1F', neutrals: ['#A1A1AA', '#E4E4E7'] },
+      };
+      const valid = h => /^[0-9a-f]{6}$/i.test(h || '');
+      const vars = [];
+      for (const [name, t] of Object.entries(themes)) {
+        const usable = team => [team?.color, team?.alternateColor].filter(valid).map(h => `#${h}`)
+          .filter(c => contrastRatio(c, t.surface) >= 3);
+        const away = usable(awayTeam)[0] || t.neutrals[0];
+        const homeOpts = [...usable(homeTeam), ...t.neutrals];
+        const home = homeOpts.find(c => rgbDistance(c, away) >= 60) || homeOpts[0];
+        vars.push(`--away-${name}:${away}`, `--home-${name}:${home}`);
+      }
+      return vars.join(';');
+    }
+
+    function rankBarShares(row, a, b) {
+      let sa, sb;
+      if (row.signed) {
+        // Turnover differential can be negative, so compare league rank instead of value.
+        sa = a.rank ? 33 - a.rank : 16; sb = b.rank ? 33 - b.rank : 16;
+      } else if (row.lowerIsBetter) {
+        sa = b.value; sb = a.value;
+      } else {
+        sa = a.value; sb = b.value;
+      }
+      const pa = sa + sb > 0 ? (sa / (sa + sb)) * 100 : 50;
+      return [pa, 100 - pa];
+    }
+
+    function rankingsHTML(ranks, awayComp, homeComp, awayAbbr, homeAbbr) {
+      if (!ranks) {
+        return `<div class="section-card"><h2>League Rankings</h2><p class="muted-note">League rankings are unavailable right now.</p></div>`;
+      }
+      const [ar, hr] = ranks;
+      const fmt = (row, s) => !s ? '—' : row.signed ? fmtSigned(Math.round(s.value)) : s.value.toFixed(1);
+      const rows = NFL_RANK_ROWS.map(row => {
+        const a = ar[row.src]?.[row.stat], h = hr[row.src]?.[row.stat];
+        if (!a && !h) return '';
+        const [pa, ph] = a && h ? rankBarShares(row, a, h) : [50, 50];
+        return `<div class="rank-row">
+          <div class="rank-head">
+            <div class="rank-side away"><span class="rank-val">${fmt(row, a)}</span><span class="rank-ord">${rankLabel(a)}</span></div>
+            <div class="rank-label">${row.label}</div>
+            <div class="rank-side home"><span class="rank-val">${fmt(row, h)}</span><span class="rank-ord">${rankLabel(h)}</span></div>
+          </div>
+          <div class="rank-bar"><span class="away" style="flex:${pa.toFixed(1)} 1 0"></span><span class="home" style="flex:${ph.toFixed(1)} 1 0"></span></div>
+        </div>`;
+      }).join('');
+      if (!rows) return `<div class="section-card"><h2>League Rankings</h2><p class="muted-note">League rankings are unavailable right now.</p></div>`;
+      return `<div class="section-card rankings" style="${rankColorVars(awayComp.team, homeComp.team)}">
+        <h2>League Rankings</h2>
+        <div class="rank-legend"><span><i style="background:var(--away-bar)"></i>${awayAbbr}</span><span>${homeAbbr}<i style="background:var(--home-bar)"></i></span></div>
+        ${rows}
+      </div>`;
+    }
+
+    // ── NFL: last 5 games / injuries ────────────────────────────
+    function teamColTitle(team, abbr) {
+      const logo = team?.logo || team?.logos?.[0]?.href;
+      return `<div class="team-col-title">${logo ? `<img src="${logo}" alt="" onerror="this.remove()">` : ''}${abbr}</div>`;
+    }
+
+    function lastFiveHTML(data, awayComp, homeComp, awayAbbr, homeAbbr) {
+      const eventsFor = id => (data.lastFiveGames || []).find(t => t.team?.id === id)?.events || [];
+      const col = (comp, abbr) => {
+        const evs = eventsFor(comp.team?.id).slice(-5).reverse();   // most recent first
+        const rows = evs.map(e => {
+          // ESPN's score is winner-first ("13-10" even for a loss), so
+          // re-order it from this team's side.
+          const nums = (e.score || '').match(/\d+/g)?.map(Number) || [];
+          const res = e.gameResult || '';
+          let score = e.score || '';
+          if (nums.length >= 2) {
+            const [hi, lo] = [Math.max(nums[0], nums[1]), Math.min(nums[0], nums[1])];
+            score = (res === 'L' ? `${lo}-${hi}` : `${hi}-${lo}`) + (/OT/.test(e.score) ? ' OT' : '');
+          }
+          return `<div class="l5-row"><span class="l5-res ${res}">${res || '–'}</span><span class="l5-score">${score}</span><span>${e.atVs === '@' ? '@' : 'vs'} ${e.opponent?.abbreviation || ''}</span></div>`;
+        }).join('');
+        return `<div>${teamColTitle(comp.team, abbr)}${rows || '<p class="muted-note" style="text-align:left;padding:0.35rem 0">No games yet</p>'}</div>`;
+      };
+      if (!eventsFor(awayComp.team?.id).length && !eventsFor(homeComp.team?.id).length) return '';
+      return `<div class="section-card"><h2>Last 5 Games</h2><div class="team-cols">${col(awayComp, awayAbbr)}${col(homeComp, homeAbbr)}</div></div>`;
+    }
+
+    const INJURY_LIMIT = 4;
+    const injuryPriority = s => { const i = ['out', 'doubtful', 'questionable'].indexOf((s || '').toLowerCase()); return i === -1 ? 3 : i; };
+    function injuriesHTML(data, awayComp, homeComp, awayAbbr, homeAbbr) {
+      const listFor = id => ((data.injuries || []).find(t => t.team?.id === id)?.injuries || [])
+        .slice().sort((a, b) => injuryPriority(a.status) - injuryPriority(b.status)).slice(0, INJURY_LIMIT);
+      const col = (comp, abbr) => {
+        const rows = listFor(comp.team?.id).map(i => {
+          const a = i.athlete || {};
+          const status = i.status || '';
+          const severe = /^(out|injured reserve)$/i.test(status);
+          return `<div class="inj-row"><span class="inj-name">${a.displayName || a.shortName || ''}<span class="inj-pos">${a.position?.abbreviation || ''}</span></span><span class="inj-status${severe ? ' out' : ''}">${status}</span></div>`;
+        }).join('');
+        return `<div>${teamColTitle(comp.team, abbr)}${rows || '<p class="muted-note" style="text-align:left;padding:0.35rem 0">No reported injuries</p>'}</div>`;
+      };
+      if (!listFor(awayComp.team?.id).length && !listFor(homeComp.team?.id).length) return '';
+      return `<div class="section-card"><h2>Key Injuries</h2><div class="team-cols inj-cols">${col(awayComp, awayAbbr)}${col(homeComp, homeAbbr)}</div></div>`;
+    }
+
+    // ── NFL: weather (outdoor games only) ───────────────────────
+    // ESPN's weather comes from AccuWeather and only carries a numeric
+    // condition id, so map the ids to short labels.
+    const WEATHER_TEXT = {
+      1: 'Sunny', 2: 'Mostly sunny', 3: 'Partly sunny', 4: 'Partly cloudy', 5: 'Hazy', 6: 'Mostly cloudy',
+      7: 'Cloudy', 8: 'Overcast', 11: 'Fog', 12: 'Showers', 13: 'Showers', 14: 'Showers', 15: 'Thunderstorms',
+      16: 'Thunderstorms', 17: 'Thunderstorms', 18: 'Rain', 19: 'Flurries', 20: 'Flurries', 21: 'Flurries',
+      22: 'Snow', 23: 'Snow', 24: 'Ice', 25: 'Sleet', 26: 'Freezing rain', 29: 'Rain and snow', 30: 'Hot',
+      31: 'Cold', 32: 'Windy', 33: 'Clear', 34: 'Mostly clear', 35: 'Partly cloudy', 36: 'Partly cloudy',
+      37: 'Hazy', 38: 'Mostly cloudy', 39: 'Showers', 40: 'Showers', 41: 'Thunderstorms', 42: 'Thunderstorms',
+      43: 'Flurries', 44: 'Snow',
+    };
+    // The summary has no indoor flag (it even returns a forecast for domes),
+    // but the core API's competition record does.
+    let indoorPromise = null;
+    function fetchIndoor(id) {
+      return indoorPromise ||= fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${id}/competitions/${id}`)
+        .then(r => r.ok ? r.json() : null).then(d => d?.venue?.indoor ?? null).catch(() => null);
+    }
+    function weatherText(w) {
+      if (!w || w.temperature == null) return '';
+      const cond = WEATHER_TEXT[Number(w.conditionId)];
+      return [`${w.temperature}°F`, cond].filter(Boolean).join(' · ');
+    }
+
+    // ── NFL: our model's pick ───────────────────────────────────
+    let nflFeedPromise = null;
+    const loadNFLFeed = () => nflFeedPromise ||= fetch(NFL_PREDICTIONS_URL).then(r => r.ok ? r.json() : null).catch(() => null);
+    function findModelPick(feed, awayAbbr, homeAbbr, week) {
+      return (feed?.picks || []).find(p => p.has_pick === true
+        && toEspnAbbrNFL(p.away_team) === awayAbbr && toEspnAbbrNFL(p.home_team) === homeAbbr
+        && (week == null || nflWeekFromGameId(p.game_id) == null || nflWeekFromGameId(p.game_id) === week)) || null;
+    }
+
+    // Like Today's Picks, the pick itself is for signed-in users only;
+    // signed-out visitors get a sign-up prompt. Re-rendered on auth change.
+    let modelPick = null;
+    function renderModelPickSlot() {
+      const slot = document.getElementById('model-pick-slot');
+      if (!slot) return;
+      if (!modelPick || window.currentUser === undefined) { slot.innerHTML = ''; return; }
+      if (!window.currentUser) {
+        slot.innerHTML = `<div class="section-card"><h2>Our Model's Pick</h2>
+          <div class="gp-signup"><span>Our model has a pick for this game.</span><button type="button" onclick="openAuthModal('signup')">Sign up to see it</button></div>
+        </div>`;
+        return;
+      }
+      const p = modelPick;
+      const edge = Math.abs(p.edge ?? 0);
+      const spread = p.spread != null ? (p.spread === 0 ? 'PK' : fmtSigned(p.spread)) : '';
+      const logo = teamLogoURLNFL(p.pick);
+      slot.innerHTML = `<div class="section-card"><h2>Our Model's Pick</h2>
+        <div class="gp-pick">${logo ? `<img src="${logo}" alt="" onerror="this.remove()">` : ''}<span class="gp-pick-team">${toEspnAbbrNFL(p.pick)} ${spread}</span></div>
+        <div class="gp-chips">
+          <span class="gp-chip">Edge: <span>+${edge}%</span></span>
+          <span class="gp-chip">Odds: <span>${p.line != null ? fmtSigned(p.line) : '—'}</span></span>
+        </div>
+        <div class="gp-footer"><span data-partner-label></span>${oddsSourceHTML(p)}<a class="gp-link" href="predictions.html">All picks →</a></div>
+      </div>`;
+      buildPartnerLabels();
+    }
+    window.renderModelPickSlot = renderModelPickSlot;
 
     function showEmpty(msg) {
       document.getElementById('game-root').innerHTML = `<div class="empty-state">
@@ -286,6 +641,20 @@
 
     function teamStatsHTML(awayBx, homeBx) {
       if (!awayBx || !homeBx) return '<p class="muted-note">Team stats will be available once the game begins.</p>';
+      if (!(awayBx.statistics || []).some(c => Array.isArray(c.stats))) {
+        const keys = FLAT_KEY_STATS[sport];
+        const list = keys
+          ? keys.map(n => awayBx.statistics?.find(s => s.name === n)).filter(Boolean)
+          : (awayBx.statistics || []).slice(0, 10);
+        return list.map(stat => {
+          const hStat = homeBx.statistics?.find(s => s.name === stat.name);
+          return `<div class="stat-compare-row">
+            <span class="sc-val away">${stat.displayValue ?? '—'}</span>
+            <span class="sc-label">${stat.label || stat.displayName || stat.name}</span>
+            <span class="sc-val home">${hStat?.displayValue ?? '—'}</span>
+          </div>`;
+        }).join('') || '<p class="muted-note">No team stats available.</p>';
+      }
       const curated = KEY_STATS[sport];
       let html = '';
       for (const cat of awayBx.statistics || []) {
@@ -403,32 +772,56 @@
       const isPre   = status?.type?.state === 'pre';
       const isBaseball = sport === 'baseball';
 
-      const scheduledTime = comp?.date
-        ? new Date(comp.date).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
-        : '';
+      // NFL extras load in parallel; each piece is optional and the page
+      // renders without it if its request fails.
+      let nflRanks = null;
+      let weatherLine = '';
+      modelPick = null;
+      if (isNFL) {
+        const season = data.header?.season?.year;
+        const [ranks, feed, indoor] = await Promise.all([
+          season ? Promise.all([fetchNFLTeamRanks(awayComp.team?.id, season), fetchNFLTeamRanks(homeComp.team?.id, season)]).catch(() => null) : null,
+          loadNFLFeed(),
+          isPre && data.gameInfo?.weather ? fetchIndoor(eventId) : null,
+        ]);
+        nflRanks = ranks;
+        modelPick = findModelPick(feed, awayAbbr, homeAbbr, data.header?.week ?? null);
+        if (indoor === false) weatherLine = weatherText(data.gameInfo.weather);
+      }
 
       const gameInfo = data.gameInfo || {};
       const venue = gameInfo.venue;
       const venueBits = [venue?.fullName, venue?.address?.city, venue?.address?.state].filter(Boolean).join(' · ');
 
+      // Pre-game: kickoff once, in the viewer's time zone, plus the network.
+      // ESPN's own status text is only shown when it says something else
+      // (e.g. a delay) -- for a normal scheduled game it repeats the time.
+      const network = isPre || isLive ? networkText(comp) : '';
+      const preStatus = status?.type?.name && status.type.name !== 'STATUS_SCHEDULED' ? (status.type.shortDetail || status.type.detail || '') : '';
+      const centerHTML = isPre
+        ? `${comp?.date ? kickoffHTML(comp.date, comp.timeValid) : ''}
+           ${preStatus ? `<div class="gh-status">${preStatus}</div>` : ''}`
+        : `<div class="gh-score">${awayComp.score ?? '0'} - ${homeComp.score ?? '0'}</div>
+           <div class="gh-status ${isLive ? 'live' : ''}">${isLive ? '<span class="live-dot"></span>' : ''}${status?.type?.detail || status?.type?.description || ''}</div>`;
+      const lines = isNFL && isPre ? headerLines(data) : { away: '', home: '' };
+      const teamHTML = (c, abbr, line) => `
+          <div class="gh-team">
+            ${logoHTML(c.team, abbr)}
+            <div class="gh-abbr">${abbr}</div>
+            ${recordOf(c) ? `<div class="gh-record">${recordOf(c)}</div>` : ''}
+            ${line ? `<div class="gh-line">${line}</div>` : ''}
+          </div>`;
+
       const headerHTML = `
         <div class="game-header">
-          <div class="gh-team">
-            ${logoHTML(awayComp.team, awayAbbr)}
-            <div class="gh-abbr">${awayAbbr}</div>
-            <div class="gh-name">${awayComp.team?.displayName || ''}</div>
-          </div>
+          ${teamHTML(awayComp, awayAbbr, lines.away)}
           <div class="gh-center">
-            ${isPre ? `<div class="gh-time">${scheduledTime}</div>` : `<div class="gh-score">${awayComp.score ?? '0'} - ${homeComp.score ?? '0'}</div>`}
-            <div class="gh-status ${isLive ? 'live' : ''}">${isLive ? '<span class="live-dot"></span>' : ''}${status?.type?.detail || status?.type?.description || ''}</div>
+            ${centerHTML}
+            ${network ? `<div class="gh-network">${network}</div>` : ''}
           </div>
-          <div class="gh-team">
-            ${logoHTML(homeComp.team, homeAbbr)}
-            <div class="gh-abbr">${homeAbbr}</div>
-            <div class="gh-name">${homeComp.team?.displayName || ''}</div>
-          </div>
+          ${teamHTML(homeComp, homeAbbr, lines.home)}
         </div>
-        <div class="gh-meta">${venueBits}</div>
+        <div class="gh-meta">${venueBits ? `<div>${venueBits}</div>` : ''}${weatherLine ? `<div>${weatherLine}</div>` : ''}</div>
       `;
 
       // ── Live bases / count / outs (baseball only) ──────────────
@@ -479,7 +872,7 @@
 
         linescoreHTML = `
           <div class="section-card">
-            <h2>Inning by Inning</h2>
+            <h2>${isBaseball ? 'Inning by Inning' : (sport === 'football' || sport === 'basketball') ? 'Score by Quarter' : 'Score by Period'}</h2>
             <table class="linescore-table">
               <thead><tr><th></th>${headCells}</tr></thead>
               <tbody>
@@ -514,11 +907,16 @@
       const bxTeams = data.boxscore?.teams || [];
       const awayBx = bxTeams.find(t => t.homeAway === 'away');
       const homeBx = bxTeams.find(t => t.homeAway === 'home');
-      const statsHTML = `
+      const statsHTML = isNFL && isPre ? '' : `
         <div class="section-card">
           <h2>Team Stats</h2>
           ${teamStatsHTML(awayBx, homeBx)}
         </div>`;
+      const nflHTML = !isNFL ? '' :
+        rankingsHTML(nflRanks, awayComp, homeComp, awayAbbr, homeAbbr)
+        + lastFiveHTML(data, awayComp, homeComp, awayAbbr, homeAbbr)
+        + injuriesHTML(data, awayComp, homeComp, awayAbbr, homeAbbr)
+        + '<div id="model-pick-slot"></div>';
 
       // ── Starting pitchers (baseball only) ───────────────────────
       let pitchersHTML = '';
@@ -559,7 +957,8 @@
         }
       }
 
-      document.getElementById('game-root').innerHTML = headerHTML + liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML;
+      document.getElementById('game-root').innerHTML = headerHTML + liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML + nflHTML;
+      renderModelPickSlot();
 
       if (wp.length > 1) {
         // ESPN plots the AWAY team's win probability: above the 50 line
@@ -631,6 +1030,7 @@
     onAuthChange(user => {
       window.currentUser = user;
       if (window.updateAuthUI) window.updateAuthUI(user);
+      if (window.renderModelPickSlot) window.renderModelPickSlot();
     });
   </script>
 </body>
