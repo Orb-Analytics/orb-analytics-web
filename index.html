@@ -315,6 +315,16 @@
     .playoff-notice a { color: var(--purple-600); font-weight: 600; text-decoration: none; }
     .playoff-notice a:hover { text-decoration: underline; }
 
+    /* Today's Picks is for signed-in users: a spinner until Firebase reports
+       the sign-in state, then the picks (signed in) or a sign-up prompt. */
+    #panel-today:not([data-auth="in"]) .today-picks-content { display: none; }
+    #panel-today:not([data-auth="out"]) .today-signup-prompt { display: none; }
+    #panel-today:not([data-auth="unknown"]) .today-auth-loading { display: none; }
+    .today-signup-prompt { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .today-signup-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--text); margin: 0; }
+    .today-signup-prompt a { color: var(--purple-600); font-weight: 600; text-decoration: none; }
+    .today-signup-prompt a:hover { text-decoration: underline; }
+
     /* ── Pick cards ──────────────────────────────────────────── */
     .picks-grid {
       display: grid;
@@ -529,8 +539,8 @@
           <!-- Tabs row -->
           <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;justify-content:space-between">
             <div class="main-tabs">
-              <button class="main-tab active" onclick="switchView('history')" id="view-tab-history">Model History</button>
-              <button class="main-tab" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
+              <button class="main-tab active" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
+              <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>
             </div>
             <div class="main-tabs">
               <button class="main-tab active" onclick="switchSport('all')" id="sport-tab-all">All</button>
@@ -541,7 +551,15 @@
           </div>
 
           <!-- TODAY'S PICKS -->
-          <div class="tab-panel" id="panel-today">
+          <div class="tab-panel active" id="panel-today" data-auth="unknown">
+            <div class="loading-state today-auth-loading"><div class="spinner"></div> Loading today's picks...</div>
+            <div class="empty-state today-signup-prompt">
+              <h3 class="today-signup-title">See today's picks</h3>
+              <p>Create a free account to view our model's picks for today.</p>
+              <button type="button" class="email-signup-btn" onclick="openAuthModal('signup')">Create free account</button>
+              <p>Already have an account? <a href="javascript:void(0)" onclick="openAuthModal('signin')">Sign in</a></p>
+            </div>
+            <div class="today-picks-content">
             <div class="playoff-notice" id="notice-mlb" style="display:none"><strong>MLB model paused for the offseason.</strong> Our MLB model is on break through the playoffs and offseason and will return with daily picks at the start of next regular season. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
             <div id="picks-mlb">
               <div class="picks-grid" id="picks-container">
@@ -560,10 +578,11 @@
               <div class="playoff-notice" id="notice-nba"><strong>NBA picks coming soon.</strong> The NBA season is underway, but our model needs a few weeks of games before its picks are reliable, since every team's stats start fresh on opening night. We're testing the model now and will begin publishing NBA picks here once testing is complete. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
               <div class="picks-grid" id="picks-container-nba"></div>
             </div>
+            </div><!-- end today-picks-content -->
           </div>
 
           <!-- MODEL HISTORY -->
-          <div class="tab-panel active" id="panel-history">
+          <div class="tab-panel" id="panel-history">
             <div class="history-controls">
               <select class="filter-select" id="filter-category" onchange="applyHistoryFilters()">
                 <option value="all">All Picks</option>
@@ -846,11 +865,10 @@
     let filteredHistory = [];
     let equityChart = null;
     let chartMode = 'units';
-    let activeSport = localStorage.getItem('orb-active-sport') || 'all';
-    // The home page is the fixed landing entry point -- always open on
-    // Today's Picks regardless of whatever view was last left active on
-    // predictions.html (they share the same localStorage keys).
-    let activeView  = 'history'; // land on Model History by default now that the MLB season has ended
+    // Every visit lands on Today's Picks with All selected (signed-out
+    // visitors see a sign-up prompt there -- see updateTodayGate()).
+    let activeSport = 'all';
+    let activeView  = 'today';
 
     // Per-sport "Updated <time>" label state. Each sport's loader stores its
     // own generated_at here instead of writing #last-updated directly --
@@ -981,13 +999,18 @@
       applyHistoryFilters();
     }
 
+    // Today's Picks is gated behind sign-in: its panel shows a spinner until
+    // Firebase reports the sign-in state, then the picks for signed-in users
+    // or a sign-up prompt for signed-out visitors (CSS keyed on data-auth).
+    function updateTodayGate() {
+      const user = window.currentUser;
+      document.getElementById('panel-today').dataset.auth = user === undefined ? 'unknown' : (user ? 'in' : 'out');
+    }
+    window.updateTodayGate = updateTodayGate;
+    // If Firebase never reports (blocked or offline), show the prompt rather than a spinner forever.
+    setTimeout(() => { if (window.currentUser === undefined) { window.currentUser = null; updateTodayGate(); } }, 5000);
+
     function switchView(view) {
-      // Today's Picks is gated behind sign-in -- prompt Google sign-up
-      // rather than switching, so a signed-out visitor can't see live picks.
-      if (view === 'today' && !window.currentUser) {
-        window.openAuthModal('signup');
-        return;
-      }
       activeView = view;
       localStorage.setItem('orb-active-view', view);
       ['today','history'].forEach(v => {
@@ -1919,6 +1942,7 @@
       label.textContent = collapsed ? 'Show Tracker' : 'Hide Tracker';
     }
 
+    updateTodayGate();
     switchView(activeView);
     switchSport(activeSport);
 
@@ -1942,6 +1966,7 @@
 
     onAuthChange(async user => {
       window.currentUser = user;
+      if (window.updateTodayGate) window.updateTodayGate();
       // Update sidebar auth UI
       if (window.updateAuthUI) window.updateAuthUI(user);
       // Reload bets from correct source
