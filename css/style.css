@@ -602,10 +602,12 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
   white-space: nowrap;
 }
 .partner-label-row { margin-top: 0.5rem; }
-/* Promo card: label gets its own strip under the image so it never covers the ad */
+/* Promo card: the label and fine print get their own strip under the image so they never cover the ad */
 .email-signup-sponsor { display: flex; flex-direction: column; }
-.email-signup-sponsor > a { flex: 1 1 auto; min-height: 0; display: block; }
-.email-signup-sponsor .partner-label { align-self: flex-start; margin: 0.6rem 0.75rem; }
+.email-signup-sponsor > a { flex: none; display: block; }
+.promo-footer { display: flex; flex-direction: column; align-items: flex-start; gap: 0.45rem; padding: 0.6rem 0.75rem 0.75rem; }
+.promo-fineprint { margin: 0; font-size: 0.75rem; line-height: 1.45; color: var(--gray-600); }
+.promo-fineprint a { color: inherit; text-decoration: underline; }
 
 /* ─── Pick card odds source ("Odds via DraftKings") ──────────────── */
 .odds-source { font-size: 0.75rem; color: var(--gray-600); text-align: center; margin-top: -0.25rem; }
@@ -613,7 +615,9 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
 /* ─── Email Signup ───────────────────────────────────────────────── */
 .email-signup {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, ...) lets both columns shrink; with plain 1fr the signup card's
+     min-content width squeezed the promo to ~25px at 769-1100px. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.85rem;
   margin: 2rem 0;
   min-height: 280px;
@@ -626,12 +630,20 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
   overflow: hidden;
   position: relative;
 }
+/* The promos are square: keep the box square (no cropping of the offer or
+   fine print), and reveal the image only once js/novig-promos.js's pick has
+   loaded so no other image can flash first. */
 .email-signup-sponsor img {
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
+.email-signup-sponsor img.is-loaded { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .email-signup-sponsor img { transition: none; } }
 .email-signup-cta {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -652,6 +664,13 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
   text-transform: uppercase;
   color: var(--purple-600);
   margin-bottom: 0.6rem;
+}
+/* Narrow desktop (sidebar visible): two columns are tight, so stack the form.
+   The one-row form needs ~1110px; 1199px leaves headroom for font differences. */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .email-signup-cta { padding: 2rem 1.25rem; }
+  .email-signup-form { flex-direction: column; }
+  .email-signup-input { width: 100%; }
 }
 @media (max-width: 768px) {
   .email-signup { grid-template-columns: 1fr; min-height: unset; }
