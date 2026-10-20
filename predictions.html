@@ -315,16 +315,6 @@
     .playoff-notice a { color: var(--purple-600); font-weight: 600; text-decoration: none; }
     .playoff-notice a:hover { text-decoration: underline; }
 
-    /* Today's Picks is for signed-in users: a spinner until Firebase reports
-       the sign-in state, then the picks (signed in) or a sign-up prompt. */
-    #panel-today:not([data-auth="in"]) .today-picks-content { display: none; }
-    #panel-today:not([data-auth="out"]) .today-signup-prompt { display: none; }
-    #panel-today:not([data-auth="unknown"]) .today-auth-loading { display: none; }
-    .today-signup-prompt { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
-    .today-signup-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--text); margin: 0; }
-    .today-signup-prompt a { color: var(--purple-600); font-weight: 600; text-decoration: none; }
-    .today-signup-prompt a:hover { text-decoration: underline; }
-
     /* ── Pick cards ──────────────────────────────────────────── */
     .picks-grid {
       display: grid;
@@ -551,15 +541,7 @@
           </div>
 
           <!-- TODAY'S PICKS -->
-          <div class="tab-panel active" id="panel-today" data-auth="unknown">
-            <div class="loading-state today-auth-loading"><div class="spinner"></div> Loading today's picks...</div>
-            <div class="empty-state today-signup-prompt">
-              <h3 class="today-signup-title">See today's picks</h3>
-              <p>Create a free account to view our model's picks for today.</p>
-              <button type="button" class="email-signup-btn" onclick="openAuthModal('signup')">Create free account</button>
-              <p>Already have an account? <a href="javascript:void(0)" onclick="openAuthModal('signin')">Sign in</a></p>
-            </div>
-            <div class="today-picks-content">
+          <div class="tab-panel active" id="panel-today">
             <div class="playoff-notice" id="notice-mlb" style="display:none"><strong>MLB model paused for the offseason.</strong> Our MLB model is on break through the playoffs and offseason and will return with daily picks at the start of next regular season. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
             <div id="picks-mlb">
               <div class="picks-grid" id="picks-container">
@@ -578,7 +560,6 @@
               <div class="playoff-notice" id="notice-nba"><strong>NBA picks coming soon.</strong> The NBA season is underway, but our model needs a few weeks of games before its picks are reliable, since every team's stats start fresh on opening night. We're testing the model now and will begin publishing NBA picks here once testing is complete. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
               <div class="picks-grid" id="picks-container-nba"></div>
             </div>
-            </div><!-- end today-picks-content -->
           </div>
 
           <!-- MODEL HISTORY -->
@@ -791,7 +772,7 @@
     </div><!-- end sidebar-content -->
   </div><!-- end app-layout -->
 
-  <script src="js/nav.js?v=20261013"></script>
+  <script src="js/nav.js?v=20261020"></script>
   <script src="js/odds-source.js?v=20261014"></script>
   <script src="js/nfl-picks.js?v=20261014"></script>
   <script>
@@ -865,8 +846,9 @@
     let filteredHistory = [];
     let equityChart = null;
     let chartMode = 'units';
-    // Every visit lands on Today's Picks with All selected (signed-out
-    // visitors see a sign-up prompt there -- see updateTodayGate()).
+    // Every visit lands on Today's Picks with All selected. The picks are
+    // public; opening a game from a pick card asks signed-out visitors to
+    // sign up (goToGame() in js/nav.js).
     let activeSport = 'all';
     let activeView  = 'today';
 
@@ -998,17 +980,6 @@
       populateNFLWeekOptions();
       applyHistoryFilters();
     }
-
-    // Today's Picks is gated behind sign-in: its panel shows a spinner until
-    // Firebase reports the sign-in state, then the picks for signed-in users
-    // or a sign-up prompt for signed-out visitors (CSS keyed on data-auth).
-    function updateTodayGate() {
-      const user = window.currentUser;
-      document.getElementById('panel-today').dataset.auth = user === undefined ? 'unknown' : (user ? 'in' : 'out');
-    }
-    window.updateTodayGate = updateTodayGate;
-    // If Firebase never reports (blocked or offline), show the prompt rather than a spinner forever.
-    setTimeout(() => { if (window.currentUser === undefined) { window.currentUser = null; updateTodayGate(); } }, 5000);
 
     function switchView(view) {
       activeView = view;
@@ -1942,7 +1913,6 @@
       label.textContent = collapsed ? 'Show Tracker' : 'Hide Tracker';
     }
 
-    updateTodayGate();
     switchView(activeView);
     switchSport(activeSport);
 
@@ -1966,7 +1936,6 @@
 
     onAuthChange(async user => {
       window.currentUser = user;
-      if (window.updateTodayGate) window.updateTodayGate();
       // Update sidebar auth UI
       if (window.updateAuthUI) window.updateAuthUI(user);
       // Reload bets from correct source
