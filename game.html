@@ -175,8 +175,11 @@
     .gp-footer .odds-source { margin: 0; text-align: left; }
     .gp-link { font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple-600); font-weight: 600; text-decoration: none; }
     .gp-link:hover { text-decoration: underline; }
-    .gp-signup { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; font-size: 0.8125rem; color: var(--gray-600); }
-    .gp-signup button { font: inherit; font-weight: 600; color: #fff; background: var(--purple-600); border: none; border-radius: var(--radius-sm); padding: 0.45rem 0.9rem; cursor: pointer; }
+    .stats-signup { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; font-size: 0.875rem; color: var(--text); }
+    .stats-signup button { font: inherit; font-weight: 600; color: #fff; background: var(--purple-600); border: none; border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer; }
+    .stats-signin { margin: 0.75rem 0 0; font-size: 0.8125rem; color: var(--gray-600); }
+    .stats-signin a { color: var(--purple-600); font-weight: 600; text-decoration: none; }
+    .stats-signin a:hover { text-decoration: underline; }
 
     @media (max-width: 580px), (max-height: 500px) and (orientation: landscape) {
       .game-header { padding: 1.1rem 0.75rem; }
@@ -227,7 +230,7 @@
     </div><!-- end sidebar-content -->
   </div><!-- end app-layout -->
 
-  <script src="js/nav.js?v=20261013"></script>
+  <script src="js/nav.js?v=20261020"></script>
   <script src="js/odds-source.js?v=20261014"></script>
   <script src="js/nfl-picks.js?v=20261014"></script>
   <script>
@@ -555,19 +558,13 @@
         && (week == null || nflWeekFromGameId(p.game_id) == null || nflWeekFromGameId(p.game_id) === week)) || null;
     }
 
-    // Like Today's Picks, the pick itself is for signed-in users only;
-    // signed-out visitors get a sign-up prompt. Re-rendered on auth change.
+    // Picks are public, so the pick shows for everyone (game stats are the
+    // part that needs sign-in -- see render()).
     let modelPick = null;
     function renderModelPickSlot() {
       const slot = document.getElementById('model-pick-slot');
       if (!slot) return;
-      if (!modelPick || window.currentUser === undefined) { slot.innerHTML = ''; return; }
-      if (!window.currentUser) {
-        slot.innerHTML = `<div class="section-card"><h2>Our Model's Pick</h2>
-          <div class="gp-signup"><span>Our model has a pick for this game.</span><button type="button" onclick="openAuthModal('signup')">Sign up to see it</button></div>
-        </div>`;
-        return;
-      }
+      if (!modelPick) { slot.innerHTML = ''; return; }
       const p = modelPick;
       const edge = Math.abs(p.edge ?? 0);
       const spread = p.spread != null ? (p.spread === 0 ? 'PK' : fmtSigned(p.spread)) : '';
@@ -582,7 +579,28 @@
       </div>`;
       buildPartnerLabels();
     }
-    window.renderModelPickSlot = renderModelPickSlot;
+
+    // ── Sign-in gate for game stats ─────────────────────────────
+    // Signed-out visitors see the header and our pick, with a sign-up prompt
+    // in place of the stats. window.currentUser is undefined until Firebase
+    // reports the sign-in state; the page re-renders from the loaded game
+    // data when it does (and on sign-in / sign-out), so no refresh is needed.
+    let lastGameData = null;
+    let renderSeq = 0;
+    const authState = () => window.currentUser === undefined ? 'unknown' : (window.currentUser ? 'in' : 'out');
+    window.onGameAuthChange = () => { if (lastGameData) render(lastGameData).catch(() => {}); };
+    // If Firebase never reports (blocked or offline), treat the visitor as signed out.
+    setTimeout(() => { if (window.currentUser === undefined) { window.currentUser = null; window.onGameAuthChange(); } }, 5000);
+    const STATS_SIGNUP_HTML = `
+      <div class="section-card">
+        <h2>Game Stats</h2>
+        <div class="stats-signup">
+          <span>Create a free account to see full game stats.</span>
+          <button type="button" onclick="openAuthModal('signup')">Create free account</button>
+        </div>
+        <p class="stats-signin">Already have an account? <a href="javascript:void(0)" onclick="openAuthModal('signin')">Sign in</a></p>
+      </div>`;
+    const STATS_LOADING_HTML = `<div class="loading-state"><div class="spinner"></div> Loading game stats...</div>`;
 
     function showEmpty(msg) {
       document.getElementById('game-root').innerHTML = `<div class="empty-state">
@@ -597,23 +615,36 @@
       if (!awayParam || !homeParam) return null;
       const wantAway = toEspnAbbr(awayParam);
       const wantHome = toEspnAbbr(homeParam);
-      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${slug}/scoreboard`);
-      const data = await r.json();
-      for (const ev of data.events || []) {
-        const comp = ev.competitions?.[0];
-        const away = comp?.competitors?.find(c => c.homeAway === 'away');
-        const home = comp?.competitors?.find(c => c.homeAway === 'home');
-        if (away?.team?.abbreviation?.toUpperCase() === wantAway && home?.team?.abbreviation?.toUpperCase() === wantHome) {
-          return ev.id;
+      const base = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${slug}/scoreboard`;
+      const findIn = data => {
+        for (const ev of data.events || []) {
+          const comp = ev.competitions?.[0];
+          const away = comp?.competitors?.find(c => c.homeAway === 'away');
+          const home = comp?.competitors?.find(c => c.homeAway === 'home');
+          if (away?.team?.abbreviation?.toUpperCase() === wantAway && home?.team?.abbreviation?.toUpperCase() === wantHome) {
+            return ev.id;
+          }
         }
-      }
-      return null;
+        return null;
+      };
+      const data = await fetch(base).then(r => r.json());
+      const found = findIn(data);
+      if (found || !isNFL || !data.season?.year || !data.week?.number) return found;
+      // The NFL model publishes next week's picks (Tuesday) before ESPN's
+      // default scoreboard moves on to that week, so pick-card links for
+      // next week's games also need a look one week ahead. After regular-
+      // season week 18 the next week is the first playoff round.
+      const [type, week] = data.season.type === 2 && data.week.number >= 18
+        ? [3, 1] : [data.season.type, data.week.number + 1];
+      const next = await fetch(`${base}?year=${data.season.year}&seasontype=${type}&week=${week}`).then(r => r.json()).catch(() => ({}));
+      return findIn(next);
     }
 
     async function fetchAndRender(id) {
       const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${slug}/summary?event=${id}`);
       if (!r.ok) throw new Error('bad response');
       const data = await r.json();
+      lastGameData = data;
       await render(data);
       return data;
     }
@@ -759,6 +790,9 @@
     }
 
     async function render(data) {
+      const seq = ++renderSeq;          // a newer render (e.g. after sign-in) supersedes this one
+      const auth = authState();
+      const showStats = auth === 'in';
       const comp   = data.header?.competitions?.[0];
       const status = comp?.status;
       const competitors = comp?.competitors || [];
@@ -780,9 +814,9 @@
       if (isNFL) {
         const season = data.header?.season?.year;
         const [ranks, feed, indoor] = await Promise.all([
-          season ? Promise.all([fetchNFLTeamRanks(awayComp.team?.id, season), fetchNFLTeamRanks(homeComp.team?.id, season)]).catch(() => null) : null,
+          showStats && season ? Promise.all([fetchNFLTeamRanks(awayComp.team?.id, season), fetchNFLTeamRanks(homeComp.team?.id, season)]).catch(() => null) : null,
           loadNFLFeed(),
-          isPre && data.gameInfo?.weather ? fetchIndoor(eventId) : null,
+          showStats && isPre && data.gameInfo?.weather ? fetchIndoor(eventId) : null,
         ]);
         nflRanks = ranks;
         modelPick = findModelPick(feed, awayAbbr, homeAbbr, data.header?.week ?? null);
@@ -912,15 +946,15 @@
           <h2>Team Stats</h2>
           ${teamStatsHTML(awayBx, homeBx)}
         </div>`;
-      const nflHTML = !isNFL ? '' :
+      const nflStatsHTML = !isNFL || !showStats ? '' :
         rankingsHTML(nflRanks, awayComp, homeComp, awayAbbr, homeAbbr)
         + lastFiveHTML(data, awayComp, homeComp, awayAbbr, homeAbbr)
-        + injuriesHTML(data, awayComp, homeComp, awayAbbr, homeAbbr)
-        + '<div id="model-pick-slot"></div>';
+        + injuriesHTML(data, awayComp, homeComp, awayAbbr, homeAbbr);
+      const pickSlotHTML = isNFL ? '<div id="model-pick-slot"></div>' : '';
 
       // ── Starting pitchers (baseball only) ───────────────────────
       let pitchersHTML = '';
-      if (isBaseball) {
+      if (isBaseball && showStats) {
         const bxPlayers = data.boxscore?.players || [];
         const awayPl = bxPlayers.find(p => p.team?.abbreviation === awayAbbr);
         const homePl = bxPlayers.find(p => p.team?.abbreviation === homeAbbr);
@@ -957,10 +991,15 @@
         }
       }
 
-      document.getElementById('game-root').innerHTML = headerHTML + liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML + nflHTML;
+      if (seq !== renderSeq) return;
+      const bodyHTML = showStats
+        ? liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML + nflStatsHTML + pickSlotHTML
+        : pickSlotHTML + (auth === 'unknown' ? STATS_LOADING_HTML : STATS_SIGNUP_HTML);
+      if (wpChart) { wpChart.destroy(); wpChart = null; }
+      document.getElementById('game-root').innerHTML = headerHTML + bodyHTML;
       renderModelPickSlot();
 
-      if (wp.length > 1) {
+      if (showStats && wp.length > 1) {
         // ESPN plots the AWAY team's win probability: above the 50 line
         // means the away team is favored, below it means the home team is.
         const awaySeries = wp.map(p => Math.round((1 - (p.homeWinPercentage ?? 0.5) - (p.tiePercentage ?? 0)) * 100));
@@ -1026,11 +1065,17 @@
 
   <!-- Firebase auth so the sidebar reflects the signed-in state here too -->
   <script type="module">
-    import { onAuthChange } from './js/firebase.js';
+    import { signUp, signIn, signInWithGoogle, logOut, onAuthChange } from './js/firebase.js';
+    // The sign-in modal (js/nav.js) calls these; without them, signing in
+    // from this page failed.
+    window.orbSignUp   = signUp;
+    window.orbSignIn   = signIn;
+    window.orbSignInWithGoogle = signInWithGoogle;
+    window.orbSignOut  = logOut;
     onAuthChange(user => {
       window.currentUser = user;
       if (window.updateAuthUI) window.updateAuthUI(user);
-      if (window.renderModelPickSlot) window.renderModelPickSlot();
+      if (window.onGameAuthChange) window.onGameAuthChange();
     });
   </script>
 </body>

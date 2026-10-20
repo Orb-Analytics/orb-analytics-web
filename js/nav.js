@@ -472,12 +472,22 @@ window.confirmSignOut = async function() {
 };
 
 // ── Gate game clickthroughs behind sign-up ─────────────────────────
+// Firebase reports the sign-in state shortly after load (window.currentUser
+// is undefined until then). A click before that waits for it, up to 3s,
+// rather than showing a signed-in user the sign-up popup.
 window.goToGame = function(url) {
-  if (window.currentUser) {
-    location.href = url;
-  } else {
-    window.openAuthModal('signup');
-  }
+  const decide = () => {
+    if (window.currentUser) location.href = url;
+    else window.openAuthModal('signup');
+  };
+  if (window.currentUser !== undefined) return decide();
+  const started = Date.now();
+  const timer = setInterval(() => {
+    if (window.currentUser !== undefined || Date.now() - started > 3000) {
+      clearInterval(timer);
+      decide();
+    }
+  }, 100);
 };
 
 // ── Theme ─────────────────────────────────────────────────────────
