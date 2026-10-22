@@ -14,3 +14,9 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
           channelId: live
           projectId: orb-analytics-7d212
+          # Pinned: firebase-tools 15.34.1 added a pre-deploy check
+          # (serviceusage.services.get) that this service account isn't allowed
+          # to make, so every deploy since Oct 22 failed with a 403. 15.34.0 was
+          # the last version that deployed. Unpin once the service account has
+          # the "Service Usage Consumer" role.
+          firebaseToolsVersion: "15.34.0"
