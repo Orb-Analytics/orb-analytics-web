@@ -62,7 +62,8 @@
     }
     .league-tabs::-webkit-scrollbar { display: none; }
     @media (min-width: 769px) {
-      .league-tabs { width: fit-content; }
+      /* fit-content, but never wider than the page: extra tabs scroll inside the row */
+      .league-tabs { width: fit-content; max-width: 100%; }
     }
     .league-tab {
       display: flex; align-items: center; gap: 0.4rem;
@@ -80,6 +81,17 @@
       font-size: 0.75rem; font-weight: 700;
       padding: 0.1rem 0.4rem; border-radius: var(--radius-pill); line-height: 1.4;
     }
+
+    /* ── All tab: one group per sport ─────────────────────────── */
+    .sport-group + .sport-group { margin-top: 1.75rem; }
+    .sport-group-header {
+      display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.75rem;
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--text);
+    }
+    .sport-group-header img { height: 18px; border-radius: 2px; flex-shrink: 0; }
+    .sport-group-count { color: var(--gray-600); font-weight: 600; }
+    .league-tab .tab-icon { width: 16px; height: 16px; flex-shrink: 0; }
 
     /* ── Section dividers ──────────────────────────────────────── */
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0 0.65rem; }
@@ -360,7 +372,10 @@
       { id:'pga', label:'PGA', logo:'https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/pgatour.png', sport:'golf', slug:'pga', type:'golf' },
     ];
 
-    let activeLeague = 'mlb';
+    // "All" (today's games from every team sport) is the default tab.
+    let activeLeague = 'all';
+    const TEAM_LEAGUES = LEAGUES.filter(l => l.type === 'team');
+    const liveCounts = {};   // team league id -> live games, summed for the All badge
     const cache     = {};
     const eraCache  = {};
 
@@ -398,7 +413,10 @@
       `Updated ${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })} at ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/New_York',timeZoneName:'short'})}`;
 
     // ── Helpers ───────────────────────────────────────────────────
-    const isLive  = s => s?.type?.name === 'STATUS_IN_PROGRESS';
+    // Any in-progress state counts as live: halftime, end of a period/inning and
+    // delays have their own status names (STATUS_HALFTIME, STATUS_END_PERIOD...),
+    // and matching only STATUS_IN_PROGRESS dropped those games from the list.
+    const isLive  = s => s?.type?.state === 'in';
     const isFinal = s => s?.type?.name === 'STATUS_FINAL';
     const isPre   = s => s?.type?.state === 'pre';
     const sortOrd = s => isLive(s) ? 0 : isPre(s) ? 1 : 2;
@@ -608,6 +626,10 @@
         badge.className = 'tab-live-count';
         badge.textContent = liveCount;
         tab.appendChild(badge);
+      }
+      if (TEAM_LEAGUES.some(l => l.id === leagueId)) {
+        liveCounts[leagueId] = liveCount;
+        updateLiveBadge('all', Object.values(liveCounts).reduce((a, b) => a + b, 0));
       }
     }
 
@@ -1076,7 +1098,87 @@
     }
 
     // ── Load a league ─────────────────────────────────────────────
+    // ESPN scoreboard for one league, cached until a refresh.
+    async function fetchLeagueData(leagueObj, force = false) {
+      if (!force && cache[leagueObj.id]) return cache[leagueObj.id];
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${leagueObj.sport}/${leagueObj.slug}/scoreboard${leagueObj.query || ''}`);
+      const data = await r.json();
+      cache[leagueObj.id] = data;
+      return data;
+    }
+
+    // MLB cards also show probable pitchers (with ERA) and our model's odds.
+    async function loadMLBExtras() {
+      const [pitcherMap] = await Promise.all([
+        fetchPitchersTagged(),
+        fetchOdds(),
+      ]);
+      // Fetch all ERAs in parallel
+      const allIds = [];
+      Object.values(pitcherMap).forEach(p => {
+        if (p.away?.id) allIds.push(p.away.id);
+        if (p.home?.id) allIds.push(p.home.id);
+      });
+      await Promise.all([...new Set(allIds)].map(fetchERA));
+      return pitcherMap;
+    }
+
+    // ── All tab ───────────────────────────────────────────────────
+    // Today's games (viewer's local date) from every team sport, one group per
+    // sport in tab order, sports with no games left out. Within a group: live,
+    // then upcoming, then finished, each by start time. Cards are the same
+    // buildCard() the sport tabs use. NFL/CFB feeds cover the whole week, hence
+    // the date filter; a game in progress always counts as today's.
+    async function loadAll(force = false) {
+      const output = document.getElementById('scoreboard-output');
+      output.innerHTML = `<div class="loading-state"><div class="spinner"></div> Loading today's games...</div>`;
+      const results = await Promise.all(TEAM_LEAGUES.map(async l => {
+        try {
+          const events = (await fetchLeagueData(l, force)).events || [];
+          updateLiveBadge(l.id, events.filter(e => isLive(e.status)).length);
+          return { l, events };
+        } catch { return { l, events: null }; }
+      }));
+      if (activeLeague !== 'all') return;   // switched tabs while loading
+      if (results.every(r => r.events === null)) {
+        output.innerHTML = `<div class="empty-state">
+          <p>Could not load scores.</p>
+          <button class="btn btn-ghost btn-sm" onclick="loadLeague('all',true)" style="margin-top:0.5rem">Try Again</button>
+        </div>`;
+        return;
+      }
+      const today  = new Date().toDateString();
+      const byTime = (a, b) => new Date(a.date) - new Date(b.date);
+      const groups = results.filter(r => r.events).map(({ l, events }) => {
+        const todays = events.filter(e => isLive(e.status) || ((isPre(e.status) || isFinal(e.status)) && new Date(e.date).toDateString() === today));
+        return { l, games: [
+          ...todays.filter(e => isLive(e.status)).sort(byTime),
+          ...todays.filter(e => isPre(e.status)).sort(byTime),
+          ...todays.filter(e => isFinal(e.status)).sort(byTime),
+        ] };
+      }).filter(g => g.games.length);
+      const pitcherMap = groups.some(g => g.l.id === 'mlb') ? await loadMLBExtras().catch(() => ({})) : {};
+      if (activeLeague !== 'all') return;
+      if (!groups.length) {
+        output.innerHTML = `<div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <p>No games scheduled today.</p>
+        </div>`;
+        return;
+      }
+      output.innerHTML = groups.map(({ l, games }) => `
+        <section class="sport-group">
+          <h3 class="sport-group-header"><img src="${l.logo}" alt=""> ${l.label} <span class="sport-group-count">· ${games.length} game${games.length === 1 ? '' : 's'}</span></h3>
+          <div class="games-grid">${games.map(e => buildCard(e, l.id, pitcherMap)).join('')}</div>
+        </section>`).join('');
+    }
+
     async function loadLeague(leagueId, force = false) {
+      if (leagueId === 'all') return loadAll(force);
       const leagueObj = LEAGUES.find(l => l.id === leagueId);
       const output    = document.getElementById('scoreboard-output');
 
@@ -1104,34 +1206,12 @@
           return;
         }
 
-        let data;
-        if (!force && cache[leagueId]) {
-          data = cache[leagueId];
-        } else {
-          const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${leagueObj.sport}/${leagueObj.slug}/scoreboard${leagueObj.query || ''}`);
-          data = await r.json();
-          cache[leagueId] = data;
-        }
-
+        const data   = await fetchLeagueData(leagueObj, force);
         const events = data.events || [];
 
         if (leagueObj.type === 'golf')   { renderGolfOutput(events, leagueId); return; }
 
-        let pitcherMap = {};
-
-        if (leagueId === 'mlb') {
-          [pitcherMap] = await Promise.all([
-            fetchPitchersTagged(),
-            fetchOdds(),
-          ]);
-          // Fetch all ERAs in parallel
-          const allIds = [];
-          Object.values(pitcherMap).forEach(p => {
-            if (p.away?.id) allIds.push(p.away.id);
-            if (p.home?.id) allIds.push(p.home.id);
-          });
-          await Promise.all([...new Set(allIds)].map(fetchERA));
-        }
+        const pitcherMap = leagueId === 'mlb' ? await loadMLBExtras() : {};
 
         renderOutput(events, leagueId, pitcherMap);
 
@@ -1145,7 +1225,11 @@
 
     // ── Tabs ──────────────────────────────────────────────────────
     function buildTabs() {
-      document.getElementById('league-tabs').innerHTML = LEAGUES.map(l => `
+      const allTab = `
+        <button class="league-tab ${activeLeague === 'all' ? 'active' : ''}" data-league="all" onclick="switchLeague('all')">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> All
+        </button>`;
+      document.getElementById('league-tabs').innerHTML = allTab + LEAGUES.map(l => `
         <button class="league-tab ${l.id === activeLeague ? 'active' : ''}" data-league="${l.id}"
                 onclick="switchLeague('${l.id}')">
           <img src="${l.logo}" height="18" style="border-radius:2px;flex-shrink:0"> ${l.label}
@@ -1160,26 +1244,30 @@
     }
 
     // ── Refresh ───────────────────────────────────────────────────
+    function clearActiveCache() {
+      const ids = activeLeague === 'all' ? TEAM_LEAGUES.map(l => l.id) : [activeLeague];
+      ids.forEach(id => { delete cache[id]; delete cache[id + '_combined']; });
+    }
+
     async function doRefresh() {
       const btn = document.getElementById('refresh-btn');
       btn.classList.add('spinning'); btn.disabled = true;
-      delete cache[activeLeague];
-      delete cache[activeLeague + '_combined'];
+      clearActiveCache();
       await loadLeague(activeLeague, true);
       btn.classList.remove('spinning'); btn.disabled = false;
     }
 
     // Auto-refresh every 45s
     setInterval(() => {
-      delete cache[activeLeague];
-      delete cache[activeLeague + '_combined'];
+      clearActiveCache();
       loadLeague(activeLeague, true);
     }, 45000);
 
     // ── Preload live-game counts for every tab so badges are correct
     // before the user ever clicks a tab, not just for the active one ──
     async function preloadLiveCounts() {
-      await Promise.all(LEAGUES.filter(l => l.id !== activeLeague).map(async l => {
+      // The All tab loads every team sport itself; only preload the rest.
+      await Promise.all(LEAGUES.filter(l => l.id !== activeLeague && !(activeLeague === 'all' && l.type === 'team')).map(async l => {
         try {
           if (l.type === 'tennis') {
             const cacheKey = l.id + '_combined';
