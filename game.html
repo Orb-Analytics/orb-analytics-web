@@ -88,6 +88,12 @@
     .linescore-table th { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); border-bottom: 1px solid var(--border); }
     .linescore-table td.ls-team { text-align: left; font-weight: 700; }
     .linescore-table tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+    /* Baseball: 9+ innings plus R/H/E -- tighter cells on phones, and scroll
+       inside the card (extra innings) rather than overflow it. */
+    .ls-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    @media (max-width: 420px) {
+      .linescore-table.ls-baseball th, .linescore-table.ls-baseball td { padding: 0.4rem 0.3rem; }
+    }
 
     /* ── Team stat comparison ──────────────────────────────────── */
     .stat-cat-title {
@@ -139,6 +145,14 @@
     .rank-bar span { min-width: 6px; border-radius: 3px; }
     .rank-bar .away { background: var(--away-bar); }
     .rank-bar .home { background: var(--home-bar); }
+    .rank-note { margin: 0.75rem 0 0; font-size: 0.75rem; color: var(--gray-600); }
+
+    /* ── Goalies / rest (MLB, NBA, NHL) ───────────────────────── */
+    .sp-row { padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
+    .sp-row:last-child { border-bottom: none; }
+    .sp-name { font-size: 0.8125rem; color: var(--text); font-weight: 600; overflow-wrap: anywhere; }
+    .sp-line { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600); margin-top: 0.1rem; }
+    .rest-note { font-size: 0.8125rem; color: var(--text); padding: 0.2rem 0; }
 
     /* ── NFL: last 5 / injuries (two team columns) ─────────────── */
     .team-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -253,6 +267,7 @@
     // which need nfl-picks.js's NFL mapping rather than the MLB one above.
     const toEspnAbbr = a => sport === 'football' ? toEspnAbbrNFL(a) : (MODEL_TO_ESPN[a] || a || '').toUpperCase();
     const isNFL = sport === 'football' && slug === 'nfl';
+    const SPORT_KEY = `${sport}/${slug}`;
 
     // Curated stat allowlist per sport/category so the page stays readable.
     // Sports without an entry fall back to showing a handful of raw stats.
@@ -324,7 +339,10 @@
     // National broadcasts when ESPN flags them (MLB lists every local
     // network too), capped at two so the header stays short.
     function networkText(comp) {
-      const all = comp?.broadcasts || [];
+      // TV networks only when ESPN lists any (MLB adds national radio, e.g. "ERADM").
+      const listed = comp?.broadcasts || [];
+      const tv = listed.filter(b => b.type?.shortName !== 'Radio');
+      const all = tv.length ? tv : listed;
       const national = all.filter(b => b.isNational || b.market?.type === 'National');
       const names = [...new Set((national.length ? national : all).map(b => b.media?.shortName).filter(Boolean))].slice(0, 2);
       return names.length ? `on ${names.join(' / ')}` : '';
@@ -334,10 +352,19 @@
 
     // Spread under the favorite, total under the other team. ESPN's
     // pickcenter spread is from the home side (-7.5 = home favored).
-    function headerLines(data) {
+    // MLB/NHL run and puck lines are almost always 1.5, so those sports
+    // show the favorite's moneyline instead (style 'moneyline').
+    function headerLines(data, style = 'spread') {
       const pc = data.pickcenter?.[0];
       if (!pc) return { away: '', home: '' };
       const total  = pc.overUnder != null ? `O/U ${pc.overUnder}` : '';
+      if (style === 'moneyline') {
+        const homeMl = pc.homeTeamOdds?.moneyLine, awayMl = pc.awayTeamOdds?.moneyLine;
+        if (homeMl == null || awayMl == null) return { away: '', home: total };
+        const homeFav = pc.homeTeamOdds?.favorite ?? homeMl < awayMl;
+        const favLine = `ML ${fmtSigned(homeFav ? homeMl : awayMl)}`;
+        return homeFav ? { away: total, home: favLine } : { away: favLine, home: total };
+      }
       const spread = Number(pc.spread);
       if (pc.spread == null || !Number.isFinite(spread)) return { away: '', home: total };
       if (spread === 0) return { away: total, home: 'PK' };
@@ -451,14 +478,25 @@
       return [pa, 100 - pa];
     }
 
-    function rankingsHTML(ranks, awayComp, homeComp, awayAbbr, homeAbbr) {
-      if (!ranks) {
+    // NFL: per-team ranks (fetchNFLTeamRanks) -> the shared card's rows.
+    function nflRankingRows(ranks) {
+      if (!ranks) return null;
+      const [ar, hr] = ranks;
+      return NFL_RANK_ROWS.map(row => ({
+        ...row, a: ar[row.src]?.[row.stat], h: hr[row.src]?.[row.stat],
+        fmt: v => row.signed ? fmtSigned(Math.round(v)) : v.toFixed(1),
+      }));
+    }
+
+    // Shared League Rankings card. rows: [{ label, a, h, fmt, lowerIsBetter,
+    // signed }] where a/h are { value, rank, rankText } for away/home.
+    function rankingsHTML(rankRows, awayComp, homeComp, awayAbbr, homeAbbr, note = '') {
+      if (!rankRows) {
         return `<div class="section-card"><h2>League Rankings</h2><p class="muted-note">League rankings are unavailable right now.</p></div>`;
       }
-      const [ar, hr] = ranks;
-      const fmt = (row, s) => !s ? '—' : row.signed ? fmtSigned(Math.round(s.value)) : s.value.toFixed(1);
-      const rows = NFL_RANK_ROWS.map(row => {
-        const a = ar[row.src]?.[row.stat], h = hr[row.src]?.[row.stat];
+      const fmt = (row, s) => !s ? '—' : row.fmt(s.value);
+      const rows = rankRows.map(row => {
+        const a = row.a, h = row.h;
         if (!a && !h) return '';
         const [pa, ph] = a && h ? rankBarShares(row, a, h) : [50, 50];
         return `<div class="rank-row">
@@ -475,7 +513,152 @@
         <h2>League Rankings</h2>
         <div class="rank-legend"><span><i style="background:var(--away-bar)"></i>${awayAbbr}</span><span>${homeAbbr}<i style="background:var(--home-bar)"></i></span></div>
         ${rows}
+        ${note ? `<p class="rank-note">${note}</p>` : ''}
       </div>`;
+    }
+
+    // ── League rankings for MLB / NBA / NHL ─────────────────────
+    // One league-wide request (ESPN's team-stats table; MLB adds standings
+    // for runs) instead of one per team. Ranks are computed here across
+    // every team that has played (1 = best, ties share a rank) and cached
+    // in sessionStorage for the visit.
+    const fetchJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+    const BYTEAM_URL = (q = '') => `https://site.web.api.espn.com/apis/common/v3/sports/${sport}/${slug}/statistics/byteam?region=us&lang=en&contentorigin=espn&limit=50${q}`;
+    const fmtFixed = d => v => v.toFixed(d);
+    const fmtPct = v => `${v.toFixed(1)}%`;
+    const fmtAvg = v => v.toFixed(3).replace(/^0/, '');
+
+    // Team values from the byteam table: each team's categories line up by
+    // index with the league's category list, whose `names` label the values.
+    function byteamTable(d) {
+      const table = {};
+      for (const t of d.teams || []) {
+        const v = {};
+        (t.categories || []).forEach((c, i) => (d.categories?.[i]?.names || []).forEach((n, j) => {
+          if (v[n] === undefined && Number.isFinite(c.values?.[j])) v[n] = c.values[j];
+        }));
+        if (t.team?.id) table[t.team.id] = v;
+      }
+      return table;
+    }
+
+    function rankLeague(table, rows) {
+      const out = {};
+      for (const row of rows) {
+        if (!row.value) continue;
+        const entries = Object.entries(table).map(([id, v]) => [id, row.value(v)]).filter(([, x]) => Number.isFinite(x));
+        const sorted = entries.map(e => e[1]).sort((a, b) => row.lowerIsBetter ? a - b : b - a);
+        for (const [id, x] of entries) {
+          const rank = sorted.indexOf(x) + 1;
+          const tied = sorted.lastIndexOf(x) !== rank - 1;
+          (out[id] ||= {})[row.key] = { value: x, rank, rankText: `${tied ? 'T-' : ''}${ordinal(rank)}`, n: entries.length };
+        }
+      }
+      return out;
+    }
+
+    const leagueMemo = {};
+    function cachedLoad(key, loader) {
+      return leagueMemo[key] ||= (async () => {
+        try {
+          const hit = JSON.parse(sessionStorage.getItem(key));
+          if (hit && Date.now() - hit.at < RANKS_TTL_MS) return hit.data;
+        } catch {}
+        const data = await loader();
+        try { sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), data })); } catch {}
+        return data;
+      })().catch(e => { delete leagueMemo[key]; throw e; });
+    }
+
+    // Returns { ranked: { teamId: { rowKey: {value, rank, rankText, n} } }, seasonStart }.
+    function loadLeagueRanks(cfg, seasonYear) {
+      return cachedLoad(`orb-league-ranks-v1:${SPORT_KEY}:${seasonYear}`, async () => {
+        const bt = await fetchJSON(BYTEAM_URL(cfg.byteamQuery || ''));
+        const table = byteamTable(bt);
+        if (cfg.extraTable) await cfg.extraTable(table, seasonYear);
+        return { ranked: rankLeague(table, cfg.rankRows), seasonStart: bt.requestedSeason?.type?.startDate || null };
+      });
+    }
+
+    // Builds the shared card's rows for the two teams in this game.
+    async function leagueRankingRows(cfg, data, awayComp, homeComp) {
+      const seasonYear = data.header?.season?.year;
+      const league = await loadLeagueRanks(cfg, seasonYear);
+      const espnRanked = cfg.espnRankedRows ? await cfg.espnRankedRows([awayComp.team?.id, homeComp.team?.id], seasonYear) : {};
+      const pick = (teamId, row) => (espnRanked[teamId] || {})[row.key] || league.ranked[teamId]?.[row.key];
+      const rows = cfg.rankRows.map(row => ({ ...row, a: pick(awayComp.team?.id, row), h: pick(homeComp.team?.id, row) }));
+      const n = rows.map(r => r.a?.n || r.h?.n).find(Boolean);
+      const note = n && cfg.leagueSize && n < cfg.leagueSize ? `Ranked among the ${n} teams that have played so far this season.` : '';
+      return { rows, note, seasonStart: league.seasonStart };
+    }
+
+    const standingsEntries = n => [...(n.children || []).flatMap(standingsEntries), ...(n.standings?.entries || [])];
+
+    // ── Sport-specific sections ─────────────────────────────────
+    // NHL goalies. Upcoming: each team's goalies with season stats (ESPN
+    // doesn't flag a confirmed starter). Live/finished: who played, from
+    // the box score.
+    function goaliesHTML(data, awayComp, homeComp, awayAbbr, homeAbbr, isPre) {
+      const stat = (list, ...abbrs) => list?.find(x => abbrs.includes(x.abbreviation))?.displayValue;
+      let colFor, note = '';
+      if (isPre) {
+        const g = data.goalies || {};
+        const byTeam = id => [g.awayTeam, g.homeTeam].find(t => t?.teamId === id)?.athletes || [];
+        colFor = comp => byTeam(comp.team?.id).slice(0, 2).map(a => {
+          const st = a.statistics || [];
+          const rec = [stat(st, 'W', 'WINS'), stat(st, 'L'), stat(st, 'OTL')];
+          const bits = [rec.every(x => x != null) ? rec.join('-') : null,
+            stat(st, 'GAA') != null ? `${stat(st, 'GAA')} GAA` : null,
+            stat(st, 'SV%') != null ? `${stat(st, 'SV%')} SV%` : null].filter(Boolean);
+          return { name: a.displayName || a.shortName, line: bits.join(' · ') };
+        });
+        note = 'Starting goalies aren\'t confirmed by ESPN yet; season stats shown.';
+      } else {
+        const box = data.boxscore?.players || [];
+        colFor = comp => {
+          const team = box.find(p => p.team?.id === comp.team?.id);
+          const st = team?.statistics?.find(x => /goal/i.test(x.name || x.type || ''));
+          if (!st) return [];
+          const idx = l => (st.labels || []).indexOf(l);
+          return (st.athletes || []).map(a => {
+            const v = l => idx(l) >= 0 ? a.stats?.[idx(l)] : null;
+            const bits = [v('SV') != null && v('SA') != null ? `${v('SV')}/${v('SA')} saves` : null,
+              v('SV%') != null ? `${v('SV%')} SV%` : null, v('GA') != null ? `${v('GA')} GA` : null, v('TOI') ? `${v('TOI')} TOI` : null].filter(Boolean);
+            return { name: a.athlete?.displayName || a.athlete?.shortName, line: bits.join(' · ') };
+          });
+        };
+      }
+      const away = colFor(awayComp), home = colFor(homeComp);
+      if (!away.length && !home.length) return '';
+      const col = (comp, abbr, list) => `<div>${teamColTitle(comp.team, abbr)}${list.map(x => `<div class="sp-row"><div class="sp-name">${x.name || ''}</div><div class="sp-line">${x.line || ''}</div></div>`).join('') || '<p class="muted-note" style="text-align:left;padding:0.35rem 0">Not listed yet</p>'}</div>`;
+      return `<div class="section-card"><h2>Goalies</h2><div class="team-cols">${col(awayComp, awayAbbr, away)}${col(homeComp, homeAbbr, home)}</div>${note ? `<p class="rank-note">${note}</p>` : ''}</div>`;
+    }
+
+    // NBA rest/schedule note from each team's recent game dates (any game,
+    // preseason included -- rest is rest), compared in US Eastern dates.
+    const easternDate = iso => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    const daysBetween = (later, earlier) => Math.round((Date.parse(easternDate(later)) - Date.parse(easternDate(earlier))) / 86400000);
+    function restNote(events, gameIso, seasonStart) {
+      const before = events.map(e => e.gameDate).filter(d => d && Date.parse(d) < Date.parse(gameIso)).sort();
+      if (!before.length) return null;
+      if (seasonStart && !before.some(d => Date.parse(d) >= Date.parse(seasonStart))) return 'First game of the regular season';
+      const days = daysBetween(gameIso, before[before.length - 1]);
+      if (days < 1) return null;
+      if (days === 1) {
+        const inLast3 = before.filter(d => daysBetween(gameIso, d) <= 3).length;
+        return inLast3 >= 2 ? '2nd night of a back-to-back (3rd game in 4 nights)' : '2nd night of a back-to-back';
+      }
+      return `${days - 1} day${days - 1 === 1 ? '' : 's'} of rest`;
+    }
+    function restHTML(data, awayComp, homeComp, awayAbbr, homeAbbr, seasonStart) {
+      const gameIso = data.header?.competitions?.[0]?.date;
+      if (!gameIso) return '';
+      const eventsFor = id => (data.lastFiveGames || []).find(t => t.team?.id === id)?.events || [];
+      const away = restNote(eventsFor(awayComp.team?.id), gameIso, seasonStart);
+      const home = restNote(eventsFor(homeComp.team?.id), gameIso, seasonStart);
+      if (!away && !home) return '';
+      const col = (comp, abbr, note) => `<div>${teamColTitle(comp.team, abbr)}<div class="rest-note">${note || '—'}</div></div>`;
+      return `<div class="section-card"><h2>Rest &amp; Schedule</h2><div class="team-cols">${col(awayComp, awayAbbr, away)}${col(homeComp, homeAbbr, home)}</div></div>`;
     }
 
     // ── NFL: last 5 games / injuries ────────────────────────────
@@ -484,8 +667,10 @@
       return `<div class="team-col-title">${logo ? `<img src="${logo}" alt="" onerror="this.remove()">` : ''}${abbr}</div>`;
     }
 
-    function lastFiveHTML(data, awayComp, homeComp, awayAbbr, homeAbbr) {
-      const eventsFor = id => (data.lastFiveGames || []).find(t => t.team?.id === id)?.events || [];
+    // since: optional ISO date; earlier games (preseason) are left out.
+    function lastFiveHTML(data, awayComp, homeComp, awayAbbr, homeAbbr, since = null) {
+      const eventsFor = id => ((data.lastFiveGames || []).find(t => t.team?.id === id)?.events || [])
+        .filter(e => !since || (e.gameDate && Date.parse(e.gameDate) >= Date.parse(since)));
       const col = (comp, abbr) => {
         const evs = eventsFor(comp.team?.id).slice(-5).reverse();   // most recent first
         const rows = evs.map(e => {
@@ -540,13 +725,15 @@
     // but the core API's competition record does.
     let indoorPromise = null;
     function fetchIndoor(id) {
-      return indoorPromise ||= fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${id}/competitions/${id}`)
+      return indoorPromise ||= fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${slug}/events/${id}/competitions/${id}`)
         .then(r => r.ok ? r.json() : null).then(d => d?.venue?.indoor ?? null).catch(() => null);
     }
-    function weatherText(w) {
+    // withWind: ESPN only gives wind as gusts (no sustained speed or direction).
+    function weatherText(w, withWind = false) {
       if (!w || w.temperature == null) return '';
       const cond = WEATHER_TEXT[Number(w.conditionId)];
-      return [`${w.temperature}°F`, cond].filter(Boolean).join(' · ');
+      const wind = withWind && w.gust != null ? `Gusts ${w.gust} mph` : null;
+      return [`${w.temperature}°F`, cond, wind].filter(Boolean).join(' · ');
     }
 
     // ── NFL: our model's pick ───────────────────────────────────
@@ -558,19 +745,47 @@
         && (week == null || nflWeekFromGameId(p.game_id) == null || nflWeekFromGameId(p.game_id) === week)) || null;
     }
 
+    // MLB/NBA feeds: one day's picks. A pick only counts for this game if
+    // its date (from the pick, its game_id, or the feed) is the game's date.
+    const feedMemo = {};
+    const loadFeed = url => feedMemo[url] ||= fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);
+    function feedPickDate(feed, p) {
+      const fromId = String(p.game_id || '').match(/(\d{4})(\d{2})(\d{2})$/);
+      if (fromId) return `${fromId[1]}-${fromId[2]}-${fromId[3]}`;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(p.date || '')) return p.date;
+      if (p.date && !isNaN(new Date(p.date))) return new Date(p.date).toLocaleDateString('en-CA');
+      return feed?.generated_at ? easternDate(feed.generated_at) : null;
+    }
+    function findDailyPick(feed, cfgFeed, ctx) {
+      const gameDay = easternDate(ctx.data.header?.competitions?.[0]?.date);
+      return (feed?.picks || []).find(p => cfgFeed.isPick(p)
+        && cfgFeed.matchTeam(p.away_team, ctx.awayComp) && cfgFeed.matchTeam(p.home_team, ctx.homeComp)
+        && feedPickDate(feed, p) === gameDay) || null;
+    }
+    // NBA model files name teams ("Denver", "La Lakers") rather than abbreviations.
+    const normTeam = x => String(x || '').toLowerCase().replace(/[^a-z]/g, '');
+    function teamNameMatches(name, comp) {
+      const t = comp.team || {}, n = normTeam(name);
+      if (!n) return false;
+      if ([t.abbreviation, t.location, t.name, t.shortDisplayName, t.displayName].some(x => normTeam(x) === n)) return true;
+      return n.startsWith('la') && normTeam(t.location) === 'losangeles' && n.slice(2) === normTeam(t.name);
+    }
+    const pickedComp = (p, ctx, match) => [ctx.awayComp, ctx.homeComp].find(c => match(p.pick, c));
+    const compLogo = c => c?.team?.logo || c?.team?.logos?.[0]?.href || '';
+
     // Picks are public, so the pick shows for everyone (game stats are the
     // part that needs sign-in -- see render()).
     let modelPick = null;
+    let modelPickView = null;   // { logo, title } from the sport's feed config
     function renderModelPickSlot() {
       const slot = document.getElementById('model-pick-slot');
       if (!slot) return;
-      if (!modelPick) { slot.innerHTML = ''; return; }
+      if (!modelPick || !modelPickView) { slot.innerHTML = ''; return; }
       const p = modelPick;
       const edge = Math.abs(p.edge ?? 0);
-      const spread = p.spread != null ? (p.spread === 0 ? 'PK' : fmtSigned(p.spread)) : '';
-      const logo = teamLogoURLNFL(p.pick);
+      const { logo, title } = modelPickView;
       slot.innerHTML = `<div class="section-card"><h2>Our Model's Pick</h2>
-        <div class="gp-pick">${logo ? `<img src="${logo}" alt="" onerror="this.remove()">` : ''}<span class="gp-pick-team">${toEspnAbbrNFL(p.pick)} ${spread}</span></div>
+        <div class="gp-pick">${logo ? `<img src="${logo}" alt="" onerror="this.remove()">` : ''}<span class="gp-pick-team">${title}</span></div>
         <div class="gp-chips">
           <span class="gp-chip">Edge: <span>+${edge}%</span></span>
           <span class="gp-chip">Odds: <span>${p.line != null ? fmtSigned(p.line) : '—'}</span></span>
@@ -579,6 +794,112 @@
       </div>`;
       buildPartnerLabels();
     }
+
+    // ── Per-sport configuration ─────────────────────────────────
+    // Each sport plugs its odds style, rankings, weather, pick feed and its
+    // own sections into the shared renderer (render()). CFB has no entry,
+    // so its page is unchanged.
+    const SPORT_CONFIG = {
+      'football/nfl': {
+        lines: 'spread', weather: { wind: false },
+        // rankings: set below -- NFL keeps its per-team ESPN ranks (fetchNFLTeamRanks).
+        feed: {
+          load: () => loadNFLFeed(),
+          find: (feed, ctx) => findModelPick(feed, ctx.awayAbbr, ctx.homeAbbr, ctx.data.header?.week ?? null),
+          view: p => ({ logo: teamLogoURLNFL(p.pick), title: `${toEspnAbbrNFL(p.pick)} ${p.spread != null ? (p.spread === 0 ? 'PK' : fmtSigned(p.spread)) : ''}` }),
+        },
+      },
+      'baseball/mlb': {
+        lines: 'moneyline', weather: { wind: true }, leagueSize: 30, pitchers: true,
+        byteamQuery: '&seasontype=2',
+        rankRows: [
+          { key: 'rpg',  label: 'Runs/G',         value: v => v.runsPerGame, fmt: fmtFixed(2) },
+          { key: 'rapg', label: 'Runs Allowed/G', value: v => v.runsAllowedPerGame, lowerIsBetter: true, fmt: fmtFixed(2) },
+          { key: 'avg',  label: 'AVG',            value: v => v.avg, fmt: fmtAvg },
+          { key: 'ops',  label: 'OPS',            value: v => v.OPS, fmt: fmtAvg },
+          { key: 'hr',   label: 'Home Runs',      value: v => v.homeRuns, fmt: fmtFixed(0) },
+          { key: 'era',  label: 'Team ERA',       value: v => v.ERA, lowerIsBetter: true, fmt: fmtFixed(2) },
+          { key: 'whip', label: 'WHIP',           value: v => v.WHIP, lowerIsBetter: true, fmt: fmtFixed(2) },
+        ],
+        // Runs scored/allowed per game aren't in the team-stats table; the standings have both.
+        extraTable: async (table, year) => {
+          const st = await fetchJSON(`https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?seasontype=2${year ? `&season=${year}` : ''}`);
+          for (const e of standingsEntries(st)) {
+            const v = Object.fromEntries((e.stats || []).map(x => [x.name, Number(x.value)]));
+            if (!(v.gamesPlayed > 0) || !e.team?.id) continue;
+            const t = (table[e.team.id] ||= {});
+            t.runsPerGame = v.pointsFor / v.gamesPlayed;
+            t.runsAllowedPerGame = v.pointsAgainst / v.gamesPlayed;
+          }
+        },
+        feed: {
+          load: () => loadFeed('/data/mlb/predictions.json'),
+          isPick: p => p.has_pick === true,
+          matchTeam: (abbr, comp) => !!abbr && toEspnAbbr(abbr) === (comp.team?.abbreviation || '').toUpperCase(),
+        },
+      },
+      'basketball/nba': {
+        lines: 'spread', weather: null, leagueSize: 30, rest: true,
+        rankRows: [
+          { key: 'pts',    label: 'Points/G',     value: v => v.avgPoints, fmt: fmtFixed(1) },
+          { key: 'oppPts', label: 'Opp Points/G', value: v => v.avgPoints - v.avgPointsDifferential, lowerIsBetter: true, fmt: fmtFixed(1) },
+          { key: 'fg',     label: 'FG%',          value: v => v.fieldGoalPct, fmt: fmtPct },
+          { key: 'fg3',    label: '3P%',          value: v => v.threePointFieldGoalPct, fmt: fmtPct },
+          { key: 'reb',    label: 'Rebounds/G',   value: v => v.avgRebounds, fmt: fmtFixed(1) },
+          { key: 'ast',    label: 'Assists/G',    value: v => v.avgAssists, fmt: fmtFixed(1) },
+          { key: 'tov',    label: 'Turnovers/G',  value: v => v.avgTurnovers, lowerIsBetter: true, fmt: fmtFixed(1) },
+        ],
+        feed: {
+          load: () => loadFeed('/data/nba/predictions.json'),
+          isPick: p => p.has_pick !== false,
+          matchTeam: teamNameMatches,
+        },
+      },
+      'hockey/nhl': {
+        lines: 'moneyline', weather: null, leagueSize: 32, goalies: true,
+        rankRows: [
+          { key: 'gf', label: 'Goals/G',         value: v => v.avgGoals, fmt: fmtFixed(2) },
+          { key: 'ga', label: 'Goals Against/G', value: v => v.avgGoalsAgainst, lowerIsBetter: true, fmt: fmtFixed(2) },
+          { key: 'pp', label: 'Power Play %',    value: v => v.powerPlayPct, fmt: fmtPct },
+          { key: 'pk', label: 'Penalty Kill %',  value: v => v.penaltyKillPct, fmt: fmtPct },
+          { key: 'sf', label: 'Shots/G',         value: v => v.games > 0 ? v.shotsTotal / v.games : NaN, fmt: fmtFixed(1) },
+          { key: 'sa', label: 'Shots Against/G', value: v => v.games > 0 ? v.shotsAgainst / v.games : NaN, lowerIsBetter: true, fmt: fmtFixed(1) },
+          { key: 'fo', label: 'Faceoff %',       fmt: fmtPct },   // ranked by ESPN per team (below)
+        ],
+        // Faceoff % isn't in the team-stats table; ESPN's per-team stats have it, with ESPN's rank.
+        espnRankedRows: async (teamIds, seasonYear) => {
+          const out = {};
+          await Promise.all(teamIds.filter(Boolean).map(id => cachedLoad(`orb-nhl-faceoff-v1:${seasonYear}:${id}`, async () => {
+            const d = await fetchJSON(`https://sports.core.api.espn.com/v2/sports/hockey/leagues/nhl/seasons/${seasonYear}/types/2/teams/${id}/statistics`);
+            for (const c of d.splits?.categories || []) {
+              const st = c.stats?.find(x => x.name === 'faceoffPercent');
+              if (st && Number.isFinite(st.value)) return { value: st.value, rank: st.rank ?? null, rankText: st.rankDisplayValue || null };
+            }
+            return null;
+          }).then(fo => { if (fo) out[id] = { fo }; }).catch(() => {})));
+          return out;
+        },
+      },
+    };
+    // NFL rankings: the two teams' per-team ESPN ranks, as before.
+    SPORT_CONFIG['football/nfl'].rankings = async (data, awayComp, homeComp) => {
+      const season = data.header?.season?.year;
+      if (!season) return null;
+      const ranks = await Promise.all([fetchNFLTeamRanks(awayComp.team?.id, season), fetchNFLTeamRanks(homeComp.team?.id, season)]);
+      return { rows: nflRankingRows(ranks), note: '', seasonStart: null };
+    };
+    // Shared defaults for the daily-feed sports: find by teams + date, card shows team + line.
+    for (const key of ['baseball/mlb', 'basketball/nba']) {
+      const fc = SPORT_CONFIG[key].feed;
+      fc.find = (feed, ctx) => findDailyPick(feed, fc, ctx);
+      fc.view = (p, ctx) => {
+        const comp = pickedComp(p, ctx, fc.matchTeam);
+        const abbr = comp?.team?.abbreviation || p.pick;
+        const line = p.spread != null && key !== 'baseball/mlb' ? (Number(p.spread) === 0 ? 'PK' : fmtSigned(p.spread)) : 'ML';
+        return { logo: compLogo(comp), title: `${abbr} ${line}` };
+      };
+    }
+    const CFG = SPORT_CONFIG[SPORT_KEY] || null;
 
     // ── Sign-in gate for game stats ─────────────────────────────
     // Signed-out visitors see the header and our pick, with a sign-up prompt
@@ -741,23 +1062,21 @@
       } catch { return null; }
     }
 
-    // ── Fetch probable pitchers for a date from MLB Stats API ─────
-    async function fetchProbablePitchers(venueName, awayAbbr, homeAbbr) {
+    // ── Fetch probable pitchers for a game from MLB Stats API ─────
+    // Asks for the game's own date (it used today's, so games on a later
+    // day always showed TBD). The Pacific date of first pitch is the MLB
+    // schedule date for every park. Matches by venue, then by teams.
+    const MLB_API_ABBR = { AZ: 'ARI', CWS: 'CHW' };
+    async function fetchProbablePitchers(venueName, awayAbbr, homeAbbr, gameIso) {
       try {
-        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
-        const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,probablePitcher,venue`);
+        const day = (gameIso ? new Date(gameIso) : new Date()).toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+        const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${day}&hydrate=team,probablePitcher,venue`);
         const d = await r.json();
-        for (const day of d.dates || []) {
-          for (const g of day.games || []) {
-            if (g.venue?.name === venueName) {
-              return {
-                away: g.teams?.away?.probablePitcher || null,
-                home: g.teams?.home?.probablePitcher || null,
-              };
-            }
-          }
-        }
-        return null;
+        const games = (d.dates || []).flatMap(x => x.games || []);
+        const abbr = t => { const a = (t?.abbreviation || '').toUpperCase(); return MLB_API_ABBR[a] || a; };
+        const g = games.find(x => x.venue?.name === venueName)
+          || games.find(x => abbr(x.teams?.away?.team) === awayAbbr && abbr(x.teams?.home?.team) === homeAbbr);
+        return g ? { away: g.teams?.away?.probablePitcher || null, home: g.teams?.home?.probablePitcher || null } : null;
       } catch { return null; }
     }
 
@@ -806,21 +1125,24 @@
       const isPre   = status?.type?.state === 'pre';
       const isBaseball = sport === 'baseball';
 
-      // NFL extras load in parallel; each piece is optional and the page
-      // renders without it if its request fails.
-      let nflRanks = null;
+      // Sport extras (SPORT_CONFIG) load in parallel; each piece is optional
+      // and the page renders without it if its request fails.
+      let rankings = null;
       let weatherLine = '';
       modelPick = null;
-      if (isNFL) {
-        const season = data.header?.season?.year;
-        const [ranks, feed, indoor] = await Promise.all([
-          showStats && season ? Promise.all([fetchNFLTeamRanks(awayComp.team?.id, season), fetchNFLTeamRanks(homeComp.team?.id, season)]).catch(() => null) : null,
-          loadNFLFeed(),
-          showStats && isPre && data.gameInfo?.weather ? fetchIndoor(eventId) : null,
+      modelPickView = null;
+      if (CFG) {
+        const loadRankings = CFG.rankRows ? () => leagueRankingRows(CFG, data, awayComp, homeComp) : () => CFG.rankings(data, awayComp, homeComp);
+        const [rk, feed, indoor] = await Promise.all([
+          showStats ? loadRankings().catch(() => null) : null,
+          CFG.feed ? CFG.feed.load() : null,
+          showStats && isPre && CFG.weather && data.gameInfo?.weather ? fetchIndoor(eventId) : null,
         ]);
-        nflRanks = ranks;
-        modelPick = findModelPick(feed, awayAbbr, homeAbbr, data.header?.week ?? null);
-        if (indoor === false) weatherLine = weatherText(data.gameInfo.weather);
+        rankings = rk;
+        const ctx = { data, awayComp, homeComp, awayAbbr, homeAbbr };
+        modelPick = feed ? CFG.feed.find(feed, ctx) : null;
+        if (modelPick) modelPickView = CFG.feed.view(modelPick, ctx);
+        if (indoor === false) weatherLine = weatherText(data.gameInfo.weather, CFG.weather.wind);
       }
 
       const gameInfo = data.gameInfo || {};
@@ -837,7 +1159,7 @@
            ${preStatus ? `<div class="gh-status">${preStatus}</div>` : ''}`
         : `<div class="gh-score">${awayComp.score ?? '0'} - ${homeComp.score ?? '0'}</div>
            <div class="gh-status ${isLive ? 'live' : ''}">${isLive ? '<span class="live-dot"></span>' : ''}${status?.type?.detail || status?.type?.description || ''}</div>`;
-      const lines = isNFL && isPre ? headerLines(data) : { away: '', home: '' };
+      const lines = CFG && isPre ? headerLines(data, CFG.lines) : { away: '', home: '' };
       const teamHTML = (c, abbr, line) => `
           <div class="gh-team">
             ${logoHTML(c.team, abbr)}
@@ -907,13 +1229,13 @@
         linescoreHTML = `
           <div class="section-card">
             <h2>${isBaseball ? 'Inning by Inning' : (sport === 'football' || sport === 'basketball') ? 'Score by Quarter' : 'Score by Period'}</h2>
-            <table class="linescore-table">
+            ${isBaseball ? '<div class="ls-scroll">' : ''}<table class="linescore-table${isBaseball ? ' ls-baseball' : ''}">
               <thead><tr><th></th>${headCells}</tr></thead>
               <tbody>
                 ${lsRow(awayAbbr, awayLS, awayComp.score)}
                 ${lsRow(homeAbbr, homeLS, homeComp.score)}
               </tbody>
-            </table>
+            </table>${isBaseball ? '</div>' : ''}
           </div>`;
       }
 
@@ -946,11 +1268,18 @@
           <h2>Team Stats</h2>
           ${teamStatsHTML(awayBx, homeBx)}
         </div>`;
-      const nflStatsHTML = !isNFL || !showStats ? '' :
-        rankingsHTML(nflRanks, awayComp, homeComp, awayAbbr, homeAbbr)
-        + lastFiveHTML(data, awayComp, homeComp, awayAbbr, homeAbbr)
+      // Rankings / last 5 / injuries for every configured sport (NFL as before).
+      const seasonStart = isNFL ? null : rankings?.seasonStart || null;
+      // League tables can load fine yet have nothing for these teams (no
+      // games played yet): skip the card then rather than call it unavailable.
+      const noRankData = !isNFL && rankings && !rankings.rows.some(r => r.a || r.h);
+      const nflStatsHTML = !CFG || !showStats ? '' :
+        (noRankData ? '' : rankingsHTML(rankings?.rows || null, awayComp, homeComp, awayAbbr, homeAbbr, rankings?.note || ''))
+        + lastFiveHTML(data, awayComp, homeComp, awayAbbr, homeAbbr, seasonStart)
         + injuriesHTML(data, awayComp, homeComp, awayAbbr, homeAbbr);
-      const pickSlotHTML = isNFL ? '<div id="model-pick-slot"></div>' : '';
+      const restCardHTML = CFG?.rest && isPre && showStats ? restHTML(data, awayComp, homeComp, awayAbbr, homeAbbr, seasonStart) : '';
+      const goaliesCardHTML = CFG?.goalies && showStats ? goaliesHTML(data, awayComp, homeComp, awayAbbr, homeAbbr, isPre) : '';
+      const pickSlotHTML = CFG?.feed ? '<div id="model-pick-slot"></div>' : '';
 
       // ── Starting pitchers (baseball only) ───────────────────────
       let pitchersHTML = '';
@@ -964,7 +1293,7 @@
         if (isPre) {
           // Pre-game: fetch probable pitchers + season stats from MLB Stats API
           const venueName = venue?.fullName;
-          const probables = venueName ? await fetchProbablePitchers(venueName, awayAbbr, homeAbbr) : null;
+          const probables = await fetchProbablePitchers(venueName, awayAbbr, homeAbbr, comp?.date);
           let awayCard = pitcherCardPreGameHTML(null, awayAbbr, null);
           let homeCard = pitcherCardPreGameHTML(null, homeAbbr, null);
           if (probables) {
@@ -992,9 +1321,18 @@
       }
 
       if (seq !== renderSeq) return;
-      const bodyHTML = showStats
-        ? liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML + nflStatsHTML + pickSlotHTML
-        : pickSlotHTML + (auth === 'unknown' ? STATS_LOADING_HTML : STATS_SIGNUP_HTML);
+      let bodyHTML;
+      if (!showStats) {
+        bodyHTML = pickSlotHTML + (auth === 'unknown' ? STATS_LOADING_HTML : STATS_SIGNUP_HTML);
+      } else if (!CFG || isNFL) {
+        // NFL and CFB: unchanged order.
+        bodyHTML = liveHTML + linescoreHTML + winProbHTML + statsHTML + pitchersHTML + nflStatsHTML + pickSlotHTML;
+      } else if (isPre) {
+        // Upcoming MLB/NBA/NHL: starters/goalies first, then context, then the season Team Stats.
+        bodyHTML = pitchersHTML + goaliesCardHTML + liveHTML + linescoreHTML + winProbHTML + restCardHTML + nflStatsHTML + statsHTML + pickSlotHTML;
+      } else {
+        bodyHTML = liveHTML + linescoreHTML + winProbHTML + goaliesCardHTML + statsHTML + pitchersHTML + nflStatsHTML + pickSlotHTML;
+      }
       if (wpChart) { wpChart.destroy(); wpChart = null; }
       document.getElementById('game-root').innerHTML = headerHTML + bodyHTML;
       renderModelPickSlot();
