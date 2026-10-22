@@ -31,7 +31,11 @@
       font-weight: 700;
       letter-spacing: 0.14em;
       margin-bottom: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    .scoreboard-header-top > div { min-width: 0; }
     @media (min-width: 769px) {
       .scoreboard-header-inner .section-title { font-size: clamp(2rem, 4vw, 3rem); }
     }
@@ -103,8 +107,9 @@
     @media (max-width: 580px), (max-height: 500px) and (orientation: landscape) { .games-grid { grid-template-columns: 1fr; } }
 
     @media (max-width: 580px), (max-height: 500px) and (orientation: landscape) {
-      .scoreboard-header { padding: 1rem 0 0.75rem; }
-      .scoreboard-header-top { flex-wrap: wrap; gap: 0.75rem; }
+      /* Same inner padding as the game cards below, so nothing touches the card edge */
+      .scoreboard-header { padding: 1rem 1.1rem; }
+      .scoreboard-header-top { gap: 0.75rem; }
       .league-tab { padding: 0.4rem 0.85rem; font-size: 0.875rem; }
       .team-logo { width: 30px; height: 30px; }
       .team-logo-fallback { width: 30px; height: 30px; }
@@ -254,6 +259,7 @@
       background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
       color: var(--gray-600); font-size: 0.75rem; font-family: var(--font-body);
       padding: 0.4rem 0.8rem; cursor: pointer; transition: var(--transition);
+      flex-shrink: 0; white-space: nowrap;
     }
     .refresh-btn:hover { color: var(--text); border-color: var(--hover-border); background: var(--hover-tint); }
     .refresh-btn svg { width: 13px; height: 13px; fill: currentColor; }
