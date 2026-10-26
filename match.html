@@ -12,12 +12,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Match · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261026" />
+  <link rel="stylesheet" href="css/style.css?v=20261026b" />
   <style>
     .back-link {
       display: inline-flex; align-items: center; gap: 0.35rem;
       font-family: var(--font-mono); font-size: 0.75rem; color: var(--gray-600);
-      text-decoration: none; margin: 1.5rem 0 1rem; transition: var(--transition);
+      text-decoration: none; transition: var(--transition);
     }
     .back-link:hover { color: var(--text); }
     .back-link svg { width: 14px; height: 14px; }
@@ -54,7 +54,8 @@
     .mh-status.live { color: #FCA5A5; display: flex; align-items: center; gap: 0.35rem; }
     .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #FCA5A5; animation: pulse-dot 1.4s infinite; }
     @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .mh-meta { text-align: center; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 1.5rem; line-height: 1.75; }
+    .back-row { margin: var(--page-top) 0 var(--stack-gap); }
+    .mh-meta { text-align: center; font-size: 0.75rem; color: var(--gray-600); margin-bottom: var(--stack-gap); line-height: 1.75; }
     .mh-meta-title { font-size: 0.8125rem; font-weight: 700; color: var(--text); }
     .mh-meta-title .mh-meta-tier { color: var(--purple-600); font-weight: 700; }
     body.dark .mh-meta-title .mh-meta-tier { color: var(--purple-300); }
@@ -62,7 +63,7 @@
     /* ── Section card ──────────────────────────────────────────── */
     .section-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 1.25rem 1.25rem 1.5rem; margin-bottom: 1.25rem;
+      padding: 1.25rem 1.25rem 1.5rem; margin-bottom: var(--stack-gap);
     }
     .section-card h2 {
       font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
@@ -122,10 +123,18 @@
     <div class="sidebar-content">
   <main class="page">
     <div class="container" style="max-width: 900px;">
-      <a class="back-link" href="scoreboard.html">
+      <!-- Top row: menu button (phones only) + Back to Scoreboard, like the Scoreboard header row -->
+      <div class="page-header-top back-row">
+        <div class="page-header-lead">
+          <button class="sidebar-toggle" id="sidebar-toggle">
+            <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <a class="back-link" href="scoreboard.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         Back to Scoreboard
       </a>
+        </div>
+      </div>
       <div id="match-root"><div class="loading-state"><div class="spinner"></div> Loading match...</div></div>
       <div id="site-disclaimer"></div>
     </div>

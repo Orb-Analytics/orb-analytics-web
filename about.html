@@ -12,13 +12,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>About Us · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261026" />
+  <link rel="stylesheet" href="css/style.css?v=20261026b" />
   <style>
     /* ── Page layout ─────────────────────────────────────────────── */
     .about-page {
       max-width: 1080px;
       margin: 0 auto;
-      padding: 1.75rem 0 0;
+      padding: var(--page-top) 0 0;
     }
 
     /* ── Hero ───────────────────────────────────────────────────── */
@@ -42,7 +42,7 @@
     .about-divider {
       height: 1px;
       background: var(--border);
-      margin: 1.5rem 0;
+      margin: var(--stack-gap) 0;
     }
 
     /* ── Section labels ─────────────────────────────────────────── */
@@ -80,8 +80,8 @@
     .about-two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin: 2rem 0;
+      gap: var(--stack-gap);
+      margin: 0 0 var(--stack-gap);
     }
     .about-col { display: flex; flex-direction: column; }
     .about-two-col .mission-card,
@@ -103,8 +103,8 @@
     .stats-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin: 2rem 0;
+      gap: var(--stack-gap);
+      margin: 0 0 var(--stack-gap);
     }
     @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
     .stat-card {
@@ -136,8 +136,7 @@
     .team-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 1.25rem;
-      margin-top: 1.5rem;
+      gap: var(--stack-gap);
     }
     @media (max-width: 760px), (max-height: 500px) and (orientation: landscape) { .team-grid { grid-template-columns: 1fr; } }
 
@@ -273,7 +272,10 @@
     body.dark .substack-btn { background: rgba(255,103,25,0.18); color: #FF9A5C; border-color: rgba(255,103,25,0.5); }
     body.dark .substack-btn:hover { background: rgba(255,103,25,0.28); }
 
-    .about-section { margin-top: 2.5rem; }
+    .about-section { margin-top: 0; }
+    /* Hero top row: menu button (phones only) + eyebrow, like the Scoreboard header row */
+    .about-top { margin-bottom: 0.6rem; }
+    .about-top .about-eyebrow { margin-bottom: 0; }
 
     /* ── Subscribe CTA ───────────────────────────────────────────── */
     .subscribe-banner {
@@ -343,7 +345,14 @@
       <div class="about-page">
 
         <!-- ── Hero ─────────────────────────────────────────────── -->
-        <div class="about-eyebrow">Orb Analytics Limited</div>
+        <div class="page-header-top about-top">
+          <div class="page-header-lead">
+            <button class="sidebar-toggle" id="sidebar-toggle">
+              <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="about-eyebrow">Orb Analytics Limited</div>
+          </div>
+        </div>
         <h1 class="about-headline">Rebalance the Odds with Proprietary Models</h1>
         <div class="about-divider"></div>
 

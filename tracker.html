@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Bet Tracker · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261026" />
+  <link rel="stylesheet" href="css/style.css?v=20261026b" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout (mirrors predictions.html) ──────────── */
@@ -79,8 +79,8 @@
 
     /* ── Tracker header ──────────────────────────────────────── */
     .tracker-header {
-      padding: 1.75rem 0 1.75rem;
-      margin-bottom: 1.5rem;
+      padding: var(--page-top) 0 var(--stack-gap);
+      margin-bottom: var(--stack-gap);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: flex-end;
@@ -116,16 +116,16 @@
     .page-split.tracker-collapsed .tracker-col { display: none; }
 
     /* ── Stats + chart (hero content) ────────────────────────── */
-    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--stack-gap); margin-bottom: var(--stack-gap); }
     .summary-grid .stat-card { min-width: 0; overflow: hidden; }
     .summary-grid .stat-card .stat-value { font-size: clamp(1.1rem, 2.5vw, 2.75rem); white-space: nowrap; overflow: visible; }
 
-    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: var(--stack-gap); }
     .chart-card-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
     .chart-card-title { font-family: var(--font-mono); font-size: 1.125rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; }
     .chart-wrap { position: relative; height: 320px; }
 
-    .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+    .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--stack-gap); margin-bottom: var(--stack-gap); }
     .split-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
     .split-card-title { padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 1.125rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); background: var(--gray-50); }
     .split-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
@@ -183,11 +183,11 @@
       }
       .tracker-main-col {
         height: auto; overflow-x: hidden; overflow-y: visible;
-        padding: 1rem 1rem 1.5rem; max-width: 100%; box-sizing: border-box;
+        padding: 0; max-width: 100%; box-sizing: border-box;
       }
       .tracker-col {
         height: auto; overflow-x: hidden; overflow-y: visible;
-        padding: 1rem 1rem 1.5rem; max-width: 100%; box-sizing: border-box;
+        padding: 0; max-width: 100%; box-sizing: border-box;
       }
       .tracker-main-col.mobile-hidden, .tracker-col.mobile-hidden { display: none; }
       .tracker-toggle-btn { display: none; }
@@ -196,7 +196,7 @@
       main.page { overflow-x: hidden !important; overflow-y: visible !important; }
 
       .t-form-card, .chart-card { padding: 0.85rem; }
-      .summary-grid { gap: 0.5rem; }
+      .summary-grid { gap: var(--stack-gap); }
       .summary-grid .stat-card { padding: 0.75rem; }
       .summary-grid .stat-card .stat-value { font-size: 1.5rem; }
       .chart-wrap { height: 220px; }

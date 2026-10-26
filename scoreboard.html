@@ -12,11 +12,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Scoreboard · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261026" />
+  <link rel="stylesheet" href="css/style.css?v=20261026b" />
   <style>
     .scoreboard-header {
       padding: 1.5rem 1.75rem;
-      margin: 1.5rem 0;
+      margin: var(--page-top) 0 var(--stack-gap);
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -56,7 +56,7 @@
       padding: 0.25rem;
       flex-wrap: nowrap;
       overflow-x: auto;
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--stack-gap);
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
     }
@@ -83,7 +83,7 @@
     }
 
     /* ── All tab: one group per sport ─────────────────────────── */
-    .sport-group + .sport-group { margin-top: 1.75rem; }
+    .sport-group + .sport-group { margin-top: var(--stack-gap); }
     .sport-group-header {
       display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.75rem;
       font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
@@ -112,8 +112,7 @@
     .games-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      padding-bottom: 1rem;
+      gap: var(--stack-gap);
     }
     @media (max-width: 900px) { .games-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 580px), (max-height: 500px) and (orientation: landscape) { .games-grid { grid-template-columns: 1fr; } }
