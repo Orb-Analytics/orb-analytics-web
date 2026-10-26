@@ -419,6 +419,15 @@ body.dark .sidebar-link { color: var(--text); }
 
 body.dark .sidebar-toggle { color: var(--text); }
 
+/* ── Page header top row (the Scoreboard pattern) ────────────────
+   Menu button (shown on phones only) + small section label on the left,
+   an optional action (Refresh, Show Tracker) on the right, title below. */
+.page-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.page-header-lead { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+.page-header-lead .section-label { margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A title directly under the row keeps the label's usual spacing. */
+.page-header-top + .section-title { margin-top: 0.4rem; }
+
 /* ─── Cards ──────────────────────────────────────────────────────── */
 .card {
   background: var(--surface);
