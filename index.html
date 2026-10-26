@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261015" />
+  <link rel="stylesheet" href="css/style.css?v=20261026" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -50,41 +50,8 @@
     .tracker-col::-webkit-scrollbar { width: 4px; }
     .tracker-col::-webkit-scrollbar-thumb { background: var(--purple-600); border-radius: 2px; }
 
-    /* ── Mobile tab switcher (hidden on desktop) ─────────────── */
-    .mobile-page-tabs {
-      display: none;
-      gap: 0;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 0;
-      background: var(--surface);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .mobile-page-tab {
-      flex: 1;
-      padding: 0.75rem 0.5rem;
-      border: none;
-      background: transparent;
-      color: var(--gray-600);
-      font-family: var(--font-body);
-      font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: var(--transition);
-    }
-
-    .mobile-page-tab.active {
-      color: var(--purple-600);
-      border-bottom-color: var(--purple-600);
-    }
-
     /* ── Mobile responsive ───────────────────────────────────── */
     @media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
-      .mobile-page-tabs { display: flex; }
 
       .page-split {
         grid-template-columns: 1fr;
@@ -276,6 +243,10 @@
     }
     @media (min-width: 769px) {
       .predictions-header-inner .section-title { font-size: clamp(2rem, 3.5vw, 2.75rem); }
+    }
+    /* Same inner padding on phones as the Scoreboard header card */
+    @media (max-width: 580px), (max-height: 500px) and (orientation: landscape) {
+      .predictions-header { padding: 1rem 1.1rem; }
     }
 
     .main-tabs {
@@ -500,20 +471,19 @@
     <!-- Main content -->
     <div class="sidebar-content">
   <main class="page" style="overflow:hidden">
-    <!-- Mobile tab switcher -->
-    <div class="mobile-page-tabs">
-      <button class="sidebar-toggle" id="sidebar-toggle" style="margin:0.5rem">
-        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-    </div>
     <div class="container" id="main-container" style="height:calc(100vh - var(--nav-height));padding-top:0;padding-bottom:0">
       <div class="page-split tracker-collapsed" id="page-split">
 
         <!-- ══ LEFT: PREDICTIONS ══════════════════════════════════ -->
         <div class="predictions-col">
           <div class="predictions-header">
-            <div class="predictions-header-top">
-              <div class="section-label">Model vs. Market</div>
+            <div class="predictions-header-top page-header-top">
+              <div class="page-header-lead">
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                  <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <div class="section-label">Model vs. Market</div>
+              </div>
               <button class="tracker-toggle-btn" id="tracker-toggle-btn" onclick="toggleTracker()" aria-expanded="false" aria-controls="tracker-col">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
                 <span id="tracker-toggle-label">Show Tracker</span>
