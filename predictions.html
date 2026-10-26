@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261026" />
+  <link rel="stylesheet" href="css/style.css?v=20261026b" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -66,7 +66,7 @@
         height: auto;
         overflow-x: hidden;
         overflow-y: visible;
-        padding: 1rem 1rem 1.5rem;
+        padding: 0;   /* cards sit on the page gutter, like the rest of the page */
         max-width: 100%;
         box-sizing: border-box;
       }
@@ -99,7 +99,7 @@
 
       .summary-grid {
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.5rem !important;
+        gap: var(--stack-gap) !important;
       }
 
       .summary-grid .stat-card {
@@ -147,11 +147,6 @@
       #main-container { height: auto !important; overflow-x: hidden !important; overflow-y: visible !important; max-width: 100%; }
       main.page { overflow-x: hidden !important; overflow-y: visible !important; }
 
-      div[style*="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap"] {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
 
       .data-table:not(#history-table) thead { display: none; }
       .data-table:not(#history-table),
@@ -204,7 +199,7 @@
     /* ── Predictions header ──────────────────────────────────── */
     .predictions-header {
       padding: 1.5rem 1.75rem;
-      margin: 1.5rem 0;
+      margin: var(--page-top) 0 var(--stack-gap);
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -279,7 +274,7 @@
 
     .playoff-notice {
       background: var(--gray-50); border: 1px solid var(--border); border-left: 3px solid var(--purple-600);
-      border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1rem;
+      border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: var(--stack-gap);
       font-size: 0.8125rem; color: var(--gray-600); line-height: 1.5;
     }
     .playoff-notice strong { color: var(--text); }
@@ -290,8 +285,7 @@
     .picks-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 0.85rem;
-      padding-bottom: 1rem;
+      gap: var(--stack-gap);
     }
 
     .pick-card {
@@ -374,13 +368,13 @@
     .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
 
     /* ── Model History ────────────────────────────────────────── */
-    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--stack-gap); margin-bottom: var(--stack-gap); }
     .summary-grid .stat-card { min-width: 0; overflow: hidden; }
     .summary-grid .stat-card .stat-value { font-size: clamp(1.4rem, 3.2vw, 3.5rem); white-space: nowrap; overflow: visible; }
     #filter-count { display: none; }
     @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
 
-    .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+    .splits-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--stack-gap); margin-bottom: var(--stack-gap); }
     .split-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
     .split-card-title { padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 1.125rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); background: var(--gray-50); }
     .split-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
@@ -394,7 +388,7 @@
     .split-winrate.ok   { color: var(--green); }
     .split-winrate.bad  { color: var(--red); }
 
-    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem; margin-bottom: 1.25rem; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem; margin-bottom: var(--stack-gap); }
     .chart-card-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
     .chart-card-title { font-family: var(--font-mono); font-size: 1.125rem; color: var(--gray-600); letter-spacing: 0.08em; text-transform: uppercase; }
     .chart-toggle { display: flex; gap: 0.25rem; }
@@ -407,7 +401,7 @@
     .chart-toggle-btn:hover:not(.active) { background: var(--hover-tint); }
     .chart-wrap { position: relative; height: 190px; }
 
-    .history-controls { display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 0.85rem; }
+    .history-controls { display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; flex-wrap: wrap; margin-bottom: var(--stack-gap); }
     .split-select { width: 100%; }
     .filter-select {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text);
@@ -418,7 +412,7 @@
     }
     body.dark .filter-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A1A1AA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
     .filter-select:focus { border-color: var(--purple-500); }
-    .history-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 2rem; }
+    .history-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: var(--stack-gap); }
     .score-display { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--gray-600); }
     .score-display .winning-score { color: var(--text); font-weight: 600; }
     .units-positive { color: var(--green); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; }
@@ -497,7 +491,7 @@
           </div>
 
           <!-- Tabs row -->
-          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;justify-content:space-between">
+          <div class="page-controls">
             <div class="main-tabs">
               <button class="main-tab active" onclick="switchView('today')" id="view-tab-today">Today's Picks</button>
               <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>

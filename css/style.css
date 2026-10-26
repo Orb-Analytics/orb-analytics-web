@@ -53,6 +53,14 @@
   --hover-border: var(--purple-400);
 }
 
+/* ── Page spacing scale ──────────────────────────────────────────
+   ONE gap between stacked cards/containers on every page (and between
+   cards inside card grids), and one space above each page's first block.
+   Section labels and meta lines stay attached to their card; the stack gap
+   goes between whole blocks. */
+:root { --stack-gap: 1rem; --page-top: 1.5rem; }
+@media (min-width: 769px) { :root { --stack-gap: 1.25rem; } }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; }
@@ -428,6 +436,17 @@ body.dark .sidebar-toggle { color: var(--text); }
 /* A title directly under the row keeps the label's usual spacing. */
 .page-header-top + .section-title { margin-top: 0.4rem; }
 
+/* Row of toggles/filters under a page header (e.g. Today's Picks / Model
+   History + sport filter). On phones the rows stack, start at the page's
+   side margin, and a row wider than the screen scrolls inside itself. */
+.page-controls { display: flex; gap: var(--stack-gap) 0.75rem; align-items: center; flex-wrap: wrap; justify-content: space-between; margin-bottom: var(--stack-gap); }
+@media (max-width: 768px) {
+  .page-controls { flex-direction: column; align-items: flex-start; }
+  .page-controls > * { max-width: 100%; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .page-controls > *::-webkit-scrollbar { display: none; }
+  .page-controls .main-tab { white-space: nowrap; flex-shrink: 0; }
+}
+
 /* ─── Cards ──────────────────────────────────────────────────────── */
 .card {
   background: var(--surface);
@@ -577,7 +596,7 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem 1.75rem;
-  margin-top: 3rem;
+  margin-top: var(--stack-gap);
 }
 .disclaimer-label {
   font-family: var(--font-mono);
@@ -592,7 +611,7 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
 .disclaimer-text p + p { margin-top: 0.75rem; }
 
 /* ─── Novig paid-partnership disclosure ──────────────────────────── */
-.disclaimer-block.partner-disclosure { margin-top: 0.75rem; }
+.disclaimer-block.partner-disclosure { margin-top: var(--stack-gap); }
 .partner-disclosure-text { font-size: 0.875rem; line-height: 1.65; color: var(--text); }
 .partner-disclosure-text strong { font-weight: 700; }
 .partner-label {
@@ -627,8 +646,8 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
   /* minmax(0, ...) lets both columns shrink; with plain 1fr the signup card's
      min-content width squeezed the promo to ~25px at 769-1100px. */
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.85rem;
-  margin: 2rem 0;
+  gap: var(--stack-gap);
+  margin: var(--stack-gap) 0;
   min-height: 280px;
   align-items: stretch;
 }
