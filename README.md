@@ -45,6 +45,24 @@ The predictions page reads `predictions.json` from each model repo:
 
 Commit a file matching this schema to the model repo's `main` branch and it will auto-appear on the predictions page.
 
+## Dev Environment
+
+Changes ship through a `dev` environment before reaching prod:
+
+1. Branch off `dev` for your feature work and open a PR **into `dev`**.
+2. Once merged, `.github/workflows/firebase-hosting-dev.yml` deploys `dev`'s code to
+   the `orb-analytics-dev` Firebase Hosting site (`orb-analytics-dev.web.app`), with
+   `main`'s current `data/` directory always overlaid on top at deploy time — dev
+   never carries its own committed data, so there's nothing to merge-conflict with
+   `main` later.
+3. Test on the dev URL. Every page there carries a visible "DEV SITE" banner and a
+   `noindex` header, injected at deploy time only (not present in the repo source),
+   and talks to a stubbed-out Firebase SDK — sign-in/bet-saving are intentionally
+   disabled there so dev never writes to the production Firestore/Auth project.
+4. When it's ready, open a PR **from `dev` into `main`**. Merging that is what
+   actually ships to production (`firebase-hosting-merge.yml`, unchanged by any of
+   this) and to GitHub Pages.
+
 ## Tech Stack
 
 - Vanilla HTML/CSS/JS — no build step, deploys instantly to GitHub Pages
