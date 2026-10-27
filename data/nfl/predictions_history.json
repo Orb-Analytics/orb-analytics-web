@@ -1,14 +1,14 @@
 {
   "model": "NFL",
-  "generated_at": "2026-10-20T18:05:39.453002+00:00",
+  "generated_at": "2026-10-27T18:40:28.029412+00:00",
   "version": "v1.0-3way-consensus-low-edge-favorite",
   "summary": {
-    "wins": 160,
-    "losses": 139,
+    "wins": 163,
+    "losses": 141,
     "pushes": 7,
-    "win_rate": 53.5,
-    "total_units": 11.63,
-    "total_picks": 306
+    "win_rate": 53.6,
+    "total_units": 12.64,
+    "total_picks": 311
   },
   "picks": [
     {
@@ -5212,6 +5212,91 @@
       "units": 0.9615,
       "home_score": 19,
       "away_score": 26
+    },
+    {
+      "date": "10/25/2026",
+      "season": 2026,
+      "week": 7,
+      "home_team": "ATL",
+      "away_team": "SF",
+      "pick": "SF",
+      "spread": -3.5,
+      "confidence": 0.4967,
+      "line": 108,
+      "edge": 1.59,
+      "is_favorite": true,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 29,
+      "away_score": 20
+    },
+    {
+      "date": "10/25/2026",
+      "season": 2026,
+      "week": 7,
+      "home_team": "BAL",
+      "away_team": "CIN",
+      "pick": "CIN",
+      "spread": 2.5,
+      "confidence": 0.519,
+      "line": 108,
+      "edge": 3.82,
+      "is_favorite": false,
+      "result": "Win",
+      "units": 1.08,
+      "home_score": 13,
+      "away_score": 35
+    },
+    {
+      "date": "10/25/2026",
+      "season": 2026,
+      "week": 7,
+      "home_team": "NYJ",
+      "away_team": "MIA",
+      "pick": "MIA",
+      "spread": 4.5,
+      "confidence": 0.5367,
+      "line": 100,
+      "edge": 3.67,
+      "is_favorite": false,
+      "result": "Win",
+      "units": 1.0,
+      "home_score": 25,
+      "away_score": 28
+    },
+    {
+      "date": "10/25/2026",
+      "season": 2026,
+      "week": 7,
+      "home_team": "SEA",
+      "away_team": "KC",
+      "pick": "KC",
+      "spread": 2.5,
+      "confidence": 0.5068,
+      "line": 104,
+      "edge": 1.66,
+      "is_favorite": false,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 20,
+      "away_score": 3
+    },
+    {
+      "date": "10/25/2026",
+      "season": 2026,
+      "week": 7,
+      "home_team": "TEN",
+      "away_team": "CLE",
+      "pick": "CLE",
+      "spread": -1.5,
+      "confidence": 0.5377,
+      "line": -108,
+      "edge": 1.85,
+      "is_favorite": true,
+      "result": "Win",
+      "units": 0.9259,
+      "home_score": 24,
+      "away_score": 27
     }
   ]
 }
