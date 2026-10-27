@@ -1,0 +1,4 @@
+# Assembled by the dev-deploy workflow at deploy time -- the overlaid data,
+# stubbed firebase.js, GTM-stripped/banner-injected HTML all land here. Never
+# commit this; it's rebuilt fresh in the ephemeral runner on every dev deploy.
+public/

@@ -110,22 +110,47 @@ jobs:
           path: .deploy-marker
           key: ${{ steps.cachekey.outputs.key }}
 
-      - name: Overlay main's data/ onto the dev working tree
+      # Firebase requires "public" to resolve to a directory INSIDE the directory
+      # containing firebase.json -- "../.." (pointing back at the real repo root)
+      # was rejected outright by the CLI ("Error: ../.. is outside of project
+      # directory") on the very first real deploy; the emulator run in Check 2
+      # didn't catch this because that test rewrote "public" to "." to serve
+      # locally, which happened to sidestep the real path constraint entirely.
+      # Fix: assemble a self-contained copy of the site under .deploy/dev/public/
+      # (gitignored -- see .deploy/dev/.gitignore) and point "public" at that.
+      - name: Assemble the dev site bundle under .deploy/dev/public/
         if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
-          rm -rf data
-          cp -R _main_data/data ./data
+          rm -rf .deploy/dev/public
+          mkdir -p .deploy/dev/public
+          # Copy the dev branch's site files only -- mirrors prod's firebase.json
+          # ignore list, plus the repo's own tooling dirs, which have no business
+          # being served from either site.
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.deploy/' \
+            --exclude='firebase.json' \
+            --exclude='.firebaserc' \
+            --exclude='.*' \
+            --exclude='node_modules/' \
+            --exclude='README.md' \
+            --exclude='assets/novig_promos/*.png' \
+            ./ .deploy/dev/public/
+          # Overlay main's data/ on top, replacing whatever dev's own copy had.
+          rm -rf .deploy/dev/public/data
+          cp -R _main_data/data .deploy/dev/public/data
           rm -rf _main_data
 
       - name: Replace Firebase SDK with dev no-op stub (Auth/Firestore/Analytics disabled on dev)
         if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
-          test -f js/firebase.js
-          real_exports=$(grep -oE '^export (async function|function) [A-Za-z0-9_]+' js/firebase.js | awk '{print $NF}' | sort -u)
-          cp .deploy/dev/firebase.stub.js js/firebase.js
-          stub_exports=$(grep -oE '^export (async function|function) [A-Za-z0-9_]+' js/firebase.js | awk '{print $NF}' | sort -u)
+          test -f .deploy/dev/public/js/firebase.js
+          real_exports=$(grep -oE '^export (async function|function) [A-Za-z0-9_]+' .deploy/dev/public/js/firebase.js | awk '{print $NF}' | sort -u)
+          cp .deploy/dev/firebase.stub.js .deploy/dev/public/js/firebase.js
+          stub_exports=$(grep -oE '^export (async function|function) [A-Za-z0-9_]+' .deploy/dev/public/js/firebase.js | awk '{print $NF}' | sort -u)
           missing=$(comm -23 <(echo "$real_exports") <(echo "$stub_exports") || true)
           if [ -n "$missing" ]; then
             echo "::error::dev firebase.js stub is missing exports that the real file has: $missing"
@@ -134,7 +159,7 @@ jobs:
 
       - name: Strip GTM and inject noindex + dev banner into every HTML page
         if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
-        run: python3 .deploy/dev/apply_dev_overlay.py
+        run: python3 .deploy/dev/apply_dev_overlay.py .deploy/dev/public
 
       - name: Deploy to orb-analytics-dev
         if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'

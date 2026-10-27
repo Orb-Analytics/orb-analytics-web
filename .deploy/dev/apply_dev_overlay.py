@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Dev-only deploy-time HTML transform.
 
-Run by .github/workflows/firebase-hosting-dev.yml, against the ephemeral dev-deploy
-working tree only -- AFTER the data/ overlay and the js/firebase.js stub swap, and
-BEFORE the Firebase deploy step. Never commits anything back to any branch.
+Run by .github/workflows/firebase-hosting-dev.yml, against the assembled
+.deploy/dev/public/ bundle only -- AFTER the data/ overlay and the js/firebase.js
+stub swap, and BEFORE the Firebase deploy step. Never commits anything back to
+any branch, and never touches the real repo-root HTML files.
 
-For every *.html file at the repo root, this:
+Usage: apply_dev_overlay.py [TARGET_DIR]  (default: current directory)
+
+For every *.html file directly in TARGET_DIR, this:
   1. Removes the GTM <head> loader script and the GTM <body> noscript fallback, so
      the dev site never pings the production GTM container.
   2. Inserts a noindex/nofollow robots meta tag right after <head>.
@@ -20,6 +23,7 @@ silently skipping a page, if:
     duplicated, or any leftover GTM/Analytics string in any processed file.
 """
 import glob
+import os
 import sys
 
 GTM_HEAD_BLOCK = """  <!-- Google Tag Manager -->
@@ -58,9 +62,10 @@ def fail(msg):
 
 
 def main():
-    files = sorted(glob.glob("*.html"))
+    target_dir = sys.argv[1] if len(sys.argv) > 1 else "."
+    files = sorted(glob.glob(os.path.join(target_dir, "*.html")))
     if not files:
-        fail("apply_dev_overlay.py matched zero HTML files at repo root -- refusing to deploy.")
+        fail(f"apply_dev_overlay.py matched zero HTML files in {target_dir!r} -- refusing to deploy.")
 
     for path in files:
         with open(path, "r", encoding="utf-8") as fh:
