@@ -3,6 +3,13 @@ on:
   push:
     branches:
       - main
+  # The NFL/NBA data-sync workflows (sync-nfl-data.yml, sync-nba-data.yml)
+  # push via the default GITHUB_TOKEN, which GitHub's anti-recursion rule
+  # exempts from firing other on:push workflows in this repo -- so a
+  # bot-only sync never deploys on its own. workflow_dispatch lets this be
+  # triggered manually (Actions tab or `gh workflow run`) without needing
+  # a human-authored push first.
+  workflow_dispatch: {}
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
