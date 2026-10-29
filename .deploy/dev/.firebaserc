@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "orb-analytics-7d212"
+  },
+  "targets": {
+    "orb-analytics-7d212": {
+      "hosting": {
+        "dev": [
+          "orb-analytics-dev"
+        ]
+      }
+    }
+  }
+}

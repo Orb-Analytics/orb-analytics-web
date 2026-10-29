@@ -1,0 +1,188 @@
+name: Deploy dev site
+
+# Dev environment: deploys the `dev` branch's code to the second Firebase Hosting
+# site `orb-analytics-dev`, always overlaid with main's current data/ directory at
+# deploy time (never committed to `dev` -- see .deploy/dev/apply_dev_overlay.py and
+# the "Overlay" step below). This workflow never touches the prod site, the prod
+# workflow (firebase-hosting-merge.yml), or firebase.json.
+#
+# Three GitHub constraints shaped the triggers below:
+#
+# 1. workflow_run only fires for workflows whose *definition* exists on the repo's
+#    default branch (main), even though the run it reacts to can be anything. That's
+#    why this file has to be merged into `main` before a push to `dev` -- or a
+#    completion of the two pull-based sync workflows -- can reliably trigger it:
+#    GitHub reads the `on:` triggers from main's copy of this file, not from whatever
+#    copy (if any) exists on `dev` at the time.
+#
+# 2. A `paths:` filter on a `push` trigger applies to every branch listed under that
+#    same trigger -- so a single `push: {branches: [dev, main], paths: [data/**]}`
+#    block would ALSO filter dev's own pushes down to data-only changes, silently
+#    skipping ordinary dev code commits. To avoid that, `push` below has no `paths:`
+#    filter at all. Whether anything actually changed is decided inside the job (via
+#    the cache key below), not at the trigger level.
+#
+# 3. A push authenticated with the default GITHUB_TOKEN never fires another
+#    workflow's `on: push` trigger (GitHub's anti-recursion protection). That matters
+#    here because NFL-Model's, MLB-Model's, and NFL-Snapshot-Analysis's pushes into
+#    this repo authenticate with a real PAT (ORB_WEB_SYNC_TOKEN), not GITHUB_TOKEN,
+#    so `push: branches: [main]` below does see those. This repo's own two
+#    pull-based sync workflows (sync-nfl-data.yml, sync-nba-data.yml) check out with
+#    the default token, so their commits can't be relied on to fire `push` here --
+#    that's why they're also covered explicitly via `workflow_run`, which reacts to
+#    the run completing regardless of which token it used internally for its own
+#    commit.
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_run:
+    workflows:
+      - "Sync NFL model data"
+      - "Sync NBA model data"
+    types: [completed]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dev-hosting-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy_dev:
+    runs-on: ubuntu-latest
+    # workflow_dispatch/push have no workflow_run context to check, so always proceed
+    # for those; for workflow_run, skip if the upstream sync failed or was skipped.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Check that the dev branch exists
+        id: devcheck
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh api "repos/${{ github.repository }}/branches/dev" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::dev branch does not exist yet -- nothing to deploy. Skipping cleanly."
+          fi
+
+      - name: Checkout dev branch (site code)
+        if: steps.devcheck.outputs.exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Checkout main's data/ directory only
+        if: steps.devcheck.outputs.exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: _main_data
+          sparse-checkout: |
+            data
+          sparse-checkout-cone-mode: true
+
+      # Keyed on both the dev branch's current commit and the exact git tree hash of
+      # main's data/ directory, so: a new dev commit always redeploys; a sync
+      # workflow completing with no real change (git diff --quiet on the website's
+      # own sync workflows, which run on a 30-minute cron regardless of whether
+      # there's anything new) produces the same key as last time and is skipped below.
+      - name: Compute cache key from dev code + main data state
+        if: steps.devcheck.outputs.exists == 'true'
+        id: cachekey
+        run: |
+          set -euo pipefail
+          dev_sha=$(git rev-parse HEAD)
+          data_tree=$(git -C _main_data rev-parse HEAD:data)
+          # The NBA dev feed (public branch nba-dev-feed, applied to the bundle by apply_dev_overlay.py) is part of
+          # the deployed state, so a new NBA feed commit must produce a new key. Empty if the branch is missing.
+          nba_feed=$(git ls-remote "https://github.com/${{ github.repository }}.git" refs/heads/nba-dev-feed | cut -c1-12)
+          echo "key=dev-deploy-${dev_sha}-${data_tree}-${nba_feed:-none}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore last-deployed marker for this exact state
+        if: steps.devcheck.outputs.exists == 'true'
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .deploy-marker
+          key: ${{ steps.cachekey.outputs.key }}
+
+      # Firebase requires "public" to resolve to a directory INSIDE the directory
+      # containing firebase.json -- "../.." (pointing back at the real repo root)
+      # was rejected outright by the CLI ("Error: ../.. is outside of project
+      # directory") on the very first real deploy; the emulator run in Check 2
+      # didn't catch this because that test rewrote "public" to "." to serve
+      # locally, which happened to sidestep the real path constraint entirely.
+      # Fix: assemble a self-contained copy of the site under .deploy/dev/public/
+      # (gitignored -- see .deploy/dev/.gitignore) and point "public" at that.
+      - name: Assemble the dev site bundle under .deploy/dev/public/
+        if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          rm -rf .deploy/dev/public
+          mkdir -p .deploy/dev/public
+          # Copy the dev branch's site files only -- mirrors prod's firebase.json
+          # ignore list, plus the repo's own tooling dirs, which have no business
+          # being served from either site.
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.deploy/' \
+            --exclude='firebase.json' \
+            --exclude='.firebaserc' \
+            --exclude='.*' \
+            --exclude='node_modules/' \
+            --exclude='README.md' \
+            --exclude='assets/novig_promos/*.png' \
+            ./ .deploy/dev/public/
+          # Overlay main's data/ on top, replacing whatever dev's own copy had.
+          rm -rf .deploy/dev/public/data
+          cp -R _main_data/data .deploy/dev/public/data
+          rm -rf _main_data
+
+      - name: Replace Firebase SDK with dev no-op stub (Auth/Firestore/Analytics disabled on dev)
+        if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          test -f .deploy/dev/public/js/firebase.js
+          real_exports=$(grep -oE '^export (async function|function) [A-Za-z0-9_]+' .deploy/dev/public/js/firebase.js | awk '{print $NF}' | sort -u)
+          cp .deploy/dev/firebase.stub.js .deploy/dev/public/js/firebase.js
+          stub_exports=$(grep -oE '^export (async function|function) [A-Za-z0-9_]+' .deploy/dev/public/js/firebase.js | awk '{print $NF}' | sort -u)
+          missing=$(comm -23 <(echo "$real_exports") <(echo "$stub_exports") || true)
+          if [ -n "$missing" ]; then
+            echo "::error::dev firebase.js stub is missing exports that the real file has: $missing"
+            exit 1
+          fi
+
+      - name: Strip GTM and inject noindex + dev banner into every HTML page
+        if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
+        run: python3 .deploy/dev/apply_dev_overlay.py .deploy/dev/public
+
+      - name: Deploy to orb-analytics-dev
+        if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+          channelId: live
+          projectId: orb-analytics-7d212
+          target: dev
+          entryPoint: .deploy/dev
+          firebaseToolsVersion: "15.34.0"
+
+      - name: Save deploy marker for this state
+        if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
+        run: echo "deployed $(date -u +%FT%TZ)" > .deploy-marker
+
+      - name: Cache deploy marker
+        if: steps.devcheck.outputs.exists == 'true' && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .deploy-marker
+          key: ${{ steps.cachekey.outputs.key }}
