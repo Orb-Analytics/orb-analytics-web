@@ -13,6 +13,7 @@ For every *.html file directly in TARGET_DIR, this:
      the dev site never pings the production GTM container.
   2. Inserts a noindex/nofollow robots meta tag right after <head>.
   3. Inserts the "DEV SITE" banner right after <body>.
+Before that, it replaces data/nba/ in the bundle with the NBA dev feed (see overlay_nba_feed).
 
 It fails loudly (non-zero exit, so the workflow stops before deploying) rather than
 silently skipping a page, if:
@@ -23,8 +24,10 @@ silently skipping a page, if:
     duplicated, or any leftover GTM/Analytics string in any processed file.
 """
 import glob
+import json
 import os
 import sys
+import urllib.request
 
 GTM_HEAD_BLOCK = """  <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -56,6 +59,38 @@ MARKER = 'data-orb-env="dev-banner"'
 FORBIDDEN_STRINGS = ["GTM-TQ5X32C3", "googletagmanager.com", "G-FHRKJ4YP4K", "measurementId"]
 
 
+# NBA dev feed: the NBA model pushes its picks + full graded record (shadow-mode picks included) to this public
+# branch of the web repo. Nothing on `main` reads it, and no workflow triggers on pushes to it, so prod never sees
+# it. It replaces ONLY data/nba/ in the assembled dev bundle; if it is unreachable or invalid, the bundle keeps
+# main's data/nba/ and the deploy goes on.
+NBA_FEED_BASE = os.environ.get(
+    "NBA_DEV_FEED_BASE", "https://raw.githubusercontent.com/Orb-Analytics/orb-analytics-web/nba-dev-feed")
+NBA_FEED_FILES = ("predictions.json", "predictions_history.json")
+
+
+def overlay_nba_feed(target_dir):
+    fetched = {}
+    for name in NBA_FEED_FILES:
+        try:
+            with urllib.request.urlopen(f"{NBA_FEED_BASE}/{name}", timeout=30) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+            if body.get("model") != "NBA" or not isinstance(body.get("picks"), list):
+                raise ValueError("not an NBA feed")
+            fetched[name] = body
+        except Exception as exc:
+            print(f"::warning::NBA dev feed {name} unavailable ({exc}); keeping main's data/nba/")
+            return False
+    out = os.path.join(target_dir, "data", "nba")
+    os.makedirs(out, exist_ok=True)
+    for name, body in fetched.items():
+        with open(os.path.join(out, name), "w", encoding="utf-8") as fh:
+            json.dump(body, fh, indent=2)
+            fh.write("\n")
+    print(f"NBA dev feed applied: {len(fetched['predictions.json']['picks'])} games today, "
+          f"{len(fetched['predictions_history.json']['picks'])} history picks")
+    return True
+
+
 def fail(msg):
     print(f"::error::{msg}")
     sys.exit(1)
@@ -63,6 +98,7 @@ def fail(msg):
 
 def main():
     target_dir = sys.argv[1] if len(sys.argv) > 1 else "."
+    overlay_nba_feed(target_dir)
     files = sorted(glob.glob(os.path.join(target_dir, "*.html")))
     if not files:
         fail(f"apply_dev_overlay.py matched zero HTML files in {target_dir!r} -- refusing to deploy.")
