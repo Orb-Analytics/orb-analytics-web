@@ -30,15 +30,25 @@ async function loadTodayNBA() {
       generatedAtBySport.nba = data.generated_at;
       if (activeSport === 'nba') updateLastUpdatedLabel();
     }
-    renderTodayPicksNBA((data.picks || []).filter(p => p.has_pick === true));
+    const games = data.picks || [];
+    renderTodayPicksNBA(games.filter(p => p.has_pick === true), games.length);
   } catch (e) {
     container.innerHTML = '';   // leave the "coming soon" notice if the feed is unavailable
   }
   updateNBANotice();
 }
 
-function renderTodayPicksNBA(picks) {
+// totalGames: games on today's slate. With games but no picks, say so where the cards would be; with no games
+// at all (feed not live yet, or an off day) render nothing and leave the page's "coming soon" notice.
+function renderTodayPicksNBA(picks, totalGames = 0) {
   const container = document.getElementById('picks-container-nba');
+  if (!picks.length && totalGames > 0) {
+    container.innerHTML = `<div class="empty-state nba-no-picks" style="grid-column:1/-1">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+      <p>No NBA picks today</p>
+      <p style="font-size:0.85rem;opacity:0.8">None of today's ${totalGames} games met our model's edge threshold (1.0 point).</p></div>`;
+    return;
+  }
   container.innerHTML = picks.map(pick => {
     const conf = pick.confidence || 0.5;
     const price = pick.line ?? 0;
