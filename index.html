@@ -838,11 +838,11 @@
         document.getElementById('picks-mlb').style.display = !mlbHasPicks && todayModelLoadState.mlb === 'loaded' ? 'none' : '';
       }
     }
-    // NBA has no pick cards yet, so the "coming soon" notice always shows.
+    // The "coming soon" notice shows until js/nba-picks.js renders cards or the no-picks message.
     // Once an NBA loader renders cards into #picks-container-nba, call this
     // after rendering and the notice will hide itself whenever picks exist.
     function updateNBANotice() {
-      const nbaHasPicks = document.querySelector('#picks-container-nba .pick-card') !== null;
+      const nbaHasPicks = document.querySelector('#picks-container-nba .pick-card, #picks-container-nba .nba-no-picks') !== null;
       document.getElementById('notice-nba').style.display = nbaHasPicks ? 'none' : '';
     }
     function updateLastUpdatedLabel() {
