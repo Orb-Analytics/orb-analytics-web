@@ -100,7 +100,10 @@ jobs:
           set -euo pipefail
           dev_sha=$(git rev-parse HEAD)
           data_tree=$(git -C _main_data rev-parse HEAD:data)
-          echo "key=dev-deploy-${dev_sha}-${data_tree}" >> "$GITHUB_OUTPUT"
+          # The NBA dev feed (public branch nba-dev-feed, applied to the bundle by apply_dev_overlay.py) is part of
+          # the deployed state, so a new NBA feed commit must produce a new key. Empty if the branch is missing.
+          nba_feed=$(git ls-remote "https://github.com/${{ github.repository }}.git" refs/heads/nba-dev-feed | cut -c1-12)
+          echo "key=dev-deploy-${dev_sha}-${data_tree}-${nba_feed:-none}" >> "$GITHUB_OUTPUT"
 
       - name: Restore last-deployed marker for this exact state
         if: steps.devcheck.outputs.exists == 'true'
