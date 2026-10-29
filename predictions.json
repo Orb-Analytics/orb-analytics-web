@@ -1,0 +1,56 @@
+{
+  "model": "NBA",
+  "generated_at": "2026-10-29T20:19:09+00:00",
+  "version": "nba-m1-open-v1",
+  "date": "2026-10-29",
+  "picks": [
+    {
+      "game_id": 21717987,
+      "date": "2026-10-29",
+      "home_team": "ATL",
+      "away_team": "CLE",
+      "pick": null,
+      "has_pick": false,
+      "confidence": null,
+      "home_odds": 108.0,
+      "away_odds": -113.0,
+      "line": null,
+      "spread": null,
+      "home_spread": -1.5,
+      "edge": 0.268,
+      "notes": "edge < 1"
+    },
+    {
+      "game_id": 21717988,
+      "date": "2026-10-29",
+      "home_team": "NOP",
+      "away_team": "SAC",
+      "pick": null,
+      "has_pick": false,
+      "confidence": null,
+      "home_odds": 104.0,
+      "away_odds": -108.0,
+      "line": null,
+      "spread": null,
+      "home_spread": -6.5,
+      "edge": 0.13,
+      "notes": "edge < 1"
+    },
+    {
+      "game_id": 21717989,
+      "date": "2026-10-29",
+      "home_team": "POR",
+      "away_team": "MEM",
+      "pick": null,
+      "has_pick": false,
+      "confidence": null,
+      "home_odds": -102.0,
+      "away_odds": -100.0,
+      "line": null,
+      "spread": null,
+      "home_spread": -7.5,
+      "edge": 0.511,
+      "notes": "edge < 1"
+    }
+  ]
+}
