@@ -262,9 +262,9 @@ function buildNav(activePage = '') {
     topNav.innerHTML = `
       <!-- Left: logo icon, fixed width so center calc is symmetric -->
       <div style="display:flex;align-items:center;flex-shrink:0;width:44px">
-        <a href="index.html" aria-label="Orb Analytics Home">
-          <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img"
-               style="object-fit:contain;display:block" />
+        <a href="index.html" aria-label="Orb Analytics Home" class="mini-orb">
+          <canvas class="orb-logo-img mini-orb-canvas" width="40" height="40" aria-hidden="true"></canvas>
+          <img src="assets/logo.png" alt="" class="orb-logo-img mini-orb-fallback" />
         </a>
       </div>
       <!-- Center: brand name absolutely centered so it never collides with left/right -->
@@ -284,6 +284,10 @@ function buildNav(activePage = '') {
         </button>
       </div>
     `;
+    const logoCanvas = topNav.querySelector('.mini-orb-canvas');
+    if (logoCanvas) {
+      import('./landing/mini-orb.js').then(function (m) { return m.mountMiniOrb(logoCanvas); }).catch(function () {});
+    }
   }
 
   const sidebar = document.getElementById('sidebar');

@@ -171,7 +171,11 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   flex-shrink: 0;
 }
 
-.orb-logo-img { width: 40px; height: 40px; object-fit: contain; }
+.orb-logo-img { width: 40px; height: 40px; object-fit: contain; display: block; }
+.mini-orb { position: relative; display: block; line-height: 0; text-decoration: none; }
+.mini-orb-canvas { display: none; }
+.mini-orb.is-live .mini-orb-canvas { display: block; }
+.mini-orb.is-live .mini-orb-fallback { display: none; }
 
 .nav-logo-center {
   display: flex;

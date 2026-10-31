@@ -148,7 +148,7 @@
   // 3 = Solid (three.js, own canvas, loaded on first use). The tab only exists when WebGL is available.
   var solidCv = document.getElementById("solidCanvas"), solid = null, solidState = 0; // 0 not loaded, 1 loading, 2 ready, -1 failed
   function webglOK() { try { var c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch (e) { return false; } }
-  var HAS_SOLID = !!solidCv && webglOK();
+  var HAS_SOLID = false; // Solid is the corner logo (mini-orb.js), not a hero tab.
   var phaseCount = HAS_SOLID ? 4 : 3; // 0 sphere, 1 logo, 2 hybrid, 3 solid
   var phase = 0, phaseStart = 0, now = 0, rot = 0.6, tiltX = 0.18, tiltXTarget = 0.18;
   var lyaw = 0, lpitch = 0, ctau = 0, coinFront = true, cfa = 1, flipNow = false, hC = 20, cL = [-0.45, -0.55, -0.70], hrot = 0, hyFixed = null, hyPitch = 0, stillMode = false, stillN = 0, breath = 1, FOCc = 800, cosH = 1, sinH = 0;
