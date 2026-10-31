@@ -13,6 +13,7 @@
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="stylesheet" href="css/style.css?v=20261026b" />
+  <link rel="stylesheet" href="css/landing.css?v=20261031c" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -451,6 +452,70 @@
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TQ5X32C3"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
+  <!-- Landing intro. Fixed over the predictions home; Enter site slides it away. -->
+  <div id="landing" class="landing-layer">
+    <section class="landing-hero" id="top">
+      <canvas id="orbCanvas" aria-hidden="true"></canvas>
+      <canvas id="solidCanvas" aria-hidden="true"></canvas>
+      <div class="landing-tabs">
+        <div class="pager" id="pager" role="group" aria-label="Hero animation"></div>
+      </div>
+      <div class="landing-split">
+        <div class="landing-copy">
+          <h1>Anti <span class="hl">Lock</span> Culture</h1>
+        </div>
+        <div class="landing-stage" id="stage"></div>
+        <div class="landing-faq-scroll" id="faq">
+        <p class="landing-kicker">FAQ</p>
+        <div class="faq" id="faqList">
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="a1" id="q1">What is Orb Analytics?<span class="chev" aria-hidden="true"></span></button></h3>
+            <div class="faq-a" id="a1" role="region" aria-labelledby="q1"><div><p>Our mission is to bring transparency to the sports gambling market. Orb Analytics uses Python-powered models to produce betting insights based on probability and market edges across the NFL, NBA and MLB.</p><p>Staying informed usually means switching between scores on ESPN, headlines on Reddit, and lines scattered across third-party apps. Orb Analytics puts it in a single platform.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="a2" id="q2">Why do you give out only some games, not the full slate?<span class="chev" aria-hidden="true"></span></button></h3>
+            <div class="faq-a" id="a2" role="region" aria-labelledby="q2"><div><p>Orb Analytics only gives out games where our models have an edge over the market. Responsible gambling, to us, means wagering only where we have that edge.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="a3" id="q3">What is model edge?<span class="chev" aria-hidden="true"></span></button></h3>
+            <div class="faq-a" id="a3" role="region" aria-labelledby="q3"><div><p>Model edge is the gap between the win probability from our models and the market's. If the market has Team A to win at 52% and our model has Team A at 55%, our model edge is 3%.</p><p>Models can be wrong, and results vary.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="a4" id="q4">What is your investment strategy?<span class="chev" aria-hidden="true"></span></button></h3>
+            <div class="faq-a" id="a4" role="region" aria-labelledby="q4"><div><p>Set a fixed wager size at the start of the season and take every pick the models give out. The goal is positive weeks, one after another. Winning a 3-2 week is a good outcome, and so is limiting losses in a 2-3 week. Slightly positive weeks strung together compound over time. The model currently delivers a 6.16% ROI. <span class="note">Historical result, not a guarantee. Past performance does not predict future results.</span></p><p>As the product expands across three pro sports (NFL, MLB, NBA), risk spreads out. When one sport has a drawdown, the other models can offset losses and add winning picks over a long period. The strategy is risk-adjusted, low and slow compounding growth.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="a5" id="q5">How are results tracked?<span class="chev" aria-hidden="true"></span></button></h3>
+            <div class="faq-a" id="a5" role="region" aria-labelledby="q5"><div><p>Every pick, win, loss and unit is tracked publicly. Wins and losses both stay visible.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="a6" id="q6">What sports are covered?<span class="chev" aria-hidden="true"></span></button></h3>
+            <div class="faq-a" id="a6" role="region" aria-labelledby="q6"><div><p>NFL, NBA and MLB.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="a7" id="q7">Is this betting advice?<span class="chev" aria-hidden="true"></span></button></h3>
+            <div class="faq-a" id="a7" role="region" aria-labelledby="q7"><div><p>No. Everything here is for informational purposes only. It is not financial or betting advice, and nothing is guaranteed. Bet only what you can afford to lose.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="a8" id="q8">How do I sign up, and is my data safe?<span class="chev" aria-hidden="true"></span></button></h3>
+            <div class="faq-a" id="a8" role="region" aria-labelledby="q8"><div><p>Select Continue with Google. If you already have an account, it logs you in. If not, it creates one. You need a Google account.</p><p>We sign you in through Google, so we never see your Google password. We collect only what we need to run your account. No system is risk free.</p></div></div>
+          </div>
+        </div>
+        <p class="landing-legal">For informational purposes only. Not financial advice. 21+. Past performance does not predict future results. Gambling problem? Call <span style="white-space:nowrap">1-800-GAMBLER</span>.</p>
+        </div>
+      </div>
+      <div class="landing-dock">
+        <div class="landing-actions">
+          <div class="cta-block">
+            <div data-google-slot></div>
+          </div>
+          <button type="button" class="enter-site" id="enterSite">Enter site</button>
+        </div>
+        <p class="g-notice" role="status" hidden></p>
+      </div>
+    </section>
+  </div>
+
   <nav class="nav" id="main-nav"></nav>
 
   <!-- Sidebar overlay (mobile) -->
@@ -1908,5 +1973,10 @@
       if (typeof loadTBets === 'function') await loadTBets();
     });
   </script>
+  <script src="js/landing/config.js"></script>
+  <script src="assets/landing/logo.js"></script>
+  <script src="js/landing/hero.js"></script>
+  <script src="js/landing/app.js"></script>
 </body>
+
 </html>

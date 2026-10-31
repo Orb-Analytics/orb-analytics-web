@@ -261,14 +261,14 @@ function buildNav(activePage = '') {
   if (topNav) {
     topNav.innerHTML = `
       <!-- Left: logo icon, fixed width so center calc is symmetric -->
-      <div style="display:flex;align-items:center;flex-shrink:0;width:44px">
-        <a href="predictions.html" aria-label="Orb Analytics Home">
-          <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img"
-               style="object-fit:contain;display:block" />
+      <div class="nav-logo-slot">
+        <a href="index.html" aria-label="Orb Analytics Home" class="mini-orb">
+          <canvas class="orb-logo-img mini-orb-canvas" width="56" height="56" aria-hidden="true"></canvas>
+          <img src="assets/logo.png" alt="" class="orb-logo-img mini-orb-fallback" />
         </a>
       </div>
       <!-- Center: brand name absolutely centered so it never collides with left/right -->
-      <a class="nav-logo-center" href="predictions.html" aria-label="Orb Analytics Home"
+      <a class="nav-logo-center" href="index.html" aria-label="Orb Analytics Home"
          style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;z-index:0;text-decoration:none">
         <span class="nav-logo-text">Orbanalytics<span class="nav-logo-accent">.limited</span></span>
       </a>
@@ -284,6 +284,10 @@ function buildNav(activePage = '') {
         </button>
       </div>
     `;
+    const logoCanvas = topNav.querySelector('.mini-orb-canvas');
+    if (logoCanvas) {
+      import('./landing/mini-orb.js').then(function (m) { return m.mountMiniOrb(logoCanvas); }).catch(function () {});
+    }
   }
 
   const sidebar = document.getElementById('sidebar');

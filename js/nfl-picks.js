@@ -1,10 +1,11 @@
 // NFL picks: fetch, ESPN live-score matching, and render. Moved out of
-// index.html/predictions.html (Sept 2026) after the two pages' inline
-// copies of this code drifted -- predictions.html got a crash fix
-// (fetchNFLScoreboard asking ESPN for the right week, null-safe render)
-// that never made it into index.html's duplicate, so the bare root
-// domain (served by index.html) kept crashing after the fix had already
-// shipped. One file now, included by both pages, so that can't recur.
+// the old index.html/predictions.html duplicates (Sept 2026) after the
+// two pages' inline copies of this code drifted -- predictions.html got
+// a crash fix (fetchNFLScoreboard asking ESPN for the right week,
+// null-safe render) that never made it into index.html's duplicate, so
+// the bare root domain kept crashing after the fix had already shipped.
+// index.html is that same predictions UI with a landing layer on top.
+// This file is included by both index.html and predictions.html.
 //
 // MLB's equivalents (fetchMLBScoreboard, buildLiveInfo, renderTodayPicks,
 // loadToday) were deliberately NOT moved here or touched -- they still
@@ -15,7 +16,7 @@
 // generatedAtBySport, updateLastUpdatedLabel, activeSport. That's safe
 // only because this script tag loads before the inline <script> block
 // that defines them and calls loadTodayNFL() -- see the <script src>
-// placement note in both HTML files.
+// placement in both HTML files.
 //
 // oddsSourceHTML() comes from js/odds-source.js, loaded before this file.
 

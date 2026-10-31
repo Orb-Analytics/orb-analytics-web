@@ -8,11 +8,34 @@ The official Orb Analytics platform — live scores, bet tracking, ML prediction
 
 | Page | File | Status |
 |------|------|--------|
-| Home | `index.html` | ✅ Live |
+| Home | `index.html` | ✅ Live (landing intro over the predictions home) |
 | Scoreboard | `scoreboard.html` | ✅ Live (ESPN API) |
 | Bet Tracker | `tracker.html` | ✅ Live (Firebase, sign-in required) |
 | Predictions | `predictions.html` | ✅ Live (reads model repos) |
 | Settings | `settings.html` | 🚧 Stub |
+
+## Landing page
+
+`index.html` is the predictions home with a full-viewport landing layer fixed on top of it. The predictions layout is sized to the viewport (`100vh` minus the nav), so the intro is an overlay on the same URL rather than a document section above that layout. Enter site slides the layer up and the existing nav, sidebar, and predictions UI are already underneath. `predictions.html` is the same predictions UI without the intro.
+
+The layer uses the site's light brand (DM Sans italic headlines, Inter, purple `#9A29E9`). On a wide screen the tagline and FAQ fill the left half and the particle orb fills the right. Sphere, Logo, and Hybrid sit in the top-right. Every page header uses a rotating solid orb in place of the static logo image. Enter site and Continue with Google sit together at the bottom. On a small screen those stack as tagline, orb, FAQ, then the buttons. A short legal line stays under the FAQ.
+
+Google sign-in uses the placeholder `YOUR_GOOGLE_CLIENT_ID` in `js/landing/config.js`. Do not commit a real client ID. Until that placeholder is replaced, Continue with Google shows a setup notice instead of signing in.
+
+Landing files:
+
+- `css/landing.css` (scoped to `.landing-layer`)
+- `js/landing/` (`config.js`, `app.js`, `hero.js`, `solid.js`, `mini-orb.js`)
+- `assets/landing/` (logo particle data, solid textures, vendored three.js)
+- `scripts/landing/` regenerates the logo and solid textures
+
+There is no build step. From the repo root:
+
+```
+python3 -m http.server 5173
+```
+
+Then open http://localhost:5173.
 
 ## Predictions Integration
 

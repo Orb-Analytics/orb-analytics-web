@@ -1,5 +1,5 @@
 // Odds source line for pick cards ("Odds via DraftKings"). Shared by the
-// MLB cards (inline in index.html/predictions.html) and the NFL cards
+// MLB cards (inline in index.html and predictions.html) and the NFL cards
 // (js/nfl-picks.js), so the vendor names and markup live in one place.
 //
 // Reads a pick's optional odds_source field: either a bare vendor id
