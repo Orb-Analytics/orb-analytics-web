@@ -26,7 +26,7 @@
 .landing-layer :focus-visible { outline: 2px solid var(--land-purple); outline-offset: 3px; }
 
 .landing-hero {
-  --pad-x: 32px;
+  --pad-x: 56px;
   position: relative;
   height: 100vh;
   height: 100dvh;
@@ -91,8 +91,21 @@
   text-decoration: none;
   color: inherit;
 }
-.landing-tabs { position: static; flex: none; margin-left: 16px; }
-.landing-top .nav-social { display: flex; }
+.landing-tabs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.landing-tabs .pager { pointer-events: auto; }
+.landing-lockup, .landing-top .nav-social { position: relative; z-index: 1; }
+.landing-top .nav-social { display: flex; flex: none; }
 .landing-split {
   position: relative;
   z-index: 1;
@@ -106,7 +119,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(220px, 0.95fr);
   align-items: center;
-  column-gap: 64px;
+  column-gap: 80px;
   pointer-events: none;
 }
 .landing-left {
@@ -114,7 +127,7 @@
   flex-direction: column;
   justify-content: center;
   min-width: 0;
-  max-width: 100%;
+  max-width: 32rem;
   height: 100%;
   pointer-events: none;
 }
@@ -258,7 +271,8 @@
 .landing-layer .faq {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 32px;
+  column-gap: 28px;
+  row-gap: 8px;
   border-top: 1px solid var(--land-line);
 }
 .landing-layer .faq-item { border-bottom: 1px solid var(--land-line); min-width: 0; }
@@ -277,7 +291,7 @@
   font-size: 13.5px;
   line-height: 1.25;
   text-align: left;
-  padding: 10px 4px;
+  padding: 14px 8px;
   cursor: pointer;
 }
 .landing-layer .faq-item button:hover { color: var(--land-purple); }
@@ -326,7 +340,7 @@
 
 @media (max-width: 1200px) {
   .landing-copy h1 { font-size: clamp(36px, 4.6vw, 52px); }
-  .landing-split { column-gap: 40px; }
+  .landing-split { column-gap: 64px; }
   .landing-stage { height: min(72%, 440px); min-height: 200px; }
 }
 @media (max-height: 860px) {
@@ -335,7 +349,8 @@
   .landing-copy h1 { font-size: clamp(32px, 4vw, 48px); }
   .landing-sub { margin-top: 16px; font-size: 15px; }
   .landing-faq-scroll { margin-top: 24px; }
-  .landing-layer .faq-item button { padding: 8px 4px; }
+  .landing-layer .faq { row-gap: 4px; }
+  .landing-layer .faq-item button { padding: 11px 8px; }
 }
 @media (max-width: 800px) {
   .landing-layer { overflow-x: hidden; overflow-y: auto; }
@@ -349,8 +364,18 @@
     padding: 16px var(--pad-x) 20px;
     gap: 24px;
   }
-  .landing-top { flex-wrap: wrap; align-items: flex-start; gap: 12px; }
-  .landing-tabs { margin-left: auto; }
+  .landing-top { flex-wrap: wrap; align-items: center; row-gap: 12px; }
+  .landing-lockup { order: 1; }
+  .landing-top .nav-social { order: 2; margin-left: auto; }
+  .landing-tabs {
+    position: static;
+    transform: none;
+    order: 3;
+    flex: 1 0 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+  }
   .landing-top .nav-logo-text { font-size: 1.05rem; }
   .landing-top .nav-social { gap: 0.15rem; }
   .landing-top .nav-social svg { width: 17px; height: 17px; }
