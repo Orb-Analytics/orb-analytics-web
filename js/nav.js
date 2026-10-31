@@ -262,13 +262,13 @@ function buildNav(activePage = '') {
     topNav.innerHTML = `
       <!-- Left: logo icon, fixed width so center calc is symmetric -->
       <div style="display:flex;align-items:center;flex-shrink:0;width:44px">
-        <a href="predictions.html" aria-label="Orb Analytics Home">
+        <a href="index.html" aria-label="Orb Analytics Home">
           <img src="assets/logo.png" alt="Orb Analytics" class="orb-logo-img"
                style="object-fit:contain;display:block" />
         </a>
       </div>
       <!-- Center: brand name absolutely centered so it never collides with left/right -->
-      <a class="nav-logo-center" href="predictions.html" aria-label="Orb Analytics Home"
+      <a class="nav-logo-center" href="index.html" aria-label="Orb Analytics Home"
          style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;z-index:0;text-decoration:none">
         <span class="nav-logo-text">Orbanalytics<span class="nav-logo-accent">.limited</span></span>
       </a>

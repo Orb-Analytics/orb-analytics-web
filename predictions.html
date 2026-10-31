@@ -776,10 +776,9 @@
         <div class="pick-team-logo-fallback" style="width:${size}px;height:${size}px;display:none">${abbr}</div>`;
     }
 
-    // NFL picks (fetch/live-info/render) moved to js/nfl-picks.js, shared
-    // by this file and index.html -- see that file's header comment for
-    // why (the two pages' inline copies had drifted and caused a crash on
-    // one but not the other). MLB below is untouched, still inline.
+    // NFL picks (fetch/live-info/render) live in js/nfl-picks.js.
+    // index.html is the marketing landing page; this file is the
+    // predictions UI. MLB below is untouched, still inline.
 
     // Reorders parallel pick/live-info arrays so live games lead regardless
     // of coverage, completed games come next, and not-yet-started games sit
