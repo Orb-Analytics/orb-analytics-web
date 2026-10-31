@@ -46,9 +46,9 @@ export async function createSolid(canvas, onLost) {
   const camera = new THREE.PerspectiveCamera(FOV, 1, 1, 200);
 
   // soft studio lights: purple key from the upper left, white rim from behind on the right, faint fill
-  const key = new THREE.DirectionalLight(0xb06cff, 2.0); key.position.set(-3, 3.2, 4); scene.add(key);
+  const key = new THREE.DirectionalLight(0x9A29E9, 2.0); key.position.set(-3, 3.2, 4); scene.add(key);
   const rim = new THREE.DirectionalLight(0xffffff, 2.6); rim.position.set(4, 1.5, -3); scene.add(rim);
-  scene.add(new THREE.HemisphereLight(0xf1e6ff, 0x2a0a50, 0.35));
+  scene.add(new THREE.HemisphereLight(0xF8F2FF, 0x1A0038, 0.35));
 
   // textures
   const loader = new THREE.TextureLoader();
@@ -77,7 +77,7 @@ export async function createSolid(canvas, onLost) {
     clearcoat: 0.8, clearcoatRoughness: 0.09,
     bumpMap: tHeight, bumpScale: 2.2,
     displacementMap: tHeight, displacementScale: D, displacementBias: -D,
-    emissive: new THREE.Color(0xa855f7), emissiveMap: tGlow, emissiveIntensity: 0.5,
+    emissive: new THREE.Color(0x9A29E9), emissiveMap: tGlow, emissiveIntensity: 0.5,
     envMapIntensity: 1.0
   });
   const sphere = new THREE.Mesh(geo, mat);
@@ -91,9 +91,9 @@ export async function createSolid(canvas, onLost) {
     g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
   }
-  const shadowMat = new THREE.MeshBasicMaterial({ map: radial("rgba(40,10,80,0.42)", "rgba(40,10,80,A)"), transparent: true, depthWrite: false, toneMapped: false });
+  const shadowMat = new THREE.MeshBasicMaterial({ map: radial("rgba(11,0,25,0.42)", "rgba(11,0,25,A)"), transparent: true, depthWrite: false, toneMapped: false });
   const shadow = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 0.5), shadowMat); shadow.position.set(0, -1.32, -1.2); shadow.renderOrder = -2; scene.add(shadow);
-  const glowMat = new THREE.MeshBasicMaterial({ map: radial("rgba(168,85,247,0.16)", "rgba(168,85,247,A)"), transparent: true, depthWrite: false, toneMapped: false });
+  const glowMat = new THREE.MeshBasicMaterial({ map: radial("rgba(154,41,233,0.16)", "rgba(154,41,233,A)"), transparent: true, depthWrite: false, toneMapped: false });
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), glowMat); glow.position.set(0, 0, -2); glow.renderOrder = -3; scene.add(glow);
 
   const SCALE = 0.89; // the Solid sphere is drawn about 11% smaller than the particle states; shadow and glow scale with it

@@ -4,19 +4,19 @@
 // a crash fix (fetchNFLScoreboard asking ESPN for the right week,
 // null-safe render) that never made it into index.html's duplicate, so
 // the bare root domain kept crashing after the fix had already shipped.
-// index.html is now the marketing landing page. This file is included
-// only by predictions.html, which is where that predictions UI lives.
+// index.html is that same predictions UI with a landing layer on top.
+// This file is included by both index.html and predictions.html.
 //
 // MLB's equivalents (fetchMLBScoreboard, buildLiveInfo, renderTodayPicks,
 // loadToday) were deliberately NOT moved here or touched -- they still
-// live inline in predictions.html, unchanged. This file calls a handful of
-// globals that remain defined inline on that page, because they're shared
-// with MLB and moving them would mean touching MLB's setup too:
-// coverageSortOrder, fmtOdds, fmtGameTime, logPick, generatedAtBySport,
-// updateLastUpdatedLabel, activeSport. That's safe only because this
-// script tag loads before the inline <script> block that defines them
-// and calls loadTodayNFL() -- see the <script src> placement in
-// predictions.html.
+// live inline in both HTML files, unchanged. This file calls a handful of
+// globals that remain defined inline in whichever page loads it, because
+// they're shared with MLB and moving them would mean touching MLB's setup
+// too: coverageSortOrder, fmtOdds, fmtGameTime, logPick,
+// generatedAtBySport, updateLastUpdatedLabel, activeSport. That's safe
+// only because this script tag loads before the inline <script> block
+// that defines them and calls loadTodayNFL() -- see the <script src>
+// placement in both HTML files.
 //
 // oddsSourceHTML() comes from js/odds-source.js, loaded before this file.
 

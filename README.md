@@ -8,7 +8,7 @@ The official Orb Analytics platform — live scores, bet tracking, ML prediction
 
 | Page | File | Status |
 |------|------|--------|
-| Home | `index.html` | ✅ Live (marketing landing page) |
+| Home | `index.html` | ✅ Live (landing intro over the predictions home) |
 | Scoreboard | `scoreboard.html` | ✅ Live (ESPN API) |
 | Bet Tracker | `tracker.html` | ✅ Live (Firebase, sign-in required) |
 | Predictions | `predictions.html` | ✅ Live (reads model repos) |
@@ -16,16 +16,16 @@ The official Orb Analytics platform — live scores, bet tracking, ML prediction
 
 ## Landing page
 
-`index.html` is the marketing landing page (light mode, particle hero, How it works and FAQ, Google sign-in button, footer disclaimer). It used to be a duplicate of `predictions.html`. That predictions UI still lives at `predictions.html`, linked from the landing nav and footer. The logo in the app header links back to this home page.
+`index.html` is the predictions home with a full-viewport landing layer fixed on top of it. The predictions layout is sized to the viewport (`100vh` minus the nav), so the intro is an overlay on the same URL rather than a document section above that layout. Enter site slides the layer up and the existing nav, sidebar, and predictions UI are already underneath. `predictions.html` is the same predictions UI without the intro.
+
+The layer uses the site's light brand (DM Sans, Inter, purple `#9A29E9`, the same logo particles tinted to that palette). It shows the hero animation, the Anti Lock Culture tagline, the FAQ, a short legal line, and Enter site. The site's own nav and disclaimer take over after you enter.
 
 Landing files:
 
-- `css/landing.css`
-- `js/landing/` (`config.js`, `app.js`, `hero.js`, `solid.js`)
-- `assets/landing/` (logo, particle data, solid textures, vendored three.js)
+- `css/landing.css` (scoped to `.landing-layer`)
+- `js/landing/` (`app.js`, `hero.js`, `solid.js`)
+- `assets/landing/` (logo particle data, solid textures, vendored three.js)
 - `scripts/landing/` regenerates the logo and solid textures
-
-Google sign-in stays off until `GOOGLE_CLIENT_ID` in `js/landing/config.js` is set. That file ships with the placeholder `YOUR_GOOGLE_CLIENT_ID`. Do not commit a real client ID. Until it is replaced locally, the Google buttons show a setup notice instead of signing in.
 
 There is no build step. From the repo root:
 

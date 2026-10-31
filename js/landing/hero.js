@@ -14,8 +14,8 @@
 
   var HOLD = [5, 9, 13, 13]; // seconds: sphere, logo (one coin turn), hybrid, solid
   var CLICK_PAUSE = 8; // extra seconds before auto-cycle resumes after a tab click
-  // one shared palette for all three states: a purple ramp (dark to light, indices 0..NR-1), then three near-black shades
-  var PALETTE = ["#1f0638", "#350a5c", "#4b0d7e", "#6410a0", "#6D28D9", "#7C3AED", "#A855F7", "#C084FC", "#0B0B12", "#140A24", "#1A1033"];
+  // Brand purple ramp (css/style.css), dark to light, then three near-black shades.
+  var PALETTE = ["#0B0019", "#1A0038", "#280058", "#3C0183", "#8520FE", "#9A29E9", "#A052FE", "#B174FB", "#09090B", "#111827", "#1F2937"];
   var NR = 8, DK0 = 8, DARK_SHARE = 0.28;
   var NLV = PALETTE.length, NAL = 4, ALPHAS = [0.3, 0.55, 0.8, 0.96];
 
