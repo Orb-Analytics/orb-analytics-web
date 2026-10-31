@@ -171,7 +171,17 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   flex-shrink: 0;
 }
 
-.nav-logo-slot { display: flex; align-items: center; flex-shrink: 0; width: 56px; height: 56px; }
+/* Match .sidebar width and cancel the nav's left padding so the orb
+   is centered on the sidebar column, not the padding edge. */
+.nav-logo-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 220px;
+  height: 56px;
+  margin-left: -1.5rem;
+}
 .orb-logo-img { width: 56px; height: 56px; object-fit: contain; display: block; }
 .mini-orb { position: relative; display: block; line-height: 0; text-decoration: none; }
 .mini-orb-canvas { display: none; }
@@ -749,7 +759,7 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
   }
   .section-title { font-size: 1.5rem; }
   .nav-logo-text { font-size: 0.95rem; }
-  .nav-logo-slot { width: 48px; height: 48px; }
+  .nav-logo-slot { width: 48px; height: 48px; margin-left: 0; justify-content: flex-start; }
   .orb-logo-img { width: 48px; height: 48px; }
   .nav-social { display: none; }
   .nav-theme-toggle { display: flex; }
