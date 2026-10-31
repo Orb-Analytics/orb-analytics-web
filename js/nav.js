@@ -261,9 +261,9 @@ function buildNav(activePage = '') {
   if (topNav) {
     topNav.innerHTML = `
       <!-- Left: logo icon, fixed width so center calc is symmetric -->
-      <div style="display:flex;align-items:center;flex-shrink:0;width:44px">
+      <div class="nav-logo-slot">
         <a href="index.html" aria-label="Orb Analytics Home" class="mini-orb">
-          <canvas class="orb-logo-img mini-orb-canvas" width="40" height="40" aria-hidden="true"></canvas>
+          <canvas class="orb-logo-img mini-orb-canvas" width="56" height="56" aria-hidden="true"></canvas>
           <img src="assets/logo.png" alt="" class="orb-logo-img mini-orb-fallback" />
         </a>
       </div>

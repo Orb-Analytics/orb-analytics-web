@@ -171,7 +171,8 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   flex-shrink: 0;
 }
 
-.orb-logo-img { width: 40px; height: 40px; object-fit: contain; display: block; }
+.nav-logo-slot { display: flex; align-items: center; flex-shrink: 0; width: 56px; height: 56px; }
+.orb-logo-img { width: 56px; height: 56px; object-fit: contain; display: block; }
 .mini-orb { position: relative; display: block; line-height: 0; text-decoration: none; }
 .mini-orb-canvas { display: none; }
 .mini-orb.is-live .mini-orb-canvas { display: block; }
@@ -748,7 +749,8 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
   }
   .section-title { font-size: 1.5rem; }
   .nav-logo-text { font-size: 0.95rem; }
-  .orb-logo-img { width: 36px; height: 36px; }
+  .nav-logo-slot { width: 48px; height: 48px; }
+  .orb-logo-img { width: 48px; height: 48px; }
   .nav-social { display: none; }
   .nav-theme-toggle { display: flex; }
   #theme-toggle { display: none; }

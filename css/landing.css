@@ -47,18 +47,6 @@
   -webkit-mask-image: radial-gradient(70% 70% at 68% 46%, #000 10%, transparent 75%);
   mask-image: radial-gradient(70% 70% at 68% 46%, #000 10%, transparent 75%);
 }
-.landing-mark {
-  position: absolute;
-  z-index: 4;
-  top: 0;
-  left: 0;
-  height: var(--nav-height);
-  padding: 0 1.5rem;
-  border-bottom: 1px solid transparent;
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-}
 .landing-layer #orbCanvas,
 .landing-layer #solidCanvas {
   position: absolute;
@@ -287,15 +275,6 @@
   line-height: 1.5;
 }
 
-@media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
-  .landing-mark {
-    height: 68px;
-    padding: 0;
-    padding-top: max(0.65rem, env(safe-area-inset-top, 0px));
-    padding-left: calc(0.75rem + env(safe-area-inset-left, 0px));
-    padding-right: calc(0.75rem + env(safe-area-inset-right, 0px));
-  }
-}
 @media (max-width: 860px) {
   .landing-layer { overflow-x: hidden; overflow-y: auto; }
   .landing-hero { height: auto; min-height: 100dvh; overflow: visible; }

@@ -137,6 +137,4 @@
   btn.addEventListener("click", enter);
   buildGoogle();
   renderAuth();
-  var mark = document.querySelector(".landing-mark .mini-orb-canvas");
-  if (mark) import("./mini-orb.js").then(function (m) { return m.mountMiniOrb(mark); }).catch(function () {});
 })();

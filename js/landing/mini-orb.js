@@ -1,10 +1,10 @@
-/* Small continuously rotating Solid orb, shared by the intro mark and the site nav.
-   One WebGL context, blitted to each visible canvas. Low resolution, paused while the
+/* Small continuously rotating Solid orb for the site header.
+   One WebGL context, blitted to each visible canvas. Paused while the
    tab is hidden, a single frame when the user prefers reduced motion. */
 const LOCAL = "../../assets/landing/vendor/three.module.min.js";
 const CDN = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js";
 const TEX = "assets/landing/";
-const SIZE = 96; // source buffer; display canvases stay at the CSS logo size
+const SIZE = 192; // source buffer, larger than the CSS logo so the blit stays sharp
 const TURN = 10; // seconds per revolution
 
 const canvases = new Set();
@@ -51,7 +51,7 @@ function texOf(THREE, loader, name, srgb) {
   return new Promise(function (res, rej) {
     loader.load(TEX + name, function (t) {
       t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-      t.anisotropy = 4;
+      t.anisotropy = 8;
       t.wrapS = THREE.RepeatWrapping;
       t.wrapT = THREE.ClampToEdgeWrapping;
       res(t);
@@ -92,7 +92,7 @@ async function boot() {
     texOf(THREE, loader, "solid-orm.png", false),
     texOf(THREE, loader, "solid-glow.png", false)
   ]);
-  const geo = new THREE.SphereGeometry(1, 48, 32);
+  const geo = new THREE.SphereGeometry(1, 64, 48);
   geo.rotateX(Math.PI / 2);
   const mat = new THREE.MeshPhysicalMaterial({
     map: tColor, metalnessMap: tOrm, roughnessMap: tOrm, metalness: 1, roughness: 1,
@@ -115,12 +115,14 @@ async function boot() {
 }
 
 function blit(dest) {
-  const css = dest.clientWidth || 40;
-  const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+  const css = dest.clientWidth || 56;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
   const w = Math.max(1, Math.round(css * dpr));
   if (dest.width !== w || dest.height !== w) { dest.width = w; dest.height = w; }
   const ctx = dest.getContext("2d");
   if (!ctx) return;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.clearRect(0, 0, w, w);
   ctx.drawImage(glCanvas, 0, 0, w, w);
 }
