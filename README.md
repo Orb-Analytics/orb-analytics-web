@@ -18,12 +18,14 @@ The official Orb Analytics platform — live scores, bet tracking, ML prediction
 
 `index.html` is the predictions home with a full-viewport landing layer fixed on top of it. The predictions layout is sized to the viewport (`100vh` minus the nav), so the intro is an overlay on the same URL rather than a document section above that layout. Enter site slides the layer up and the existing nav, sidebar, and predictions UI are already underneath. `predictions.html` is the same predictions UI without the intro.
 
-The layer uses the site's light brand (DM Sans, Inter, purple `#9A29E9`, the same logo particles tinted to that palette). It shows the hero animation, the Anti Lock Culture tagline, the FAQ, a short legal line, and Enter site. The site's own nav and disclaimer take over after you enter.
+The layer uses the site's light brand (DM Sans italic headlines, Inter, purple `#9A29E9`). On a wide screen the tagline and FAQ fill the left half and the particle orb fills the right. The Sphere / Logo / Hybrid / Solid pill sits in the top-right corner. Enter site and Continue with Google sit together at the bottom. On a small screen those stack as tagline, orb, FAQ, then the buttons. A short legal line stays under the FAQ.
+
+Google sign-in uses the placeholder `YOUR_GOOGLE_CLIENT_ID` in `js/landing/config.js`. Do not commit a real client ID. Until that placeholder is replaced, Continue with Google shows a setup notice instead of signing in.
 
 Landing files:
 
 - `css/landing.css` (scoped to `.landing-layer`)
-- `js/landing/` (`app.js`, `hero.js`, `solid.js`)
+- `js/landing/` (`config.js`, `app.js`, `hero.js`, `solid.js`)
 - `assets/landing/` (logo particle data, solid textures, vendored three.js)
 - `scripts/landing/` regenerates the logo and solid textures
 

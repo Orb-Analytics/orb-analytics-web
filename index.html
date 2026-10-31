@@ -13,7 +13,7 @@
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="stylesheet" href="css/style.css?v=20261026b" />
-  <link rel="stylesheet" href="css/landing.css?v=20261031b" />
+  <link rel="stylesheet" href="css/landing.css?v=20261031c" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -458,21 +458,16 @@
       <canvas id="orbCanvas" aria-hidden="true"></canvas>
       <canvas id="solidCanvas" aria-hidden="true"></canvas>
       <div class="landing-glow" aria-hidden="true"></div>
-      <div class="landing-hero-in">
+      <div class="landing-tabs">
+        <div class="pager" id="pager" role="group" aria-label="Hero animation"></div>
+      </div>
+      <div class="landing-split">
         <div class="landing-copy">
           <h1>Anti <span class="hl">Lock</span> Culture</h1>
         </div>
         <div class="landing-stage" id="stage"></div>
-      </div>
-      <div class="landing-dock">
-        <div class="pager" id="pager" role="group" aria-label="Hero animation"></div>
-        <button type="button" class="enter-site" id="enterSite">Enter site</button>
-      </div>
-    </section>
-    <section class="landing-faq" id="faq" aria-labelledby="faq-title">
-      <div class="landing-wrap">
+        <div class="landing-faq-scroll" id="faq">
         <p class="landing-kicker">FAQ</p>
-        <h2 id="faq-title">Questions, answered.</h2>
         <div class="faq" id="faqList">
           <div class="faq-item">
             <h3><button type="button" aria-expanded="false" aria-controls="a1" id="q1">What is Orb Analytics?<span class="chev" aria-hidden="true"></span></button></h3>
@@ -508,6 +503,16 @@
           </div>
         </div>
         <p class="landing-legal">For informational purposes only. Not financial advice. 21+. Past performance does not predict future results. Gambling problem? Call <span style="white-space:nowrap">1-800-GAMBLER</span>.</p>
+        </div>
+      </div>
+      <div class="landing-dock">
+        <div class="landing-actions">
+          <div class="cta-block">
+            <div data-google-slot></div>
+          </div>
+          <button type="button" class="enter-site" id="enterSite">Enter site</button>
+        </div>
+        <p class="g-notice" role="status" hidden></p>
       </div>
     </section>
   </div>
@@ -1969,6 +1974,7 @@
       if (typeof loadTBets === 'function') await loadTBets();
     });
   </script>
+  <script src="js/landing/config.js"></script>
   <script src="assets/landing/logo.js"></script>
   <script src="js/landing/hero.js"></script>
   <script src="js/landing/app.js"></script>
