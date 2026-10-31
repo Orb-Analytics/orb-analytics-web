@@ -27,6 +27,12 @@ const SIDEBAR_LINKS = [
   { href: 'settings.html',    label: 'Settings',    hidden: true, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`, soon: true },
 ];
 
+function socialLinksHTML() {
+  return SOCIAL_LINKS.map(s => `
+    <a href="${s.href}" target="_blank" rel="noopener noreferrer" aria-label="${s.label}" title="${s.label}" class="${s.class || ''}">${s.svg}</a>
+  `).join('');
+}
+
 const SOCIAL_LINKS = [
   { href: 'https://orbanalytics.substack.com/', label: 'Substack', class: 'nav-substack', svg: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>` },
   { href: 'https://www.tiktok.com/@orb.analytics', label: 'TikTok', svg: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z"/></svg>` },
@@ -275,9 +281,7 @@ function buildNav(activePage = '') {
       <!-- Right: social + theme toggle, fixed width matching left so center stays true -->
       <div style="display:flex;align-items:center;gap:0.4rem;margin-left:auto;flex-shrink:0;z-index:1">
         <div class="nav-social">
-          ${SOCIAL_LINKS.map(s => `
-            <a href="${s.href}" target="_blank" rel="noopener noreferrer" aria-label="${s.label}" title="${s.label}" class="${s.class || ''}">${s.svg}</a>
-          `).join('')}
+          ${socialLinksHTML()}
         </div>
         <button class="theme-toggle nav-theme-toggle" id="theme-toggle-mobile" onclick="toggleTheme()" title="Toggle theme">
           ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
@@ -289,6 +293,9 @@ function buildNav(activePage = '') {
       import('./landing/mini-orb.js').then(function (m) { return m.mountMiniOrb(logoCanvas); }).catch(function () {});
     }
   }
+
+  const landingSocial = document.getElementById('landing-social');
+  if (landingSocial) landingSocial.innerHTML = socialLinksHTML();
 
   const sidebar = document.getElementById('sidebar');
   if (sidebar) {

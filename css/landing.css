@@ -26,11 +26,15 @@
 .landing-layer :focus-visible { outline: 2px solid var(--land-purple); outline-offset: 3px; }
 
 .landing-hero {
+  --pad-x: 56px;
   position: relative;
   height: 100vh;
   height: 100dvh;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  align-content: stretch;
+  padding: 24px var(--pad-x) 16px;
+  box-sizing: border-box;
   overflow: hidden;
   background: linear-gradient(180deg, #FFFFFF 0%, var(--land-wash) 100%);
   isolation: isolate;
@@ -62,31 +66,72 @@
 .landing-hero.solid-on #orbCanvas { opacity: 0; }
 .landing-hero.solid-on #solidCanvas { opacity: 1; }
 
+.landing-top {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 28px;
+  padding: 0;
+  pointer-events: auto;
+  min-width: 0;
+}
+.landing-brand {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  min-width: 0;
+}
+.landing-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
 .landing-tabs {
   position: absolute;
-  top: 18px;
-  right: 22px;
-  z-index: 3;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  z-index: 2;
+  pointer-events: none;
 }
+.landing-tabs .pager { pointer-events: auto; }
+.landing-lockup, .landing-top .nav-social { position: relative; z-index: 1; }
+.landing-top .nav-social { display: flex; flex: none; }
 .landing-split {
   position: relative;
   z-index: 1;
-  flex: 1;
+  min-width: 0;
   min-height: 0;
-  width: min(1240px, calc(100% - 88px));
-  margin: 64px auto 0;
-  padding-left: 12px;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 32px 0;
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas:
-    "copy stage"
-    "faq stage";
-  column-gap: 72px;
-  row-gap: 18px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(220px, 0.95fr);
+  align-items: center;
+  column-gap: 80px;
   pointer-events: none;
 }
-.landing-copy { grid-area: copy; pointer-events: auto; align-self: end; max-width: 30rem; }
+.landing-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  max-width: 32rem;
+  height: 100%;
+  pointer-events: none;
+}
+.landing-copy { pointer-events: auto; min-width: 0; max-width: 36rem; }
 .landing-copy h1 {
   font-family: "DM Sans", sans-serif;
   font-weight: 800;
@@ -98,21 +143,29 @@
   color: var(--land-text);
 }
 .landing-copy h1 .hl { color: var(--land-purple); }
+.landing-sub {
+  margin: 24px 0 0;
+  font-family: var(--font-body), Inter, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--land-muted);
+}
 .landing-stage {
-  grid-area: stage;
-  min-height: 0;
+  min-width: 0;
+  min-height: 220px;
   justify-self: center;
   align-self: center;
-  width: 86%;
-  height: 84%;
+  width: 100%;
+  height: min(100%, 560px);
 }
 .landing-faq-scroll {
-  grid-area: faq;
   pointer-events: auto;
-  min-height: 0;
-  max-width: 30rem;
+  min-width: 0;
+  margin-top: 40px;
   overflow-y: auto;
-  padding-right: 8px;
+  padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: var(--land-purple) transparent;
 }
@@ -124,7 +177,8 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 14px 20px 22px;
+  width: 100%;
+  padding: 16px 0 0;
 }
 .landing-actions {
   display: flex;
@@ -214,30 +268,37 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.landing-layer .faq { border-top: 1px solid var(--land-line); }
-.landing-layer .faq-item { border-bottom: 1px solid var(--land-line); }
+.landing-layer .faq {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 28px;
+  row-gap: 8px;
+  border-top: 1px solid var(--land-line);
+}
+.landing-layer .faq-item { border-bottom: 1px solid var(--land-line); min-width: 0; }
 .landing-layer .faq-item h3 { margin: 0; font-size: inherit; font-weight: inherit; }
 .landing-layer .faq-item button {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 10px;
   background: none;
   border: 0;
   color: var(--land-text);
-  font-family: "DM Sans", sans-serif;
-  font-weight: 700;
-  font-size: 16px;
+  font-family: var(--font-body), Inter, sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1.25;
   text-align: left;
-  padding: 14px 2px;
+  padding: 14px 8px;
   cursor: pointer;
 }
 .landing-layer .faq-item button:hover { color: var(--land-purple); }
 .landing-layer .chev {
   flex: none;
-  width: 30px;
-  height: 30px;
+  width: 22px;
+  height: 22px;
   border: 1px solid var(--land-line);
   border-radius: 50%;
   position: relative;
@@ -263,37 +324,80 @@
 .landing-layer button[aria-expanded="true"] .chev::after { transform: translate(-50%, -50%) rotate(0); }
 .landing-layer .faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.38s cubic-bezier(.4, 0, .2, 1); }
 .landing-layer .faq-a > div { overflow: hidden; }
-.landing-layer .faq-a p { margin: 0; padding: 0 4px 22px; color: var(--land-muted); font-size: 15.5px; }
+.landing-layer .faq-a p { margin: 0; padding: 0 2px 10px; color: var(--land-muted); font-size: 13px; line-height: 1.4; }
 .landing-layer .faq-a p + p { margin-top: -8px; }
 .landing-layer .faq-a .note { display: block; margin-top: 8px; font-size: 13px; color: var(--land-purple-deep); }
 .landing-layer button[aria-expanded="true"] + .faq-a,
 .landing-layer .faq-item.open .faq-a { grid-template-rows: 1fr; }
 .landing-legal {
-  margin: 16px 0 4px;
+  margin: 16px auto 0;
+  max-width: 640px;
+  text-align: center;
   color: var(--land-muted);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1200px) {
+  .landing-copy h1 { font-size: clamp(36px, 4.6vw, 52px); }
+  .landing-split { column-gap: 64px; }
+  .landing-stage { height: min(72%, 440px); min-height: 200px; }
+}
+@media (max-height: 860px) {
+  .landing-hero { padding-top: 16px; padding-bottom: 12px; }
+  .landing-split { padding: 16px 0; }
+  .landing-copy h1 { font-size: clamp(32px, 4vw, 48px); }
+  .landing-sub { margin-top: 16px; font-size: 15px; }
+  .landing-faq-scroll { margin-top: 24px; }
+  .landing-layer .faq { row-gap: 4px; }
+  .landing-layer .faq-item button { padding: 11px 8px; }
+}
+@media (max-width: 800px) {
   .landing-layer { overflow-x: hidden; overflow-y: auto; }
-  .landing-hero { height: auto; min-height: 100dvh; overflow: visible; }
-  .landing-tabs { position: static; display: flex; justify-content: flex-end; padding: 16px 16px 0; }
+  .landing-hero {
+    height: auto;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    --pad-x: 16px;
+    padding: 16px var(--pad-x) 20px;
+    gap: 24px;
+  }
+  .landing-top { flex-wrap: wrap; align-items: center; row-gap: 12px; }
+  .landing-lockup { order: 1; }
+  .landing-top .nav-social { order: 2; margin-left: auto; }
+  .landing-tabs {
+    position: static;
+    transform: none;
+    order: 3;
+    flex: 1 0 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+  }
+  .landing-top .nav-logo-text { font-size: 1.05rem; }
+  .landing-top .nav-social { gap: 0.15rem; }
+  .landing-top .nav-social svg { width: 17px; height: 17px; }
+  .landing-top .nav-social a.nav-substack { width: 1.85rem; height: 1.85rem; }
+  .landing-top .nav-social a.nav-substack svg { width: 14px; height: 14px; }
   .landing-split {
     display: flex;
     flex-direction: column;
-    width: calc(100% - 32px);
-    margin: 12px auto 0;
-    padding-left: 0;
-    gap: 8px;
+    height: auto;
+    padding: 0;
+    gap: 24px;
   }
+  .landing-left { display: contents; }
   .landing-copy { order: 1; }
-  .landing-copy h1 { font-size: clamp(40px, 12vw, 64px); }
-  .landing-stage { order: 2; width: 100%; height: auto; min-height: min(88vw, 420px); justify-self: stretch; align-self: stretch; }
-  .landing-copy, .landing-faq-scroll { max-width: none; }
-  .landing-faq-scroll { order: 3; overflow: visible; padding-right: 0; }
+  .landing-copy h1 { font-size: clamp(40px, 12vw, 56px); }
+  .landing-sub { font-size: 15px; margin-top: 16px; }
+  .landing-stage { order: 2; width: 100%; height: auto; min-height: min(72vw, 300px); }
+  .landing-faq-scroll { order: 3; margin-top: 0; overflow: visible; }
+  .landing-layer .faq { grid-template-columns: 1fr; column-gap: 0; }
+  .landing-dock { padding-top: 8px; }
   .landing-actions { width: 100%; }
-  .g-btn, .enter-site { width: 100%; justify-content: center; }
+  .g-btn, .enter-site { flex: 1 1 160px; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   .landing-layer,
