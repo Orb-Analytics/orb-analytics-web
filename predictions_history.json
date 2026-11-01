@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-10-31T13:06:31+00:00",
+  "generated_at": "2026-11-01T14:05:26+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
     "wins": 128,
-    "losses": 102,
-    "win_rate": 55.7,
-    "total_units": 22.45,
-    "total_picks": 230,
-    "mean_clv": 0.516,
+    "losses": 103,
+    "win_rate": 55.4,
+    "total_units": 21.45,
+    "total_picks": 231,
+    "mean_clv": 0.469,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -19,11 +19,11 @@
       },
       "nba-m1-open-v1": {
         "wins": 21,
-        "losses": 10,
-        "win_rate": 67.7,
-        "total_units": 10.31,
-        "total_picks": 31,
-        "mean_clv": 0.516
+        "losses": 11,
+        "win_rate": 65.6,
+        "total_units": 9.31,
+        "total_picks": 32,
+        "mean_clv": 0.469
       }
     }
   },
@@ -4334,6 +4334,23 @@
       "home_score": 112,
       "away_score": 95,
       "clv": 0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718002,
+      "date": "2026-10-31",
+      "season": "2026-27",
+      "home_team": "CHA",
+      "away_team": "PHI",
+      "pick": "CHA",
+      "line": -102.0,
+      "spread": 1.5,
+      "edge": 2.21,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 104,
+      "away_score": 109,
+      "clv": -1.0,
       "model": "nba-m1-open-v1"
     }
   ]
