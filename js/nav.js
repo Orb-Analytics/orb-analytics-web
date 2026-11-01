@@ -17,6 +17,45 @@ window.openNovigLink = function(event) {
   return false;
 };
 
+// No saved choice follows the OS. "light" or "dark" in orb-theme is an override.
+function preferredDark() {
+  try {
+    var stored = localStorage.getItem('orb-theme');
+    if (stored === 'dark') return true;
+    if (stored === 'light') return false;
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  } catch (e) {
+    return false;
+  }
+}
+
+function applyPreferredTheme() {
+  if (document.body) document.body.classList.toggle('dark', preferredDark());
+}
+
+function syncThemeButtons() {
+  var isDark = document.body.classList.contains('dark');
+  var icon = isDark ? '☀️' : '🌙';
+  var side = document.getElementById('theme-toggle');
+  if (side) side.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  var mobile = document.getElementById('theme-toggle-mobile');
+  if (mobile) mobile.textContent = icon;
+  var landing = document.getElementById('landing-theme-toggle');
+  if (landing) {
+    landing.textContent = icon;
+    landing.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+}
+
+applyPreferredTheme();
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+    try { if (localStorage.getItem('orb-theme')) return; } catch (e) { return; }
+    applyPreferredTheme();
+    syncThemeButtons();
+  });
+}
+
 const SIDEBAR_LINKS = [
   { href: 'predictions.html', label: 'Predictions', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>` },
   { href: 'scoreboard.html',  label: 'Scoreboard',  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>` },
@@ -259,27 +298,19 @@ function friendlyError(code) {
 
 // ── Build nav ─────────────────────────────────────────────────────
 function buildNav(activePage = '') {
-  if (localStorage.getItem('orb-theme') === 'dark') {
-    document.body.classList.add('dark');
-  }
+  applyPreferredTheme();
 
   const topNav = document.getElementById('main-nav');
   if (topNav) {
     topNav.innerHTML = `
-      <!-- Left: logo icon, fixed width so center calc is symmetric -->
-      <div class="nav-logo-slot">
-        <a href="index.html" aria-label="Orb Analytics Home" class="mini-orb">
-          <canvas class="orb-logo-img mini-orb-canvas" width="56" height="56" aria-hidden="true"></canvas>
-          <img src="assets/logo.png" alt="" class="orb-logo-img mini-orb-fallback" />
-        </a>
-      </div>
-      <!-- Center: brand name absolutely centered so it never collides with left/right -->
-      <a class="nav-logo-center" href="index.html" aria-label="Orb Analytics Home"
-         style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;z-index:0;text-decoration:none">
+      <a class="nav-wordmark" href="index.html" aria-label="Orb Analytics Home">
         <span class="nav-logo-text">Orbanalytics<span class="nav-logo-accent">.limited</span></span>
       </a>
-      <!-- Right: social + theme toggle, fixed width matching left so center stays true -->
-      <div style="display:flex;align-items:center;gap:0.4rem;margin-left:auto;flex-shrink:0;z-index:1">
+      <a href="index.html" aria-label="Orb Analytics Home" class="mini-orb nav-orb-center">
+        <canvas class="orb-logo-img mini-orb-canvas" width="56" height="56" aria-hidden="true"></canvas>
+        <img src="assets/logo.png" alt="" class="orb-logo-img mini-orb-fallback" />
+      </a>
+      <div class="nav-end">
         <div class="nav-social">
           ${socialLinksHTML()}
         </div>
@@ -288,10 +319,13 @@ function buildNav(activePage = '') {
         </button>
       </div>
     `;
-    const logoCanvas = topNav.querySelector('.mini-orb-canvas');
-    if (logoCanvas) {
-      import('./landing/mini-orb.js').then(function (m) { return m.mountMiniOrb(logoCanvas); }).catch(function () {});
-    }
+  }
+
+  const orbCanvases = document.querySelectorAll('.mini-orb-canvas');
+  if (orbCanvases.length) {
+    import('./landing/mini-orb.js').then(function (m) {
+      orbCanvases.forEach(function (canvas) { m.mountMiniOrb(canvas); });
+    }).catch(function () {});
   }
 
   const landingSocial = document.getElementById('landing-social');
@@ -344,6 +378,7 @@ function buildNav(activePage = '') {
 
   buildDisclaimer();
   buildPartnerLabels();
+  syncThemeButtons();
 
   const toggle = document.getElementById('sidebar-toggle');
   if (toggle) {
@@ -505,10 +540,7 @@ window.goToGame = function(url) {
 function toggleTheme() {
   const isDark = document.body.classList.toggle('dark');
   localStorage.setItem('orb-theme', isDark ? 'dark' : 'light');
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-  const mBtn = document.getElementById('theme-toggle-mobile');
-  if (mBtn) mBtn.textContent = isDark ? '☀️' : '🌙';
+  syncThemeButtons();
 }
 
 window.toggleTheme = toggleTheme;
