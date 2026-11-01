@@ -171,30 +171,36 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   flex-shrink: 0;
 }
 
-/* Match .sidebar width and cancel the nav's left padding so the orb
-   is centered on the sidebar column, not the padding edge. */
-.nav-logo-slot {
+.nav-wordmark {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+.nav-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   flex-shrink: 0;
-  width: 220px;
-  height: 56px;
-  margin-left: -1.5rem;
+  position: relative;
+  z-index: 1;
 }
 .orb-logo-img { width: 56px; height: 56px; object-fit: contain; display: block; }
 .mini-orb { position: relative; display: block; line-height: 0; text-decoration: none; }
+.mini-orb.nav-orb-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
 .mini-orb-canvas { display: none; }
 .mini-orb.is-live .mini-orb-canvas { display: block; }
 .mini-orb.is-live .mini-orb-fallback { display: none; }
-
-.nav-logo-center {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: var(--text);
-  flex-shrink: 0;
-}
 
 .nav-logo-text { font-family: 'DM Sans', sans-serif; font-weight: 800; font-style: italic; letter-spacing: -0.01em; font-size: 1.6rem; color: #3F3F46; white-space: nowrap; }
 body.dark .nav-logo-text { color: var(--text); }
@@ -758,9 +764,8 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
     padding-right: calc(1rem + env(safe-area-inset-right, 0px));
   }
   .section-title { font-size: 1.5rem; }
-  .nav-logo-text { font-size: 0.95rem; }
-  .nav-logo-slot { width: 48px; height: 48px; margin-left: 0; justify-content: flex-start; }
-  .orb-logo-img { width: 48px; height: 48px; }
+  .nav-logo-text { font-size: clamp(0.72rem, 3.1vw, 0.95rem); }
+  .nav-orb-center .orb-logo-img { width: 40px; height: 40px; }
   .nav-social { display: none; }
   .nav-theme-toggle { display: flex; }
   #theme-toggle { display: none; }

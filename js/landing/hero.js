@@ -1,5 +1,6 @@
-/* Orb Analytics hero (light mode): purple particle sphere (with black speckle) and the Orb logo.
-   Four states: sphere, logo (a spinning 3D coin), hybrid (the logo pattern wrapped on a rotating sphere), solid (a three.js object, see solid.js). Cycle: sphere -> logo -> hybrid -> solid -> repeat.
+/* Orb Analytics hero: purple particle sphere and the Orb logo.
+   Three states: sphere, logo (a spinning 3D coin), hybrid (the logo pattern wrapped on a rotating sphere).
+   Every particle has an on-surface target in every state. Nothing is parked off the shape.
    Logo targets come from assets/landing/logo.js (see scripts/landing/prep_logo.py). */
 (function () {
   "use strict";
@@ -14,15 +15,19 @@
 
   var HOLD = [5, 9, 13, 13]; // seconds: sphere, logo (one coin turn), hybrid, solid
   var CLICK_PAUSE = 8; // extra seconds before auto-cycle resumes after a tab click
-  // Brand purple ramp (css/style.css), dark to light, then three near-black shades.
-  var PALETTE = ["#0B0019", "#1A0038", "#280058", "#3C0183", "#8520FE", "#9A29E9", "#A052FE", "#B174FB", "#09090B", "#111827", "#1F2937"];
+  // Brand purple ramp, dark to light, then three speckle shades.
+  // Light mode speckles are near-black. Dark mode speckles are light so they stay visible.
+  var PALETTE_LIGHT = ["#0B0019", "#1A0038", "#280058", "#3C0183", "#8520FE", "#9A29E9", "#A052FE", "#B174FB", "#09090B", "#111827", "#1F2937"];
+  var PALETTE_DARK = ["#F3E8FF", "#E9D5FF", "#D8B4FE", "#C084FC", "#9A29E9", "#A052FE", "#B174FB", "#E9D5FF", "#FAFAFA", "#E4E4E7", "#D4D4D8"];
+  var PALETTE = PALETTE_LIGHT;
   var NR = 8, DK0 = 8, DARK_SHARE = 0.28;
   var NLV = PALETTE.length, NAL = 4, ALPHAS = [0.3, 0.55, 0.8, 0.96];
 
   /* ---------- sprites: round dots with a soft edge, normal blending ---------- */
   var SPR = 32, sprites = [];
   function hexToRgb(h) { return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
-  (function () {
+  function buildSprites() {
+    sprites = [];
     for (var a = 0; a < NAL; a++) {
       sprites[a] = [];
       for (var c = 0; c < NLV; c++) {
@@ -37,13 +42,44 @@
         sprites[a][c] = cv;
       }
     }
-  })();
+  }
+  var paletteRGB = [];
+  // Soft disc stamps. drawImage of thousands of sprites was the frame-time cost.
+  var STAMPS = [];
+  function makeStamp(diameter) {
+    var rad = diameter / 2, layers = [];
+    for (var a = 0; a < NAL; a++) {
+      var pix = new Uint8Array(diameter * diameter);
+      for (var y = 0; y < diameter; y++) for (var x = 0; x < diameter; x++) {
+        var dx = x + 0.5 - rad, dy = y + 0.5 - rad, d = Math.sqrt(dx * dx + dy * dy) / rad;
+        if (d >= 1) continue;
+        var fall = d < 0.55 ? 1 : d < 0.8 ? 1 - (d - 0.55) / 0.25 * 0.65 : (1 - d) / 0.2 * 0.35;
+        pix[y * diameter + x] = (ALPHAS[a] * fall * 255 + 0.5) | 0;
+      }
+      layers.push(pix);
+    }
+    return { d: diameter, rad: rad, a: layers };
+  }
+  STAMPS = [makeStamp(3), makeStamp(5), makeStamp(7)];
+  var paintBuf = null, paintImg = null, paintW = 0, paintH = 0;
+  function syncPalette() {
+    var dark = document.body && document.body.classList.contains("dark");
+    var next = dark ? PALETTE_DARK : PALETTE_LIGHT;
+    if (next === PALETTE && sprites.length) return;
+    PALETTE = next;
+    paletteRGB = PALETTE.map(hexToRgb);
+    buildSprites();
+  }
+  syncPalette();
 
   /* ---------- particle setup ---------- */
   var small = window.innerWidth < 700;
-  var N_SHELL = small ? 3800 : 5800, N_SEAM = small ? 1900 : 2900, N_TRAIL = small ? 200 : 300;
-  var NB = N_SHELL + N_SEAM + N_TRAIL; // particles used by Sphere and Logo
-  var NX = small ? 2100 : 4000; // extra particles that only appear in Hybrid (fade in and out on morphs); total 13k desktop, 8k mobile
+  // One population for every state, all of it on the shape. The old trail
+  // (a stream parked off the lower-right of the sphere) and the hybrid-only
+  // extras (hidden at the origin until a morph) are gone.
+  var N_SHELL = small ? 5200 : 8600, N_SEAM = small ? 1600 : 2600, N_TRAIL = 0;
+  var NB = N_SHELL + N_SEAM + N_TRAIL;
+  var NX = 0;
   var N = NB + NX;
   var KIND_SHELL = 0, KIND_SEAM = 1, KIND_TRAIL = 2, KIND_EXTRA = 3;
   var kind = new Uint8Array(N);
@@ -77,9 +113,8 @@
     var p = seams[i % 4](rnd() * Math.PI * 2), rr = 1.012 + gauss() * 0.003;
     put(p[0] * rr + gauss() * 0.003, p[1] * rr + gauss() * 0.003, p[2] * rr + gauss() * 0.003, KIND_SEAM, 1.5 + rnd() * 0.9);
   }
-  for (i = 0; i < N_TRAIL; i++) { kind[n] = KIND_TRAIL; sz[n] = 1.0 + rnd() * 1.3; tu[n] = Math.pow(rnd(), 0.9); n++; }
-  for (i = NB; i < N; i++) { kind[i] = KIND_EXTRA; }
-  for (i = 0; i < N; i++) { K[i] = 11 + rnd() * 8; ph1[i] = rnd() * 6.283; ph2[i] = rnd() * 6.283; lzj[i] = (rnd() - 0.5) * 0.07; applied[i] = -1; }
+  // Same spring for every dot, so a morph settles them together instead of leaving a tail of slow ones.
+  for (i = 0; i < N; i++) { K[i] = 18; ph1[i] = rnd() * 6.283; ph2[i] = rnd() * 6.283; lzj[i] = (rnd() - 0.5) * 0.07; applied[i] = -1; }
   // shared per-particle look, identical in every state so nothing pops on a morph: one size distribution, one tone, and about 28% near-black
   var tn = new Float32Array(N);
   // logo sample for each particle: base particles use their own point, extras re-sample the logo with a hash and a tiny jitter (about half a dot)
@@ -126,9 +161,6 @@
     var t = 0.35 * tn[j] + 0.65 * v; t = t < 0 ? 0 : t > 1 ? 1 : t;
     return t * (NR - 1);
   }
-  var gtab = new Float32Array(2048);
-  for (i = 0; i < 2048; i++) gtab[i] = gauss();
-
   /* ---------- layout ---------- */
   var dpr = 1, W = 0, H = 0, cx = 0, cy = 0, R = 200, FOC = 800, logoScale = 300;
   function layout() {
@@ -138,7 +170,8 @@
     if (solid) solid.resize({ W: hr.width, H: hr.height, cx: sr.left - hr.left + sr.width / 2, cy: sr.top - hr.top + sr.height / 2, R: Math.max(110, Math.min(sr.width * 0.44, sr.height * 0.42)), dpr: dpr });
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     cx = sr.left - hr.left + sr.width / 2; cy = sr.top - hr.top + sr.height / 2;
-    R = Math.max(110, Math.min(sr.width * 0.44, sr.height * 0.42));
+    var narrow = W < 800;
+    R = Math.max(narrow ? 88 : 110, Math.min(sr.width * (narrow ? 0.34 : 0.44), sr.height * (narrow ? 0.36 : 0.42)));
     FOC = R * 3.4;
     logoScale = Math.max(100, Math.min(sr.width, sr.height) * 0.84) / 2; // logo spans y in [-1,1]
   }
@@ -150,7 +183,7 @@
   function webglOK() { try { var c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch (e) { return false; } }
   var HAS_SOLID = false; // Solid is the corner logo (mini-orb.js), not a hero tab.
   var phaseCount = HAS_SOLID ? 4 : 3; // 0 sphere, 1 logo, 2 hybrid, 3 solid
-  var phase = 0, phaseStart = 0, now = 0, rot = 0.6, tiltX = 0.18, tiltXTarget = 0.18;
+  var phase = 0, phaseStart = 0, now = 0, morphStart = -1, MORPH_SEC = 0.7, rot = 0.6, tiltX = 0.18, tiltXTarget = 0.18;
   var lyaw = 0, lpitch = 0, ctau = 0, coinFront = true, cfa = 1, flipNow = false, hC = 20, cL = [-0.45, -0.55, -0.70], hrot = 0, hyFixed = null, hyPitch = 0, stillMode = false, stillN = 0, breath = 1, FOCc = 800, cosH = 1, sinH = 0;
   var mouse = { x: -9999, y: -9999, on: false };
   var visible = true, last = 0, snapAll = false;
@@ -161,7 +194,9 @@
     if (phase === 2) hrot = 0; // spin restarts head-on
     if (phase === 1) ctau = 0; // coin starts head-on
     if (phase === 3) { hrot = 0; ensureSolid(); }
-    for (var j = 0; j < N; j++) swAt[j] = snap ? -1 : now + Math.random() * 0.55;
+    // Switch every particle on the same frame. A random delay left laggards on the old shape.
+    morphStart = snap ? -1 : now;
+    for (var j = 0; j < N; j++) swAt[j] = snap ? -1 : now;
     if (snap) { for (var j2 = 0; j2 < N; j2++) applied[j2] = -2; snapAll = true; }
     updatePager(); updateFade();
   }
@@ -197,7 +232,6 @@
   var cosR, sinR, cosT, sinT, cosY = 1, sinY = 0, cosP = 1, sinP = 0;
   var tmp = { x: 0, y: 0, z: 0, lv: 0, al: 0 };
   function targetFor(j, p) {
-    if (kind[j] === KIND_EXTRA && p !== 2 && p !== 1) { tmp.x = tmp.y = tmp.z = 0; tmp.lv = shade(j, 0.5); tmp.al = 0; return; }
     if (p === 2) {
       // wrap the logo onto the sphere (inverse orthographic, so the front view matches the flat logo); half of the points on the front hemisphere and half on a back copy (aligned behind the front one head-on, mirrored from behind), with only mild depth fading
       var q = lidx[j] * 3, LX = LOGO[q] + ljx[j], LY = LOGO[q + 1] + ljy[j];
@@ -217,13 +251,6 @@
     }
     if (p === 0) {
       var k = kind[j];
-      if (k === KIND_TRAIL) {
-        var u = tu[j];
-        tmp.x = R * (0.62 + 0.16 * Math.sin(u * 3.2) + 0.1 * u) + gtab[(j * 2) & 2047] * R * 0.09 * (0.3 + u);
-        tmp.y = R * (0.25 + 0.95 * u) + gtab[(j * 2 + 1) & 2047] * R * 0.03;
-        tmp.z = 0; tmp.lv = shade(j, 0.5 + 0.5 * u); tmp.al = 0.8 - u * 0.5;
-        return;
-      }
       var x = lx[j], y = ly[j], z = lz[j];
       var x1 = x * cosR + z * sinR, z1 = -x * sinR + z * cosR;
       var y2 = y * cosT - z1 * sinT, z2 = y * sinT + z1 * cosT;
@@ -307,7 +334,6 @@
       hC = logoScale * 0.07; // half thickness: total thickness t = 7% of the diameter
     } else flipNow = false;
     var damp = Math.exp(-8.5 * dt), mrad = Math.max(90, R * 0.5), mrad2 = mrad * mrad;
-    var amp = sphereMode ? R * 0.005 : 1.1;
     if (phase === 2) {
       // no baseline tilt: pitch is centred on 0 with a small symmetric wobble, plus the mouse
       var hp = (hyFixed !== null ? 0 : 0.12 * Math.sin(hrot * 0.73)) + (tiltX - 0.18) * 1.3;
@@ -317,26 +343,43 @@
     } else { breath = 1; FOCc = sphereMode ? FOC * 2 : FOC * 6; } // milder perspective on the sphere keeps dot size closer to the other states
     var snap = snapAll || reduce;
     var pscale = 0.8; // same dot scale in every state
+    syncPalette();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = "source-over";
     var lvRate = Math.min(1, dt * 5);
 
+    var morphing = morphStart >= 0;
+    var morphU = morphing ? (now - morphStart) / MORPH_SEC : 1;
+    if (morphU < 0) morphU = 0;
+    if (morphU > 1) morphU = 1;
+    // Smoothstep, shared by every particle, so the whole cloud lands on one beat.
+    var morphEase = morphU * morphU * (3 - 2 * morphU);
+    var morphLeft = 1 - morphEase;
     for (var j = 0; j < N; j++) {
+      var capture = false;
       if (applied[j] !== phase && now >= swAt[j]) {
-        if (!snap && applied[j] >= 0) {
-          var ang = Math.random() * 6.283, mag = R * (1 + Math.random() * 2.4);
-          vx[j] += Math.cos(ang) * mag; vy[j] += Math.sin(ang) * mag; vz[j] += (Math.random() - 0.5) * mag * 0.5;
-        }
+        capture = !snap;
         applied[j] = phase; pff[j] = 0;
       }
-      if (kind[j] === KIND_EXTRA && applied[j] !== 2 && applied[j] !== 1 && al[j] < 0.04 && !snap) { dsp[j] = -1; continue; } // Hybrid-only particle, hidden: no work
       targetFor(j, applied[j]);
-      var tx = tmp.x + Math.sin(now * 0.9 + ph1[j]) * amp, ty = tmp.y + Math.cos(now * 0.7 + ph2[j]) * amp, tz = tmp.z;
+      var tx = tmp.x, ty = tmp.y, tz = tmp.z;
       if (snap) { px[j] = tx; py[j] = ty; pz[j] = tz; vx[j] = vy[j] = vz[j] = 0; lv[j] = tmp.lv; al[j] = tmp.al; }
-      else {
+      else if (morphing) {
+        if (capture) { vx[j] = px[j] - tx; vy[j] = py[j] - ty; vz[j] = pz[j] - tz; }
+        if (flipNow && applied[j] === 1 && crole[j] === 0) { vx[j] = vy[j] = vz[j] = 0; }
+        px[j] = tx + vx[j] * morphLeft; py[j] = ty + vy[j] * morphLeft; pz[j] = tz + vz[j] * morphLeft;
+        if (morphLeft === 0) vx[j] = vy[j] = vz[j] = 0;
+        lv[j] += (tmp.lv - lv[j]) * lvRate; al[j] += (tmp.al - al[j]) * lvRate;
+      } else if (!mouse.on) {
+        px[j] = tx; py[j] = ty; pz[j] = tz;
+        ptx[j] = tx; pty[j] = ty; ptz[j] = tz; pff[j] = 1;
+        vx[j] = vy[j] = vz[j] = 0;
+        lv[j] = tmp.lv; al[j] = tmp.al;
+      } else {
         if (flipNow && applied[j] === 1 && crole[j] === 0) { px[j] = tx; py[j] = ty; pz[j] = tz; vx[j] = vy[j] = vz[j] = 0; ptx[j] = tx; pty[j] = ty; ptz[j] = tz; pff[j] = 1; }
-        else if (applied[j] === 2 || applied[j] === 1) { if (pff[j]) { px[j] += tx - ptx[j]; py[j] += ty - pty[j]; pz[j] += tz - ptz[j]; } ptx[j] = tx; pty[j] = ty; ptz[j] = tz; pff[j] = 1; } // ride along with the rotating target so the spin does not lag
+        else if (applied[j] === 2 || applied[j] === 1) { if (pff[j]) { px[j] += tx - ptx[j]; py[j] += ty - pty[j]; pz[j] += tz - ptz[j]; } ptx[j] = tx; pty[j] = ty; ptz[j] = tz; pff[j] = 1; }
         var k = K[j];
         vx[j] += (tx - px[j]) * k * dt; vy[j] += (ty - py[j]) * k * dt; vz[j] += (tz - pz[j]) * k * dt;
         if (mouse.on) {
@@ -356,19 +399,51 @@
       var half = sz[j] * ps * dpr * pscale * 1.5;
       var ci = lv[j] < 0 ? 0 : lv[j] > NLV - 1 ? NLV - 1 : (lv[j] + 0.5) | 0;
       var ai = (al[j] * NAL - 0.5) | 0; ai = ai < 0 ? 0 : ai > NAL - 1 ? NAL - 1 : ai;
-      dsx[j] = sx; dsy[j] = sy; dh[j] = half; dsp[j] = ai * NLV + ci; // al below 0.04 is skipped (hidden Hybrid-only particles)
+      dsx[j] = sx; dsy[j] = sy; dh[j] = half; dsp[j] = ai * NLV + ci;
       if (al[j] < 0.04) dsp[j] = -1;
       if (STATS && al[j] > 0.5) { stN++; stR += half / dpr; if (lv[j] > DK0 - 0.5) stD++; }
     }
+    var bw = canvas.width | 0, bh = canvas.height | 0;
+    if (!paintBuf || paintW !== bw || paintH !== bh) {
+      paintBuf = new Uint8ClampedArray(bw * bh * 4);
+      paintImg = new ImageData(paintBuf, bw, bh);
+      paintW = bw; paintH = bh;
+    } else paintBuf.fill(0);
     var back = phase === 2;
-    for (var d0 = 0; d0 < N; d0++) {
-      var sp = dsp[d0]; if (sp < 0 || (back && pz[d0] <= 0)) continue;
-      ctx.drawImage(sprites[(sp / NLV) | 0][sp % NLV], dsx[d0] - dh[d0], dsy[d0] - dh[d0], dh[d0] * 2, dh[d0] * 2);
+    function blit(j) {
+      var sp = dsp[j];
+      if (sp < 0) return;
+      var diam = dh[j] * 2;
+      var stamp = diam < 3.6 ? STAMPS[0] : diam < 5.6 ? STAMPS[1] : STAMPS[2];
+      var pix = stamp.a[(sp / NLV) | 0];
+      var col = paletteRGB[sp % NLV];
+      var cr = col[0], cg = col[1], cb = col[2];
+      var x0 = (dsx[j] - stamp.rad) | 0, y0 = (dsy[j] - stamp.rad) | 0, sd = stamp.d;
+      for (var yy = 0; yy < sd; yy++) {
+        var py = y0 + yy;
+        if (py < 0 || py >= bh) continue;
+        var row = (py * bw + x0) * 4, krow = yy * sd;
+        for (var xx = 0; xx < sd; xx++) {
+          var px0 = x0 + xx;
+          if (px0 < 0 || px0 >= bw) continue;
+          var a = pix[krow + xx];
+          if (!a) continue;
+          var i = row + xx * 4, inv = 255 - a;
+          paintBuf[i] = (cr * a + paintBuf[i] * inv + 127) >> 8;
+          paintBuf[i + 1] = (cg * a + paintBuf[i + 1] * inv + 127) >> 8;
+          paintBuf[i + 2] = (cb * a + paintBuf[i + 2] * inv + 127) >> 8;
+          paintBuf[i + 3] = (a * 255 + paintBuf[i + 3] * inv + 127) >> 8;
+        }
+      }
     }
-    if (back) for (var d1 = 0; d1 < N; d1++) {
-      var sq = dsp[d1]; if (sq < 0 || pz[d1] > 0) continue;
-      ctx.drawImage(sprites[(sq / NLV) | 0][sq % NLV], dsx[d1] - dh[d1], dsy[d1] - dh[d1], dh[d1] * 2, dh[d1] * 2);
+    if (back) {
+      for (var d1 = 0; d1 < N; d1++) if (pz[d1] <= 0) blit(d1);
+      for (var d0 = 0; d0 < N; d0++) if (pz[d0] > 0) blit(d0);
+    } else {
+      for (var d2 = 0; d2 < N; d2++) blit(d2);
     }
+    ctx.putImageData(paintImg, 0, 0);
+    if (morphing && morphU >= 1) morphStart = -1;
     if (STATS) { document.documentElement.setAttribute("data-orb-stats", JSON.stringify({ phase: phase, shown: stN, meanRadiusCss: +(stR / Math.max(stN, 1)).toFixed(3), darkShare: +(stD / Math.max(stN, 1)).toFixed(3), frameMsAvg: +(stMs = stMs ? stMs * 0.9 + (performance.now() - t0) * 0.1 : performance.now() - t0).toFixed(2), particles: N })); stN = stR = stD = 0; }
     snapAll = false; phase = realPhase;
     if (!reduce && visible) requestAnimationFrame(frame);
