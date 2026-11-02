@@ -321,8 +321,10 @@ function buildNav(activePage = '') {
     `;
   }
 
+  const phone = window.matchMedia && window.matchMedia('(max-width: 768px), (max-height: 500px) and (orientation: landscape)').matches;
   const orbCanvases = document.querySelectorAll('.mini-orb-canvas');
-  if (orbCanvases.length) {
+  // The spinning orb is a three.js scene. Phones keep the static fallback and never download it.
+  if (!phone && orbCanvases.length) {
     import('./landing/mini-orb.js').then(function (m) {
       orbCanvases.forEach(function (canvas) { m.mountMiniOrb(canvas); });
     }).catch(function () {});

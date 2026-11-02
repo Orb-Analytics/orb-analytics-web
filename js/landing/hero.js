@@ -4,6 +4,9 @@
    Logo targets come from assets/landing/logo.js (see scripts/landing/prep_logo.py). */
 (function () {
   "use strict";
+  // Phones never build the particle scene. The page also skips this file on small screens.
+  var phone = window.matchMedia && window.matchMedia("(max-width: 768px), (max-height: 500px) and (orientation: landscape)").matches;
+  if (phone) return;
   var canvas = document.getElementById("orbCanvas");
   var stage = document.getElementById("stage");
   var hero = document.getElementById("top");

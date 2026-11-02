@@ -462,6 +462,97 @@ body.dark .landing-legal-wrap { border-top-color: rgba(161, 161, 170, 0.28); }
 body.dark .landing-legal { color: #9B9BA3; }
 body.dark .landing-theme-toggle { background: #1A1720; color: #F4F4F5; }
 
+/* Phone intro: no particle stage, no tabs, no landing socials.
+   Desktop rules above this query are unchanged. */
+@media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
+  .landing-layer {
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 100dvh;
+    -webkit-overflow-scrolling: touch;
+  }
+  .landing-hero {
+    --pad-x: 16px;
+    height: auto;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 20px;
+    overflow: visible;
+    padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  .landing-layer #orbCanvas,
+  .landing-layer #solidCanvas,
+  .landing-stage,
+  .landing-tabs { display: none !important; }
+  .landing-top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "brand tools";
+    column-gap: 12px;
+    row-gap: 0;
+  }
+  .landing-top .nav-social { display: none !important; }
+  .landing-tools { gap: 0; }
+  .landing-theme-toggle { width: 44px; height: 44px; }
+  .landing-split {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    padding: 0;
+    gap: 20px;
+  }
+  .landing-left {
+    display: contents;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    overflow: visible;
+  }
+  .landing-copy { order: 1; width: 100%; max-width: none; }
+  .landing-copy h1 { font-size: clamp(32px, 8.6vw, 40px); }
+  .landing-sub { font-size: 15px; margin-top: 10px; line-height: 1.4; }
+  .landing-faq-scroll {
+    order: 2;
+    width: 100%;
+    margin-top: 0;
+    overflow: visible;
+    padding-right: 0;
+  }
+  .landing-kicker { margin-bottom: 6px; }
+  .landing-layer .faq { grid-template-columns: 1fr; }
+  .landing-layer .faq-item button {
+    min-height: 44px;
+    padding: 10px 2px;
+    font-size: 15px;
+  }
+  /* The 0fr/1fr accordion needs a fixed parent height. On a scrolling phone, size to the answer. */
+  .landing-layer .faq-a { display: block; grid-template-rows: none; }
+  .landing-layer .faq-a > div { overflow: hidden; max-height: 0; }
+  .landing-layer .faq-item.open .faq-a > div { max-height: none; overflow: visible; }
+  .landing-dock {
+    width: 100%;
+    padding: 4px 0 0;
+    margin-top: auto;
+  }
+  .landing-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: none;
+    gap: 10px;
+  }
+  .cta-block,
+  .cta-block [data-google-slot] { width: 100%; }
+  .g-btn,
+  .enter-site { width: 100%; max-width: none; }
+  .landing-legal-wrap {
+    width: min(560px, 100%);
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .landing-layer,
   .landing-layer #orbCanvas,
