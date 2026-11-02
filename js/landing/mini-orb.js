@@ -51,8 +51,11 @@ function texOf(THREE, loader, name, srgb) {
   return new Promise(function (res, rej) {
     loader.load(TEX + name, function (t) {
       t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+      t.generateMipmaps = false;
+      t.minFilter = THREE.LinearFilter;
+      t.magFilter = THREE.LinearFilter;
       t.anisotropy = 8;
-      t.wrapS = THREE.RepeatWrapping;
+      t.wrapS = THREE.ClampToEdgeWrapping;
       t.wrapT = THREE.ClampToEdgeWrapping;
       res(t);
     }, undefined, function () { rej(new Error(name)); });
@@ -62,13 +65,13 @@ function texOf(THREE, loader, name, srgb) {
 async function boot() {
   const { THREE, RoomEnvironment } = await loadThree();
   glCanvas = document.createElement("canvas");
-  renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: true, powerPreference: "low-power" });
-  renderer.setPixelRatio(1);
+  renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.max(2, window.devicePixelRatio || 1));
   renderer.setSize(SIZE, SIZE, false);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMapping = THREE.NoToneMapping;
+  renderer.toneMappingExposure = 1;
   renderer.domElement.addEventListener("webglcontextlost", function (e) {
     e.preventDefault();
     failed = true;
@@ -81,27 +84,26 @@ async function boot() {
   scene.environment = pmrem.fromScene(envScene, 0.04).texture;
   pmrem.dispose();
 
-  const key = new THREE.DirectionalLight(0xC084FC, 1.9); key.position.set(-3, 3.2, 4); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xffffff, 0.28); rim.position.set(4, 1.5, -3); scene.add(rim);
-  scene.add(new THREE.HemisphereLight(0xF4E9FF, 0x2A0848, 0.42));
+  const key = new THREE.DirectionalLight(0xffffff, 0.22); key.position.set(-1.6, 2.2, 4); scene.add(key);
 
   const loader = new THREE.TextureLoader();
-  const [tColor, tHeight, tGlow] = await Promise.all([
+  const [tColor, tHeight] = await Promise.all([
     texOf(THREE, loader, "mini-orb-color.png", true),
-    texOf(THREE, loader, "solid-height.png", false),
-    texOf(THREE, loader, "solid-glow.png", false)
+    texOf(THREE, loader, "solid-height.png", false)
   ]);
   const geo = new THREE.SphereGeometry(1, 64, 48);
   geo.rotateX(Math.PI / 2);
-  const mat = new THREE.MeshPhysicalMaterial({
+  const mat = new THREE.MeshStandardMaterial({
     map: tColor,
-    metalness: 0.32,
-    roughness: 0.4,
-    clearcoat: 0.22,
-    clearcoatRoughness: 0.34,
-    bumpMap: tHeight, bumpScale: 1.05,
-    emissive: new THREE.Color(0x9A29E9), emissiveMap: tGlow, emissiveIntensity: 0.62,
-    envMapIntensity: 0.32
+    color: 0xffffff,
+    emissive: new THREE.Color(0xffffff),
+    emissiveMap: tColor,
+    emissiveIntensity: 1,
+    metalness: 0,
+    roughness: 0.55,
+    envMapIntensity: 0,
+    bumpMap: tHeight,
+    bumpScale: 0.12
   });
   const sphere = new THREE.Mesh(geo, mat);
   pivot = new THREE.Group();
