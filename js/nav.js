@@ -307,7 +307,8 @@ function buildNav(activePage = '') {
         <span class="nav-logo-text">Orbanalytics<span class="nav-logo-accent">.limited</span></span>
       </a>
       <a href="index.html" aria-label="Orb Analytics Home" class="mini-orb nav-orb-center">
-        <canvas class="orb-logo-img mini-orb-canvas" width="56" height="56" aria-hidden="true"></canvas>
+        <span class="orb-hub" aria-hidden="true"><span class="orb-hub-ticks"></span></span>
+        <canvas class="orb-logo-img mini-orb-canvas" width="68" height="68" aria-hidden="true"></canvas>
         <img src="assets/logo.png" alt="" class="orb-logo-img mini-orb-fallback" />
       </a>
       <div class="nav-end">

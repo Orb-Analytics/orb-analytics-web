@@ -4,7 +4,7 @@
 const LOCAL = "../../assets/landing/vendor/three.module.min.js";
 const CDN = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js";
 const TEX = "assets/landing/";
-const SIZE = 192; // source buffer, larger than the CSS logo so the blit stays sharp
+const SIZE = 256; // source buffer, larger than the CSS logo so the blit stays sharp
 const TURN = 10; // seconds per revolution
 
 const canvases = new Set();
@@ -81,25 +81,27 @@ async function boot() {
   scene.environment = pmrem.fromScene(envScene, 0.04).texture;
   pmrem.dispose();
 
-  const key = new THREE.DirectionalLight(0x9A29E9, 2.0); key.position.set(-3, 3.2, 4); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xffffff, 2.2); rim.position.set(4, 1.5, -3); scene.add(rim);
-  scene.add(new THREE.HemisphereLight(0xF8F2FF, 0x1A0038, 0.35));
+  const key = new THREE.DirectionalLight(0xC084FC, 1.9); key.position.set(-3, 3.2, 4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffffff, 0.28); rim.position.set(4, 1.5, -3); scene.add(rim);
+  scene.add(new THREE.HemisphereLight(0xF4E9FF, 0x2A0848, 0.42));
 
   const loader = new THREE.TextureLoader();
-  const [tColor, tHeight, tOrm, tGlow] = await Promise.all([
-    texOf(THREE, loader, "solid-color.png", true),
+  const [tColor, tHeight, tGlow] = await Promise.all([
+    texOf(THREE, loader, "mini-orb-color.png", true),
     texOf(THREE, loader, "solid-height.png", false),
-    texOf(THREE, loader, "solid-orm.png", false),
     texOf(THREE, loader, "solid-glow.png", false)
   ]);
   const geo = new THREE.SphereGeometry(1, 64, 48);
   geo.rotateX(Math.PI / 2);
   const mat = new THREE.MeshPhysicalMaterial({
-    map: tColor, metalnessMap: tOrm, roughnessMap: tOrm, metalness: 1, roughness: 1,
-    clearcoat: 0.8, clearcoatRoughness: 0.12,
-    bumpMap: tHeight, bumpScale: 1.3,
-    emissive: new THREE.Color(0x9A29E9), emissiveMap: tGlow, emissiveIntensity: 0.45,
-    envMapIntensity: 1.0
+    map: tColor,
+    metalness: 0.32,
+    roughness: 0.4,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.34,
+    bumpMap: tHeight, bumpScale: 1.05,
+    emissive: new THREE.Color(0x9A29E9), emissiveMap: tGlow, emissiveIntensity: 0.62,
+    envMapIntensity: 0.32
   });
   const sphere = new THREE.Mesh(geo, mat);
   pivot = new THREE.Group();
@@ -109,7 +111,7 @@ async function boot() {
 
   const fov = 18;
   const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 50);
-  camera.position.z = 1 / Math.tan(THREE.MathUtils.degToRad(fov / 2)) / 0.86;
+  camera.position.z = 1 / Math.tan(THREE.MathUtils.degToRad(fov / 2)) / 0.97;
   scene.userData.camera = camera;
   return true;
 }
