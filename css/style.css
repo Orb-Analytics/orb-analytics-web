@@ -46,7 +46,7 @@
   --radius: 10px;
   --radius-lg: 16px;
   --radius-pill: 999px;
-  --nav-height: 76px;
+  --nav-height: 104px;
   --wordmark-size: 1.6rem;
   --wordmark-weight: 800;
   --wordmark-tracking: -0.01em;
@@ -199,17 +199,24 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   z-index: 1;
 }
 .orb-logo-img { width: 56px; height: 56px; object-fit: contain; display: block; }
-.mini-orb { position: relative; display: block; line-height: 0; text-decoration: none; }
-.mini-orb.nav-orb-center {
+.nav-orb-center {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: 2;
+  display: block;
+  width: 66px;
+  height: 66px;
+  line-height: 0;
 }
-.mini-orb-canvas { display: none; }
-.mini-orb.is-live .mini-orb-canvas { display: block; }
-.mini-orb.is-live .mini-orb-fallback { display: none; }
+.nav-logo-mark {
+  display: block;
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+  filter: none;
+}
 
 .nav-logo-text {
   font-family: 'DM Sans', sans-serif;
@@ -790,8 +797,10 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
     --social-substack: 1.7rem;
     --social-substack-icon: 13px;
     --nav-tools-gap: 0.25rem;
+    --nav-height: 68px;
   }
-  .nav-orb-center .orb-logo-img { width: 40px; height: 40px; }
+  .nav-orb-center,
+  .nav-logo-mark { width: 40px; height: 40px; }
   .nav-theme-toggle { display: flex; }
   #theme-toggle { display: none; }
   .email-signup-form { flex-direction: column; }

@@ -12,8 +12,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Predictions · Orb Analytics</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=20261101a" />
-  <link rel="stylesheet" href="css/landing.css?v=20261101a" />
+  <link rel="stylesheet" href="css/style.css?v=20261102d" />
+  <link rel="stylesheet" href="css/landing.css?v=20261102a" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     /* ── Two-column layout ───────────────────────────────────── */
@@ -808,7 +808,7 @@
     </div><!-- end sidebar-content -->
   </div><!-- end app-layout -->
 
-  <script src="js/nav.js?v=20261031d"></script>
+  <script src="js/nav.js?v=20261102d"></script>
   <script src="js/odds-source.js?v=20261014"></script>
   <script src="js/nfl-picks.js?v=20261014"></script>
   <script src="js/nba-picks.js?v=20261029"></script>
@@ -1981,9 +1981,24 @@
     });
   </script>
   <script src="js/landing/config.js"></script>
-  <script src="assets/landing/logo.js"></script>
-  <script src="js/landing/hero.js"></script>
   <script src="js/landing/app.js"></script>
+  <script>
+    (function () {
+      var phone = window.matchMedia("(max-width: 768px), (max-height: 500px) and (orientation: landscape)").matches;
+      if (phone) return;
+      function load(src) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement("script");
+          s.src = src;
+          s.async = false;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+      load("assets/landing/logo.js").then(function () { return load("js/landing/hero.js"); }).catch(function () {});
+    })();
+  </script>
 </body>
 
 </html>

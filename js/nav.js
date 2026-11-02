@@ -306,9 +306,8 @@ function buildNav(activePage = '') {
       <a class="nav-wordmark" href="index.html" aria-label="Orb Analytics Home">
         <span class="nav-logo-text">Orbanalytics<span class="nav-logo-accent">.limited</span></span>
       </a>
-      <a href="index.html" aria-label="Orb Analytics Home" class="mini-orb nav-orb-center">
-        <canvas class="orb-logo-img mini-orb-canvas" width="56" height="56" aria-hidden="true"></canvas>
-        <img src="assets/logo.png" alt="" class="orb-logo-img mini-orb-fallback" />
+      <a href="index.html" aria-label="Orb Analytics Home" class="nav-orb-center">
+        <img class="nav-logo-mark" src="assets/logo.png" srcset="assets/logo.png 1x, assets/landing/logo-original.png 2x" width="400" height="400" alt="" decoding="async" />
       </a>
       <div class="nav-end">
         <div class="nav-social">
@@ -319,13 +318,6 @@ function buildNav(activePage = '') {
         </button>
       </div>
     `;
-  }
-
-  const orbCanvases = document.querySelectorAll('.mini-orb-canvas');
-  if (orbCanvases.length) {
-    import('./landing/mini-orb.js').then(function (m) {
-      orbCanvases.forEach(function (canvas) { m.mountMiniOrb(canvas); });
-    }).catch(function () {});
   }
 
   const landingSocial = document.getElementById('landing-social');
