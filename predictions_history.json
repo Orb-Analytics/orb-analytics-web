@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-01T14:05:26+00:00",
+  "generated_at": "2026-11-02T14:09:17+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 128,
-    "losses": 103,
-    "win_rate": 55.4,
-    "total_units": 21.45,
-    "total_picks": 231,
-    "mean_clv": 0.469,
+    "wins": 130,
+    "losses": 104,
+    "win_rate": 55.6,
+    "total_units": 22.41,
+    "total_picks": 234,
+    "mean_clv": 0.429,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 21,
-        "losses": 11,
-        "win_rate": 65.6,
-        "total_units": 9.31,
-        "total_picks": 32,
-        "mean_clv": 0.469
+        "wins": 23,
+        "losses": 12,
+        "win_rate": 65.7,
+        "total_units": 10.27,
+        "total_picks": 35,
+        "mean_clv": 0.429
       }
     }
   },
@@ -4350,6 +4350,57 @@
       "units": -1.0,
       "home_score": 104,
       "away_score": 109,
+      "clv": -1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718008,
+      "date": "2026-11-01",
+      "season": "2026-27",
+      "home_team": "ORL",
+      "away_team": "BOS",
+      "pick": "BOS",
+      "line": -106.0,
+      "spread": -6.5,
+      "edge": 1.055,
+      "result": "Win",
+      "units": 0.9434,
+      "home_score": 97,
+      "away_score": 108,
+      "clv": 1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718009,
+      "date": "2026-11-01",
+      "season": "2026-27",
+      "home_team": "IND",
+      "away_team": "BKN",
+      "pick": "BKN",
+      "line": 102.0,
+      "spread": 3.5,
+      "edge": 2.107,
+      "result": "Win",
+      "units": 1.02,
+      "home_score": 90,
+      "away_score": 98,
+      "clv": -0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718011,
+      "date": "2026-11-01",
+      "season": "2026-27",
+      "home_team": "LAL",
+      "away_team": "TOR",
+      "pick": "TOR",
+      "line": 104.0,
+      "spread": 2.5,
+      "edge": 1.768,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 131,
+      "away_score": 125,
       "clv": -1.0,
       "model": "nba-m1-open-v1"
     }
