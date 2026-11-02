@@ -199,47 +199,24 @@ body.dark .nav-links a.active { color: var(--text); background: rgba(133,32,254,
   z-index: 1;
 }
 .orb-logo-img { width: 56px; height: 56px; object-fit: contain; display: block; }
-.mini-orb { position: relative; display: block; line-height: 0; text-decoration: none; }
-.mini-orb.nav-orb-center {
+.nav-orb-center {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: 2;
-  width: 84px;
-  height: 84px;
-}
-.nav-orb-center .orb-logo-img {
+  display: block;
   width: 66px;
   height: 66px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  border-radius: 50%;
-  filter: none;
-}
-.orb-hub {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
   line-height: 0;
 }
-.orb-hub-svg { display: block; width: 84px; height: 84px; }
-.orb-hub-outer { fill: #9A29E9; }
-.orb-hub-well { fill: #F7F7F8; }
-.orb-hub-highlight { stroke: #FFFFFF; stroke-width: 1; }
-.orb-hub-inner { stroke: #C6C6CC; stroke-width: 1; }
-.orb-hub-ticks line { stroke: #B0B0B6; stroke-width: 1; shape-rendering: crispEdges; }
-body.dark .orb-hub-well { fill: #0C0C0E; }
-body.dark .orb-hub-highlight { stroke: rgba(255, 255, 255, 0.22); }
-body.dark .orb-hub-inner { stroke: rgba(255, 255, 255, 0.32); }
-body.dark .orb-hub-ticks line { stroke: rgba(255, 255, 255, 0.28); }
-.mini-orb-canvas { display: none; }
-.mini-orb.is-live .mini-orb-canvas { display: block; }
-.mini-orb.is-live .mini-orb-fallback { display: none; }
+.nav-logo-mark {
+  display: block;
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+  filter: none;
+}
 
 .nav-logo-text {
   font-family: 'DM Sans', sans-serif;
@@ -822,9 +799,8 @@ body.dark .badge-push { background: rgba(217,119,6,0.2);   color: #FBBF24; borde
     --nav-tools-gap: 0.25rem;
     --nav-height: 68px;
   }
-  .mini-orb.nav-orb-center { width: 40px; height: 40px; }
-  .nav-orb-center .orb-logo-img { width: 40px; height: 40px; }
-  .orb-hub { display: none; }
+  .nav-orb-center,
+  .nav-logo-mark { width: 40px; height: 40px; }
   .nav-theme-toggle { display: flex; }
   #theme-toggle { display: none; }
   .email-signup-form { flex-direction: column; }

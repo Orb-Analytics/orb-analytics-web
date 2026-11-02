@@ -297,23 +297,6 @@ function friendlyError(code) {
 }
 
 // ── Build nav ─────────────────────────────────────────────────────
-function orbHubSVG() {
-  const cx = 42, cy = 42, n = 48;
-  let ticks = '';
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-    const c = Math.cos(a), s = Math.sin(a);
-    ticks += `<line x1="${(cx + c * 37.2).toFixed(2)}" y1="${(cy + s * 37.2).toFixed(2)}" x2="${(cx + c * 39).toFixed(2)}" y2="${(cy + s * 39).toFixed(2)}"/>`;
-  }
-  return `<svg class="orb-hub-svg" viewBox="0 0 84 84" width="84" height="84" aria-hidden="true">
-    <circle class="orb-hub-outer" cx="42" cy="42" r="42"/>
-    <circle class="orb-hub-well" cx="42" cy="42" r="40"/>
-    <circle class="orb-hub-highlight" cx="42" cy="42" r="39.5" fill="none"/>
-    <g class="orb-hub-ticks">${ticks}</g>
-    <circle class="orb-hub-inner" cx="42" cy="42" r="36.5" fill="none"/>
-  </svg>`;
-}
-
 function buildNav(activePage = '') {
   applyPreferredTheme();
 
@@ -323,10 +306,8 @@ function buildNav(activePage = '') {
       <a class="nav-wordmark" href="index.html" aria-label="Orb Analytics Home">
         <span class="nav-logo-text">Orbanalytics<span class="nav-logo-accent">.limited</span></span>
       </a>
-      <a href="index.html" aria-label="Orb Analytics Home" class="mini-orb nav-orb-center">
-        <span class="orb-hub" aria-hidden="true">${orbHubSVG()}</span>
-        <canvas class="orb-logo-img mini-orb-canvas" width="66" height="66" aria-hidden="true"></canvas>
-        <img src="assets/logo.png" alt="" class="orb-logo-img mini-orb-fallback" />
+      <a href="index.html" aria-label="Orb Analytics Home" class="nav-orb-center">
+        <img class="nav-logo-mark" src="assets/logo.png" srcset="assets/logo.png 1x, assets/landing/logo-original.png 2x" width="400" height="400" alt="" decoding="async" />
       </a>
       <div class="nav-end">
         <div class="nav-social">
@@ -337,15 +318,6 @@ function buildNav(activePage = '') {
         </button>
       </div>
     `;
-  }
-
-  const phone = window.matchMedia && window.matchMedia('(max-width: 768px), (max-height: 500px) and (orientation: landscape)').matches;
-  const orbCanvases = document.querySelectorAll('.mini-orb-canvas');
-  // The spinning orb is a three.js scene. Phones keep the static fallback and never download it.
-  if (!phone && orbCanvases.length) {
-    import('./landing/mini-orb.js').then(function (m) {
-      orbCanvases.forEach(function (canvas) { m.mountMiniOrb(canvas); });
-    }).catch(function () {});
   }
 
   const landingSocial = document.getElementById('landing-social');
