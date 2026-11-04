@@ -1,14 +1,14 @@
 {
   "model": "NFL",
-  "generated_at": "2026-10-27T18:40:28.029412+00:00",
+  "generated_at": "2026-11-04T02:48:06.129378+00:00",
   "version": "v1.0-3way-consensus-low-edge-favorite",
   "summary": {
     "wins": 163,
-    "losses": 141,
+    "losses": 145,
     "pushes": 7,
-    "win_rate": 53.6,
-    "total_units": 12.64,
-    "total_picks": 311
+    "win_rate": 52.9,
+    "total_units": 8.64,
+    "total_picks": 315
   },
   "picks": [
     {
@@ -5297,6 +5297,74 @@
       "units": 0.9259,
       "home_score": 24,
       "away_score": 27
+    },
+    {
+      "date": "11/1/2026",
+      "season": 2026,
+      "week": 8,
+      "home_team": "DEN",
+      "away_team": "KC",
+      "pick": "KC",
+      "spread": -1.5,
+      "confidence": 0.525,
+      "line": -100,
+      "edge": 2.5,
+      "is_favorite": true,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 28,
+      "away_score": 24
+    },
+    {
+      "date": "10/29/2026",
+      "season": 2026,
+      "week": 8,
+      "home_team": "GB",
+      "away_team": "CAR",
+      "pick": "CAR",
+      "spread": 3.5,
+      "confidence": 0.5235,
+      "line": -100,
+      "edge": 2.35,
+      "is_favorite": false,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 27,
+      "away_score": 19
+    },
+    {
+      "date": "11/1/2026",
+      "season": 2026,
+      "week": 8,
+      "home_team": "MIA",
+      "away_team": "NE",
+      "pick": "NE",
+      "spread": -7.5,
+      "confidence": 0.4815,
+      "line": 117,
+      "edge": 2.06,
+      "is_favorite": true,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 19,
+      "away_score": 24
+    },
+    {
+      "date": "11/1/2026",
+      "season": 2026,
+      "week": 8,
+      "home_team": "WAS",
+      "away_team": "PHI",
+      "pick": "PHI",
+      "spread": 5.5,
+      "confidence": 0.5331,
+      "line": -104,
+      "edge": 2.32,
+      "is_favorite": false,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 27,
+      "away_score": 10
     }
   ]
 }
