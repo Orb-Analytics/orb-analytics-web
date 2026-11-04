@@ -1,6 +1,6 @@
 {
   "model": "NFL",
-  "generated_at": "2026-11-04T02:48:16Z",
+  "generated_at": "2026-11-04T03:02:53Z",
   "version": "v3.2-2model-raw-edge-symmetric-2pct-ewma10",
   "picks": [
     {
@@ -18,6 +18,70 @@
       "edge": 6.95,
       "is_favorite": false,
       "notes": "2-model avg (logit+xgb), edge +6.95% (underdog)"
+    },
+    {
+      "game_id": "2026_09_TB_CHI",
+      "home_team": "CHI",
+      "away_team": "TB",
+      "pick": "CHI",
+      "has_pick": true,
+      "confidence": 0.5058,
+      "spread": -6.5,
+      "home_odds": 104,
+      "away_odds": -108,
+      "line": 104,
+      "market_implied": 0.4902,
+      "edge": 1.56,
+      "is_favorite": true,
+      "notes": "2-model avg (logit+xgb), edge +1.56% (favorite)"
+    },
+    {
+      "game_id": "2026_09_BUF_MIN",
+      "home_team": "MIN",
+      "away_team": "BUF",
+      "pick": "BUF",
+      "has_pick": true,
+      "confidence": 0.4893,
+      "spread": -3.5,
+      "home_odds": -117,
+      "away_odds": 111,
+      "line": 111,
+      "market_implied": 0.4739,
+      "edge": 1.54,
+      "is_favorite": true,
+      "notes": "2-model avg (logit+xgb), edge +1.54% (favorite)"
+    },
+    {
+      "game_id": "2026_09_CLE_NO",
+      "home_team": "NO",
+      "away_team": "CLE",
+      "pick": "CLE",
+      "has_pick": true,
+      "confidence": 0.534,
+      "spread": 1.5,
+      "home_odds": 104,
+      "away_odds": -106,
+      "line": -106,
+      "market_implied": 0.5146,
+      "edge": 1.95,
+      "is_favorite": false,
+      "notes": "2-model avg (logit+xgb), edge +1.95% (underdog)"
+    },
+    {
+      "game_id": "2026_09_LV_SF",
+      "home_team": "SF",
+      "away_team": "LV",
+      "pick": "LV",
+      "has_pick": true,
+      "confidence": 0.4939,
+      "spread": 9.5,
+      "home_odds": -113,
+      "away_odds": 111,
+      "line": 111,
+      "market_implied": 0.4739,
+      "edge": 2.0,
+      "is_favorite": false,
+      "notes": "2-model avg (logit+xgb), edge +2.00% (underdog)"
     }
   ]
 }
