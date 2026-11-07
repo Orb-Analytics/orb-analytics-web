@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-06T14:07:01+00:00",
+  "generated_at": "2026-11-07T14:06:34+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 134,
-    "losses": 109,
-    "win_rate": 55.1,
-    "total_units": 21.15,
-    "total_picks": 243,
-    "mean_clv": 0.5,
+    "wins": 135,
+    "losses": 112,
+    "win_rate": 54.7,
+    "total_units": 19.07,
+    "total_picks": 247,
+    "mean_clv": 0.375,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 27,
-        "losses": 17,
-        "win_rate": 61.4,
-        "total_units": 9.01,
-        "total_picks": 44,
-        "mean_clv": 0.5
+        "wins": 28,
+        "losses": 20,
+        "win_rate": 58.3,
+        "total_units": 6.93,
+        "total_picks": 48,
+        "mean_clv": 0.375
       }
     }
   },
@@ -4555,6 +4555,74 @@
       "home_score": 128,
       "away_score": 109,
       "clv": -0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718044,
+      "date": "2026-11-06",
+      "season": "2026-27",
+      "home_team": "CHA",
+      "away_team": "BOS",
+      "pick": "CHA",
+      "line": -102.0,
+      "spread": 8.5,
+      "edge": 1.696,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 80,
+      "away_score": 119,
+      "clv": -2.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718046,
+      "date": "2026-11-06",
+      "season": "2026-27",
+      "home_team": "DAL",
+      "away_team": "UTA",
+      "pick": "UTA",
+      "line": -106.0,
+      "spread": 7.5,
+      "edge": 1.334,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 112,
+      "away_score": 100,
+      "clv": 1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718047,
+      "date": "2026-11-06",
+      "season": "2026-27",
+      "home_team": "MEM",
+      "away_team": "OKC",
+      "pick": "MEM",
+      "line": -111.0,
+      "spread": 4.5,
+      "edge": 2.047,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 97,
+      "away_score": 128,
+      "clv": 0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718048,
+      "date": "2026-11-06",
+      "season": "2026-27",
+      "home_team": "MIL",
+      "away_team": "TOR",
+      "pick": "TOR",
+      "line": -108.0,
+      "spread": -6.5,
+      "edge": 1.281,
+      "result": "Win",
+      "units": 0.9259,
+      "home_score": 107,
+      "away_score": 121,
+      "clv": -3.0,
       "model": "nba-m1-open-v1"
     }
   ]
