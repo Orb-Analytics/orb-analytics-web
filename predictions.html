@@ -521,7 +521,7 @@
               <p>No Active Predictions</p>
             </div>
             <div id="picks-nba" style="display:none">
-              <div class="playoff-notice" id="notice-nba"><strong>NBA picks coming soon.</strong> The NBA season is underway, but our model needs a few weeks of games before its picks are reliable, since every team's stats start fresh on opening night. We're testing the model now and will begin publishing NBA picks here once testing is complete. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
+              <div class="playoff-notice" id="notice-nba"><strong>No NBA picks today.</strong> There are no NBA games on today's slate. Picks are posted each game-day morning. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
               <div class="picks-grid" id="picks-container-nba"></div>
             </div>
           </div>
@@ -739,7 +739,7 @@
   <script src="js/nav.js?v=20261102d"></script>
   <script src="js/odds-source.js?v=20261014"></script>
   <script src="js/nfl-picks.js?v=20261014"></script>
-  <script src="js/nba-picks.js?v=20261105"></script>
+  <script src="js/nba-picks.js?v=20261110b"></script>
   <script>
     buildNav('predictions.html');
 
@@ -822,13 +822,14 @@
     // finished last would otherwise stomp the other's timestamp even when
     // that sport's tab isn't the one being viewed.
     const generatedAtBySport = { mlb: null, nfl: null, nba: null };
-    const todayModelLoadState = { mlb: 'pending', nfl: 'pending' };
+    const todayModelLoadState = { mlb: 'pending', nfl: 'pending', nba: 'pending' };
     function updateAllPredictionsEmptyState() {
       const allEmptyState = document.getElementById('all-empty-state');
       const mlbHasPicks = document.querySelector('#picks-container .pick-card') !== null;
       const nflHasPicks = document.querySelector('#picks-container-nfl .pick-card') !== null;
+      const nbaHasPicks = document.querySelector('#picks-container-nba .pick-card') !== null;
       const allModelsLoaded = Object.values(todayModelLoadState).every(state => state === 'loaded');
-      const showEmpty = activeSport === 'all' && allModelsLoaded && !mlbHasPicks && !nflHasPicks;
+      const showEmpty = activeSport === 'all' && allModelsLoaded && !mlbHasPicks && !nflHasPicks && !nbaHasPicks;
       allEmptyState.style.display = showEmpty ? 'flex' : 'none';
       // Only All combines MLB+NFL into one empty state and hides the
       // now-redundant empty MLB section -- leave picks-mlb's visibility
@@ -843,6 +844,11 @@
     function updateNBANotice() {
       const nbaHasPicks = document.querySelector('#picks-container-nba .pick-card, #picks-container-nba .nba-no-picks') !== null;
       document.getElementById('notice-nba').style.display = nbaHasPicks ? 'none' : '';
+      // All shows the NBA section only when it has cards (no notice, no "no picks" message), like MLB/NFL there.
+      if (activeSport === 'all') {
+        document.getElementById('picks-nba').style.display =
+          document.querySelector('#picks-container-nba .pick-card') ? 'block' : 'none';
+      }
     }
     function updateLastUpdatedLabel() {
       const el = document.getElementById('last-updated');
@@ -869,11 +875,10 @@
         document.getElementById(`sport-tab-${s}`).classList.toggle('active', sport === s);
         const el = document.getElementById(`picks-${s}`);
         if (!el) return;
-        // NBA has no live picks yet -- its "coming soon" placeholder only
-        // makes sense when NBA is explicitly selected, not lumped into the
-        // combined All view alongside real MLB/NFL picks.
+        // NBA appears on All only when it has pick cards: its notice and its
+        // "no picks today" message belong on the NBA tab alone.
         el.style.display = s === 'nba'
-          ? (sport === 'nba' ? 'block' : 'none')
+          ? (sport === 'nba' || (sport === 'all' && document.querySelector('#picks-container-nba .pick-card')) ? 'block' : 'none')
           : (sport === 'all' || sport === s) ? 'block' : 'none';
       });
       document.getElementById('notice-mlb').style.display = sport === 'mlb' ? '' : 'none';
