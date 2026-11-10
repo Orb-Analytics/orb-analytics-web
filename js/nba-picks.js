@@ -1,11 +1,11 @@
 // NBA picks (spread model): fetch and render today's cards into #picks-container-nba.
 // Kept separate from the MLB/NFL loaders, like nfl-picks.js. No ESPN live-score matching yet: cards show the
-// pick, spread, price, cover probability and model edge (in points); results are recorded in Model History.
+// pick, spread, price, cover probability and model edge (a percentage); results are recorded in Model History.
 // Calls globals defined inline in the page: fmtOdds, logPick, generatedAtBySport, updateLastUpdatedLabel,
 // activeSport, updateNBANotice. Loaded before the inline script that calls loadTodayNBA().
 //
 // predictions.json fields used: picks[] with has_pick, pick, home_team, away_team, spread (picked side),
-// line (American price of the picked side), confidence (cover probability), edge (points), notes.
+// line (American price of the picked side), confidence (cover probability), edge (decimal: 0.033 = 3.3%), notes.
 
 const NBA_PREDICTIONS_URL = '/data/nba/predictions.json';
 
@@ -43,7 +43,7 @@ function renderTodayPicksNBA(picks) {
     const conf = pick.confidence || 0.5;
     const price = pick.line ?? 0;
     const side = pick.pick === pick.home_team ? 'Home' : 'Away';
-    const edge = Math.abs(pick.edge ?? 0).toFixed(1);
+    const edge = pick.edge == null ? '—' : `${pick.edge >= 0 ? '+' : ''}${(pick.edge * 100).toFixed(1)}%`;
     return `<div class="pick-card">
       <div class="pick-card-header">
         <div class="pick-card-status"><span class="badge badge-final">SPREAD</span></div>
@@ -65,7 +65,7 @@ function renderTodayPicksNBA(picks) {
         </div>
         <div class="pick-main" style="padding:0.6rem 0.8rem">
           <div class="pick-label">Model Edge</div>
-          <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--gray-600)">${edge} pts</div>
+          <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--gray-600)">${edge}</div>
         </div>
       </div>
       <div style="margin-top:auto">
