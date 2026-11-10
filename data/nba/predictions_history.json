@@ -1,13 +1,31 @@
 {
   "model": "NBA",
-  "generated_at": "2026-09-16T21:39:34.896780+00:00",
-  "version": "v1.0",
+  "generated_at": "2026-11-10T14:06:34+00:00",
+  "version": "nba-m1-open-v1",
   "summary": {
     "wins": 107,
     "losses": 92,
     "win_rate": 53.8,
     "total_units": 12.14,
-    "total_picks": 199
+    "total_picks": 199,
+    "mean_clv": null,
+    "by_model": {
+      "nba-legacy-v1": {
+        "wins": 107,
+        "losses": 92,
+        "win_rate": 53.8,
+        "total_units": 12.14,
+        "total_picks": 199
+      },
+      "nba-m1-open-v1": {
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "total_units": 0,
+        "total_picks": 0,
+        "mean_clv": null
+      }
+    }
   },
   "picks": [
     {
@@ -26,7 +44,8 @@
       "result": "Win",
       "units": 0.9,
       "home_score": 90,
-      "away_score": 96
+      "away_score": 96,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_Indiana_20260407",
@@ -44,7 +63,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 124,
-      "away_score": 104
+      "away_score": 104,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Memphis_at_Cleveland_20260406",
@@ -62,7 +82,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 142,
-      "away_score": 126
+      "away_score": 126,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Golden State_20260405",
@@ -80,7 +101,8 @@
       "result": "Win",
       "units": 0.98,
       "home_score": 117,
-      "away_score": 116
+      "away_score": 116,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Clippers_at_Sacramento_20260405",
@@ -98,7 +120,8 @@
       "result": "Win",
       "units": 1.02,
       "home_score": 138,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Lakers_at_Dallas_20260405",
@@ -116,7 +139,8 @@
       "result": "Win",
       "units": 1.0,
       "home_score": 128,
-      "away_score": 134
+      "away_score": 134,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_Minnesota_20260405",
@@ -134,7 +158,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 122,
-      "away_score": 108
+      "away_score": 108,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Memphis_at_Milwaukee_20260405",
@@ -152,7 +177,8 @@
       "result": "Win",
       "units": 1.06,
       "home_score": 115,
-      "away_score": 131
+      "away_score": 131,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_Brooklyn_20260405",
@@ -170,7 +196,8 @@
       "result": "Win",
       "units": 1.02,
       "home_score": 115,
-      "away_score": 121
+      "away_score": 121,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Milwaukee_20260403",
@@ -188,7 +215,8 @@
       "result": "Win",
       "units": 0.98,
       "home_score": 133,
-      "away_score": 101
+      "away_score": 101,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Indiana_at_Charlotte_20260403",
@@ -206,7 +234,8 @@
       "result": "Win",
       "units": 1.08,
       "home_score": 108,
-      "away_score": 129
+      "away_score": 129,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Toronto_at_Memphis_20260403",
@@ -224,7 +253,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 128,
-      "away_score": 96
+      "away_score": 96,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New Orleans_at_Sacramento_20260403",
@@ -242,7 +272,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 113,
-      "away_score": 117
+      "away_score": 117,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "San Antonio_at_La Clippers_20260402",
@@ -260,7 +291,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 118,
-      "away_score": 99
+      "away_score": 99,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Lakers_at_Okla City_20260402",
@@ -278,7 +310,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 96,
-      "away_score": 139
+      "away_score": 139,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "San Antonio_at_Golden State_20260401",
@@ -296,7 +329,8 @@
       "result": "Win",
       "units": 0.92,
       "home_score": 127,
-      "away_score": 113
+      "away_score": 113,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Denver_at_Utah_20260401",
@@ -314,7 +348,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 130,
-      "away_score": 117
+      "away_score": 117,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Miami_20260401",
@@ -332,7 +367,8 @@
       "result": "Win",
       "units": 0.98,
       "home_score": 147,
-      "away_score": 129
+      "away_score": 129,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Atlanta_at_Orlando_20260401",
@@ -350,7 +386,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 130,
-      "away_score": 101
+      "away_score": 101,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Washington_20260401",
@@ -368,7 +405,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 153,
-      "away_score": 131
+      "away_score": 131,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New York_at_Houston_20260331",
@@ -386,7 +424,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 94,
-      "away_score": 111
+      "away_score": 111,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_Brooklyn_20260331",
@@ -404,7 +443,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 117,
-      "away_score": 86
+      "away_score": 86,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Phoenix_at_Memphis_20260330",
@@ -422,7 +462,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 131,
-      "away_score": 105
+      "away_score": 105,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Miami_20260330",
@@ -440,7 +481,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 109,
-      "away_score": 119
+      "away_score": 119,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Atlanta_20260330",
@@ -458,7 +500,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 102,
-      "away_score": 112
+      "away_score": 112,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_Utah_20260330",
@@ -476,7 +519,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 122,
-      "away_score": 113
+      "away_score": 113,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_Dallas_20260330",
@@ -494,7 +538,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 124,
-      "away_score": 94
+      "away_score": 94,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_La Lakers_20260330",
@@ -512,7 +557,8 @@
       "result": "Win",
       "units": 1.03,
       "home_score": 101,
-      "away_score": 120
+      "away_score": 120,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_Portland_20260329",
@@ -530,7 +576,8 @@
       "result": "Win",
       "units": 0.93,
       "home_score": 88,
-      "away_score": 123
+      "away_score": 123,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Clippers_at_Milwaukee_20260329",
@@ -548,7 +595,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 127,
-      "away_score": 113
+      "away_score": 113,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Chicago_at_Memphis_20260328",
@@ -566,7 +614,8 @@
       "result": "Win",
       "units": 0.93,
       "home_score": 124,
-      "away_score": 125
+      "away_score": 125,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Charlotte_20260328",
@@ -584,7 +633,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 118,
-      "away_score": 114
+      "away_score": 114,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_Minnesota_20260328",
@@ -602,7 +652,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 109,
-      "away_score": 87
+      "away_score": 87,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "San Antonio_at_Milwaukee_20260328",
@@ -620,7 +671,8 @@
       "result": "Win",
       "units": 1.08,
       "home_score": 127,
-      "away_score": 95
+      "away_score": 95,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_Golden State_20260327",
@@ -638,7 +690,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 126,
-      "away_score": 131
+      "away_score": 131,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Memphis_20260327",
@@ -656,7 +709,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 119,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Portland_20260327",
@@ -674,7 +728,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 100,
-      "away_score": 93
+      "away_score": 93,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Milwaukee_at_Portland_20260325",
@@ -692,7 +747,8 @@
       "result": "Win",
       "units": 0.97,
       "home_score": 99,
-      "away_score": 130
+      "away_score": 130,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Brooklyn_at_Golden State_20260325",
@@ -710,7 +766,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 106,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Minnesota_20260325",
@@ -728,7 +785,8 @@
       "result": "Win",
       "units": 1.03,
       "home_score": 108,
-      "away_score": 110
+      "away_score": 110,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_Utah_20260325",
@@ -746,7 +804,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 133,
-      "away_score": 110
+      "away_score": 110,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Miami_at_Cleveland_20260325",
@@ -764,7 +823,8 @@
       "result": "Win",
       "units": 1.03,
       "home_score": 120,
-      "away_score": 103
+      "away_score": 103,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Boston_20260325",
@@ -782,7 +842,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 109,
-      "away_score": 119
+      "away_score": 119,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Lakers_at_Indiana_20260325",
@@ -800,7 +861,8 @@
       "result": "Win",
       "units": 1.0,
       "home_score": 137,
-      "away_score": 130
+      "away_score": 130,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Atlanta_at_Detroit_20260325",
@@ -818,7 +880,8 @@
       "result": "Win",
       "units": 1.09,
       "home_score": 130,
-      "away_score": 129
+      "away_score": 129,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Denver_at_Phoenix_20260324",
@@ -836,7 +899,8 @@
       "result": "Win",
       "units": 1.05,
       "home_score": 125,
-      "away_score": 123
+      "away_score": 123,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Sacramento_at_Charlotte_20260324",
@@ -854,7 +918,8 @@
       "result": "Win",
       "units": 0.98,
       "home_score": 90,
-      "away_score": 134
+      "away_score": 134,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Chicago_20260323",
@@ -872,7 +937,8 @@
       "result": "Win",
       "units": 1.0,
       "home_score": 124,
-      "away_score": 132
+      "away_score": 132,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Indiana_at_Orlando_20260323",
@@ -890,7 +956,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 128,
-      "away_score": 126
+      "away_score": 126,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Toronto_at_Utah_20260323",
@@ -908,7 +975,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 143,
-      "away_score": 127
+      "away_score": 127,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Golden State_at_Dallas_20260323",
@@ -926,7 +994,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 137,
-      "away_score": 131
+      "away_score": 131,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Toronto_at_Phoenix_20260322",
@@ -944,7 +1013,8 @@
       "result": "Win",
       "units": 0.93,
       "home_score": 98,
-      "away_score": 120
+      "away_score": 120,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_New York_20260322",
@@ -962,7 +1032,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 113,
-      "away_score": 145
+      "away_score": 145,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Brooklyn_at_Sacramento_20260322",
@@ -980,7 +1051,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 122,
-      "away_score": 126
+      "away_score": 126,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Utah_20260321",
@@ -998,7 +1070,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 126,
-      "away_score": 116
+      "away_score": 116,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_New Orleans_20260321",
@@ -1016,7 +1089,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 111,
-      "away_score": 106
+      "away_score": 106,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Memphis_20260320",
@@ -1034,7 +1108,8 @@
       "result": "Win",
       "units": 1.12,
       "home_score": 117,
-      "away_score": 112
+      "away_score": 112,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New York_at_Brooklyn_20260320",
@@ -1052,7 +1127,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 93,
-      "away_score": 92
+      "away_score": 92,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_Washington_20260319",
@@ -1070,7 +1146,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 117,
-      "away_score": 95
+      "away_score": 95,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Milwaukee_at_Utah_20260319",
@@ -1088,7 +1165,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 96,
-      "away_score": 128
+      "away_score": 128,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Clippers_at_New Orleans_20260319",
@@ -1106,7 +1184,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 99,
-      "away_score": 105
+      "away_score": 105,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Portland_at_Indiana_20260318",
@@ -1124,7 +1203,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 127,
-      "away_score": 119
+      "away_score": 119,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "San Antonio_at_Sacramento_20260317",
@@ -1142,7 +1222,8 @@
       "result": "Win",
       "units": 0.98,
       "home_score": 132,
-      "away_score": 104
+      "away_score": 104,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_Milwaukee_20260317",
@@ -1160,7 +1241,8 @@
       "result": "Win",
       "units": 1.01,
       "home_score": 123,
-      "away_score": 116
+      "away_score": 116,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_Washington_20260317",
@@ -1178,7 +1260,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 130,
-      "away_score": 117
+      "away_score": 117,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Orlando_at_Atlanta_20260316",
@@ -1196,7 +1279,8 @@
       "result": "Win",
       "units": 1.0,
       "home_score": 112,
-      "away_score": 124
+      "away_score": 124,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Portland_at_Philadelphia_20260315",
@@ -1214,7 +1298,8 @@
       "result": "Win",
       "units": 0.93,
       "home_score": 103,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Denver_at_La Lakers_20260314",
@@ -1232,7 +1317,8 @@
       "result": "Win",
       "units": 1.04,
       "home_score": 125,
-      "away_score": 127
+      "away_score": 127,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_San Antonio_20260314",
@@ -1250,7 +1336,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 102,
-      "away_score": 115
+      "away_score": 115,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New York_at_Indiana_20260313",
@@ -1268,7 +1355,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 101,
-      "away_score": 92
+      "away_score": 92,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_Golden State_20260313",
@@ -1286,7 +1374,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 127,
-      "away_score": 117
+      "away_score": 117,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Phoenix_at_Toronto_20260313",
@@ -1304,7 +1393,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 115,
-      "away_score": 122
+      "away_score": 122,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Memphis_20260312",
@@ -1322,7 +1412,8 @@
       "result": "Win",
       "units": 0.9,
       "home_score": 120,
-      "away_score": 112
+      "away_score": 112,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_Orlando_20260312",
@@ -1340,7 +1431,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 131,
-      "away_score": 136
+      "away_score": 136,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Okla City_20260312",
@@ -1358,7 +1450,8 @@
       "result": "Win",
       "units": 0.92,
       "home_score": 102,
-      "away_score": 104
+      "away_score": 104,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_Sacramento_20260311",
@@ -1376,7 +1469,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 117,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Denver_20260311",
@@ -1394,7 +1488,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 93,
-      "away_score": 129
+      "away_score": 129,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Toronto_at_New Orleans_20260311",
@@ -1412,7 +1507,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 111,
-      "away_score": 122
+      "away_score": 122,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_Orlando_20260311",
@@ -1430,7 +1526,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 122,
-      "away_score": 128
+      "away_score": 128,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_La Clippers_20260311",
@@ -1448,7 +1545,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 128,
-      "away_score": 153
+      "away_score": 153,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_La Lakers_20260310",
@@ -1466,7 +1564,8 @@
       "result": "Win",
       "units": 1.0,
       "home_score": 106,
-      "away_score": 120
+      "away_score": 120,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_San Antonio_20260310",
@@ -1484,7 +1583,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 116,
-      "away_score": 125
+      "away_score": 125,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Toronto_at_Houston_20260310",
@@ -1502,7 +1602,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 99,
-      "away_score": 113
+      "away_score": 113,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Atlanta_20260310",
@@ -1520,7 +1621,8 @@
       "result": "Win",
       "units": 1.04,
       "home_score": 112,
-      "away_score": 124
+      "away_score": 124,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Denver_at_Okla City_20260309",
@@ -1538,7 +1640,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 126,
-      "away_score": 129
+      "away_score": 129,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_New Orleans_20260308",
@@ -1556,7 +1659,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 118,
-      "away_score": 138
+      "away_score": 138,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Cleveland_20260308",
@@ -1574,7 +1678,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 109,
-      "away_score": 98
+      "away_score": 98,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_Miami_20260308",
@@ -1592,7 +1697,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 110,
-      "away_score": 121
+      "away_score": 121,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Indiana_at_Portland_20260308",
@@ -1610,7 +1716,8 @@
       "result": "Win",
       "units": 1.1,
       "home_score": 111,
-      "away_score": 131
+      "away_score": 131,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Orlando_at_Milwaukee_20260308",
@@ -1628,7 +1735,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 130,
-      "away_score": 91
+      "away_score": 91,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_San Antonio_20260308",
@@ -1646,7 +1754,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 120,
-      "away_score": 145
+      "away_score": 145,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Atlanta_20260307",
@@ -1664,7 +1773,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 116,
-      "away_score": 125
+      "away_score": 125,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Orlando_20260305",
@@ -1682,7 +1792,8 @@
       "result": "Win",
       "units": 0.93,
       "home_score": 114,
-      "away_score": 115
+      "away_score": 115,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New Orleans_at_Sacramento_20260305",
@@ -1700,7 +1811,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 133,
-      "away_score": 123
+      "away_score": 123,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_San Antonio_20260305",
@@ -1718,7 +1830,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 106,
-      "away_score": 121
+      "away_score": 121,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_New York_20260304",
@@ -1736,7 +1849,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 103,
-      "away_score": 100
+      "away_score": 100,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Phoenix_at_Sacramento_20260303",
@@ -1754,7 +1868,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 114,
-      "away_score": 103
+      "away_score": 103,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "San Antonio_at_Philadelphia_20260303",
@@ -1772,7 +1887,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 131,
-      "away_score": 91
+      "away_score": 91,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Chicago_20260303",
@@ -1790,7 +1906,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 116,
-      "away_score": 108
+      "away_score": 108,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Charlotte_20260303",
@@ -1808,7 +1925,8 @@
       "result": "Win",
       "units": 1.04,
       "home_score": 90,
-      "away_score": 117
+      "away_score": 117,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Denver_at_Utah_20260302",
@@ -1826,7 +1944,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 128,
-      "away_score": 125
+      "away_score": 125,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Washington_20260302",
@@ -1844,7 +1963,8 @@
       "result": "Win",
       "units": 0.98,
       "home_score": 123,
-      "away_score": 118
+      "away_score": 118,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Dallas_20260301",
@@ -1862,7 +1982,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 100,
-      "away_score": 87
+      "away_score": 87,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Portland_at_Atlanta_20260301",
@@ -1880,7 +2001,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 101,
-      "away_score": 135
+      "away_score": 135,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_Denver_20260301",
@@ -1898,7 +2020,8 @@
       "result": "Win",
       "units": 1.08,
       "home_score": 117,
-      "away_score": 108
+      "away_score": 108,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Milwaukee_at_Chicago_20260301",
@@ -1916,7 +2039,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 97,
-      "away_score": 120
+      "away_score": 120,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "San Antonio_at_New York_20260301",
@@ -1934,7 +2058,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 89,
-      "away_score": 114
+      "away_score": 114,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New Orleans_at_Utah_20260228",
@@ -1952,7 +2077,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 115,
-      "away_score": 105
+      "away_score": 105,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Miami_20260228",
@@ -1970,7 +2096,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 105,
-      "away_score": 115
+      "away_score": 115,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Portland_at_Charlotte_20260228",
@@ -1988,7 +2115,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 93,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_Detroit_20260227",
@@ -2006,7 +2134,8 @@
       "result": "Win",
       "units": 1.1,
       "home_score": 119,
-      "away_score": 122
+      "away_score": 122,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_Milwaukee_20260225",
@@ -2024,7 +2153,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 116,
-      "away_score": 118
+      "away_score": 118,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Detroit_20260225",
@@ -2042,7 +2172,8 @@
       "result": "Win",
       "units": 0.94,
       "home_score": 116,
-      "away_score": 124
+      "away_score": 124,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Denver_20260225",
@@ -2060,7 +2191,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 84,
-      "away_score": 103
+      "away_score": 103,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Orlando_at_La Lakers_20260224",
@@ -2078,7 +2210,8 @@
       "result": "Win",
       "units": 0.93,
       "home_score": 110,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Phoenix_20260224",
@@ -2096,7 +2229,8 @@
       "result": "Win",
       "units": 0.93,
       "home_score": 97,
-      "away_score": 81
+      "away_score": 81,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Golden State_at_New Orleans_20260224",
@@ -2114,7 +2248,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 109,
-      "away_score": 113
+      "away_score": 113,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Miami_at_Milwaukee_20260224",
@@ -2132,7 +2267,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 117,
-      "away_score": 128
+      "away_score": 128,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_Chicago_20260224",
@@ -2150,7 +2286,8 @@
       "result": "Win",
       "units": 1.01,
       "home_score": 131,
-      "away_score": 99
+      "away_score": 99,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New York_at_Cleveland_20260224",
@@ -2168,7 +2305,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 94,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Toronto_20260224",
@@ -2186,7 +2324,8 @@
       "result": "Win",
       "units": 0.94,
       "home_score": 116,
-      "away_score": 107
+      "away_score": 107,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Brooklyn_20260224",
@@ -2204,7 +2343,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 123,
-      "away_score": 114
+      "away_score": 114,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Indiana_20260224",
@@ -2222,7 +2362,8 @@
       "result": "Win",
       "units": 1.04,
       "home_score": 135,
-      "away_score": 114
+      "away_score": 114,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Indiana_20260222",
@@ -2240,7 +2381,8 @@
       "result": "Win",
       "units": 0.92,
       "home_score": 134,
-      "away_score": 130
+      "away_score": 130,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_Okla City_20260222",
@@ -2258,7 +2400,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 113,
-      "away_score": 121
+      "away_score": 121,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Brooklyn_at_Atlanta_20260222",
@@ -2276,7 +2419,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 104,
-      "away_score": 115
+      "away_score": 115,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Toronto_at_Milwaukee_20260222",
@@ -2294,7 +2438,8 @@
       "result": "Win",
       "units": 1.03,
       "home_score": 122,
-      "away_score": 94
+      "away_score": 94,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Denver_at_Golden State_20260222",
@@ -2312,7 +2457,8 @@
       "result": "Win",
       "units": 1.09,
       "home_score": 117,
-      "away_score": 128
+      "away_score": 128,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Portland_at_Phoenix_20260222",
@@ -2330,7 +2476,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 92,
-      "away_score": 77
+      "away_score": 77,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_Washington_20260222",
@@ -2348,7 +2495,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 129,
-      "away_score": 112
+      "away_score": 112,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New York_at_Chicago_20260222",
@@ -2366,7 +2514,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 105,
-      "away_score": 99
+      "away_score": 99,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Orlando_at_La Clippers_20260222",
@@ -2384,7 +2533,8 @@
       "result": "Win",
       "units": 0.92,
       "home_score": 111,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Minnesota_20260222",
@@ -2402,7 +2552,8 @@
       "result": "Win",
       "units": 0.83,
       "home_score": 135,
-      "away_score": 108
+      "away_score": 108,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_New York_20260221",
@@ -2420,7 +2571,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 106,
-      "away_score": 108
+      "away_score": 108,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Sacramento_at_San Antonio_20260221",
@@ -2438,7 +2590,8 @@
       "result": "Win",
       "units": 1.05,
       "home_score": 122,
-      "away_score": 139
+      "away_score": 139,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_Chicago_20260221",
@@ -2456,7 +2609,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 126,
-      "away_score": 110
+      "away_score": 110,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Orlando_at_Phoenix_20260221",
@@ -2474,7 +2628,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 110,
-      "away_score": 113
+      "away_score": 113,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Utah_at_Memphis_20260220",
@@ -2492,7 +2647,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 114,
-      "away_score": 123
+      "away_score": 123,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_Charlotte_20260220",
@@ -2510,7 +2666,8 @@
       "result": "Win",
       "units": 0.86,
       "home_score": 118,
-      "away_score": 113
+      "away_score": 113,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Indiana_at_Washington_20260220",
@@ -2528,7 +2685,8 @@
       "result": "Win",
       "units": 1.06,
       "home_score": 118,
-      "away_score": 131
+      "away_score": 131,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Milwaukee_at_New Orleans_20260220",
@@ -2546,7 +2704,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 139,
-      "away_score": 118
+      "away_score": 118,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Minnesota_20260220",
@@ -2564,7 +2723,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 111,
-      "away_score": 122
+      "away_score": 122,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Clippers_at_La Lakers_20260220",
@@ -2582,7 +2742,8 @@
       "result": "Win",
       "units": 1.08,
       "home_score": 122,
-      "away_score": 125
+      "away_score": 125,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Denver_at_La Clippers_20260219",
@@ -2600,7 +2761,8 @@
       "result": "Win",
       "units": 0.97,
       "home_score": 114,
-      "away_score": 115
+      "away_score": 115,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Phoenix_at_San Antonio_20260219",
@@ -2618,7 +2780,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 94,
-      "away_score": 121
+      "away_score": 121,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_New York_20260219",
@@ -2636,7 +2799,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 126,
-      "away_score": 111
+      "away_score": 111,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Brooklyn_at_Cleveland_20260219",
@@ -2654,7 +2818,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 84,
-      "away_score": 112
+      "away_score": 112,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Charlotte_20260219",
@@ -2672,7 +2837,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 105,
-      "away_score": 101
+      "away_score": 101,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_Toronto_20260211",
@@ -2690,7 +2856,8 @@
       "result": "Win",
       "units": 0.85,
       "home_score": 113,
-      "away_score": 95
+      "away_score": 95,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Indiana_at_Brooklyn_20260211",
@@ -2708,7 +2875,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 115,
-      "away_score": 110
+      "away_score": 110,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Phoenix_20260211",
@@ -2726,7 +2894,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 136,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Clippers_at_Houston_20260211",
@@ -2744,7 +2913,8 @@
       "result": "Win",
       "units": 1.08,
       "home_score": 105,
-      "away_score": 102
+      "away_score": 102,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "San Antonio_at_La Lakers_20260210",
@@ -2762,7 +2932,8 @@
       "result": "Win",
       "units": 1.08,
       "home_score": 136,
-      "away_score": 108
+      "away_score": 108,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Clippers_at_Houston_20260210",
@@ -2780,7 +2951,8 @@
       "result": "Win",
       "units": 1.08,
       "home_score": 95,
-      "away_score": 102
+      "away_score": 102,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Portland_20260209",
@@ -2798,7 +2970,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 118,
-      "away_score": 135
+      "away_score": 135,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_La Lakers_20260209",
@@ -2816,7 +2989,8 @@
       "result": "Win",
       "units": 0.92,
       "home_score": 119,
-      "away_score": 110
+      "away_score": 110,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Memphis_at_Golden State_20260209",
@@ -2834,7 +3008,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 113,
-      "away_score": 114
+      "away_score": 114,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Milwaukee_at_Orlando_20260209",
@@ -2852,7 +3027,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 99,
-      "away_score": 118
+      "away_score": 118,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Utah_at_Miami_20260209",
@@ -2870,7 +3046,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 115,
-      "away_score": 111
+      "away_score": 111,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Chicago_at_Brooklyn_20260209",
@@ -2888,7 +3065,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 115,
-      "away_score": 123
+      "away_score": 123,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Clippers_at_Minnesota_20260208",
@@ -2906,7 +3084,8 @@
       "result": "Win",
       "units": 0.92,
       "home_score": 115,
-      "away_score": 96
+      "away_score": 96,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Washington_at_Brooklyn_20260207",
@@ -2924,7 +3103,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 113,
-      "away_score": 127
+      "away_score": 127,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Houston_at_Okla City_20260207",
@@ -2942,7 +3122,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 112,
-      "away_score": 106
+      "away_score": 106,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Memphis_at_Portland_20260207",
@@ -2960,7 +3141,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 115,
-      "away_score": 122
+      "away_score": 122,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New York_at_Detroit_20260206",
@@ -2978,7 +3160,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 80,
-      "away_score": 118
+      "away_score": 118,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_Houston_20260205",
@@ -2996,7 +3179,8 @@
       "result": "Win",
       "units": 0.88,
       "home_score": 109,
-      "away_score": 99
+      "away_score": 99,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Chicago_at_Toronto_20260205",
@@ -3014,7 +3198,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 107,
-      "away_score": 123
+      "away_score": 123,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_La Clippers_20260204",
@@ -3032,7 +3217,8 @@
       "result": "Win",
       "units": 0.92,
       "home_score": 124,
-      "away_score": 91
+      "away_score": 91,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_San Antonio_20260204",
@@ -3050,7 +3236,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 106,
-      "away_score": 116
+      "away_score": 116,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New Orleans_at_Milwaukee_20260204",
@@ -3068,7 +3255,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 137,
-      "away_score": 141
+      "away_score": 141,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Boston_at_Houston_20260204",
@@ -3086,7 +3274,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 114,
-      "away_score": 93
+      "away_score": 93,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_Toronto_20260204",
@@ -3104,7 +3293,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 128,
-      "away_score": 126
+      "away_score": 126,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Denver_at_New York_20260204",
@@ -3122,7 +3312,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 127,
-      "away_score": 134
+      "away_score": 134,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Sacramento_at_Washington_20260201",
@@ -3140,7 +3331,8 @@
       "result": "Win",
       "units": 0.97,
       "home_score": 112,
-      "away_score": 116
+      "away_score": 116,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Brooklyn_at_Detroit_20260201",
@@ -3158,7 +3350,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 77,
-      "away_score": 130
+      "away_score": 130,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Denver_20260201",
@@ -3176,7 +3369,8 @@
       "result": "Win",
       "units": 0.98,
       "home_score": 121,
-      "away_score": 111
+      "away_score": 111,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Dallas_at_Houston_20260131",
@@ -3194,7 +3388,8 @@
       "result": "Win",
       "units": 1.03,
       "home_score": 107,
-      "away_score": 111
+      "away_score": 111,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_Memphis_20260131",
@@ -3212,7 +3407,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 131,
-      "away_score": 114
+      "away_score": 114,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Minnesota_20260129",
@@ -3230,7 +3426,8 @@
       "result": "Win",
       "units": 1.0,
       "home_score": 111,
-      "away_score": 123
+      "away_score": 123,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_Dallas_20260129",
@@ -3248,7 +3445,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 123,
-      "away_score": 121
+      "away_score": 121,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Milwaukee_at_Washington_20260129",
@@ -3266,7 +3464,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 99,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Minnesota_at_Dallas_20260128",
@@ -3284,7 +3483,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 118,
-      "away_score": 105
+      "away_score": 105,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Orlando_at_Miami_20260128",
@@ -3302,7 +3502,8 @@
       "result": "Win",
       "units": 1.02,
       "home_score": 133,
-      "away_score": 124
+      "away_score": 124,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Chicago_at_Indiana_20260128",
@@ -3320,7 +3521,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 110,
-      "away_score": 113
+      "away_score": 113,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Brooklyn_at_Phoenix_20260127",
@@ -3338,7 +3540,8 @@
       "result": "Win",
       "units": 1.06,
       "home_score": 102,
-      "away_score": 106
+      "away_score": 106,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Portland_at_Washington_20260127",
@@ -3356,7 +3559,8 @@
       "result": "Win",
       "units": 1.07,
       "home_score": 111,
-      "away_score": 115
+      "away_score": 115,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Clippers_at_Utah_20260127",
@@ -3374,7 +3578,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 115,
-      "away_score": 103
+      "away_score": 103,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Golden State_at_Minnesota_20260126",
@@ -3392,7 +3597,8 @@
       "result": "Win",
       "units": 1.05,
       "home_score": 83,
-      "away_score": 108
+      "away_score": 108,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Philadelphia_at_Charlotte_20260126",
@@ -3410,7 +3616,8 @@
       "result": "Win",
       "units": 1.01,
       "home_score": 93,
-      "away_score": 130
+      "away_score": 130,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Lakers_at_Dallas_20260124",
@@ -3428,7 +3635,8 @@
       "result": "Win",
       "units": 1.05,
       "home_score": 116,
-      "away_score": 110
+      "away_score": 110,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Cleveland_at_Orlando_20260124",
@@ -3446,7 +3654,8 @@
       "result": "Win",
       "units": 0.92,
       "home_score": 119,
-      "away_score": 105
+      "away_score": 105,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "New York_at_Philadelphia_20260124",
@@ -3464,7 +3673,8 @@
       "result": "Win",
       "units": 0.91,
       "home_score": 112,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Charlotte_at_Orlando_20260122",
@@ -3482,7 +3692,8 @@
       "result": "Win",
       "units": 0.93,
       "home_score": 124,
-      "away_score": 97
+      "away_score": 97,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Okla City_at_Milwaukee_20260121",
@@ -3500,7 +3711,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 122,
-      "away_score": 102
+      "away_score": 102,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Atlanta_at_Memphis_20260121",
@@ -3518,7 +3730,8 @@
       "result": "Win",
       "units": 0.96,
       "home_score": 124,
-      "away_score": 122
+      "away_score": 122,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Toronto_at_Sacramento_20260121",
@@ -3536,7 +3749,8 @@
       "result": "Win",
       "units": 0.9,
       "home_score": 122,
-      "away_score": 109
+      "away_score": 109,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Detroit_at_New Orleans_20260121",
@@ -3554,7 +3768,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 112,
-      "away_score": 104
+      "away_score": 104,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "Toronto_at_Golden State_20260120",
@@ -3572,7 +3787,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 145,
-      "away_score": 127
+      "away_score": 127,
+      "model": "nba-legacy-v1"
     },
     {
       "game_id": "La Lakers_at_Denver_20260120",
@@ -3590,7 +3806,8 @@
       "result": "Loss",
       "units": -1.0,
       "home_score": 115,
-      "away_score": 107
+      "away_score": 107,
+      "model": "nba-legacy-v1"
     }
   ]
 }
