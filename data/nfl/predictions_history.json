@@ -1,14 +1,14 @@
 {
   "model": "NFL",
-  "generated_at": "2026-11-04T02:48:06.129378+00:00",
+  "generated_at": "2026-11-11T01:31:27.152200+00:00",
   "version": "v1.0-3way-consensus-low-edge-favorite",
   "summary": {
-    "wins": 163,
-    "losses": 145,
+    "wins": 165,
+    "losses": 148,
     "pushes": 7,
-    "win_rate": 52.9,
-    "total_units": 8.64,
-    "total_picks": 315
+    "win_rate": 52.7,
+    "total_units": 7.69,
+    "total_picks": 320
   },
   "picks": [
     {
@@ -5365,6 +5365,91 @@
       "units": -1.0,
       "home_score": 27,
       "away_score": 10
+    },
+    {
+      "date": "11/5/2026",
+      "season": 2026,
+      "week": 9,
+      "home_team": "BAL",
+      "away_team": "JAX",
+      "pick": "BAL",
+      "spread": 9.5,
+      "confidence": 0.555,
+      "line": 106,
+      "edge": 6.95,
+      "is_favorite": false,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 10,
+      "away_score": 33
+    },
+    {
+      "date": "11/8/2026",
+      "season": 2026,
+      "week": 9,
+      "home_team": "CHI",
+      "away_team": "TB",
+      "pick": "CHI",
+      "spread": -6.5,
+      "confidence": 0.5058,
+      "line": 104,
+      "edge": 1.56,
+      "is_favorite": true,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 27,
+      "away_score": 24
+    },
+    {
+      "date": "11/9/2026",
+      "season": 2026,
+      "week": 9,
+      "home_team": "MIN",
+      "away_team": "BUF",
+      "pick": "BUF",
+      "spread": -3.5,
+      "confidence": 0.4893,
+      "line": 111,
+      "edge": 1.54,
+      "is_favorite": true,
+      "result": "Win",
+      "units": 1.11,
+      "home_score": 6,
+      "away_score": 23
+    },
+    {
+      "date": "11/8/2026",
+      "season": 2026,
+      "week": 9,
+      "home_team": "NO",
+      "away_team": "CLE",
+      "pick": "CLE",
+      "spread": 1.5,
+      "confidence": 0.534,
+      "line": -106,
+      "edge": 1.95,
+      "is_favorite": false,
+      "result": "Win",
+      "units": 0.9434,
+      "home_score": 23,
+      "away_score": 22
+    },
+    {
+      "date": "11/8/2026",
+      "season": 2026,
+      "week": 9,
+      "home_team": "SF",
+      "away_team": "LV",
+      "pick": "LV",
+      "spread": 9.5,
+      "confidence": 0.4939,
+      "line": 111,
+      "edge": 2.0,
+      "is_favorite": false,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 38,
+      "away_score": 17
     }
   ]
 }
