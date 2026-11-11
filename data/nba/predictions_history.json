@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-10T14:06:34+00:00",
+  "generated_at": "2026-11-11T14:07:28+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
     "wins": 107,
-    "losses": 92,
-    "win_rate": 53.8,
-    "total_units": 12.14,
-    "total_picks": 199,
-    "mean_clv": null,
+    "losses": 93,
+    "win_rate": 53.5,
+    "total_units": 11.14,
+    "total_picks": 200,
+    "mean_clv": 0.0,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -19,11 +19,11 @@
       },
       "nba-m1-open-v1": {
         "wins": 0,
-        "losses": 0,
+        "losses": 1,
         "win_rate": 0.0,
-        "total_units": 0,
-        "total_picks": 0,
-        "mean_clv": null
+        "total_units": -1.0,
+        "total_picks": 1,
+        "mean_clv": 0.0
       }
     }
   },
@@ -3808,6 +3808,24 @@
       "home_score": 115,
       "away_score": 107,
       "model": "nba-legacy-v1"
+    },
+    {
+      "game_id": 21718076,
+      "date": "2026-11-10",
+      "season": "2026-27",
+      "home_team": "PHX",
+      "away_team": "LAC",
+      "pick": "LAC",
+      "line": -102.0,
+      "spread": 3.5,
+      "edge": 0.0235,
+      "edge_points": 2.276,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 133,
+      "away_score": 110,
+      "clv": -0.0,
+      "model": "nba-m1-open-v1"
     }
   ]
 }
