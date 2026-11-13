@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-12T14:05:49+00:00",
+  "generated_at": "2026-11-13T14:07:36+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
     "wins": 139,
-    "losses": 114,
-    "win_rate": 54.9,
-    "total_units": 21.1,
-    "total_picks": 253,
-    "mean_clv": 0.407,
+    "losses": 115,
+    "win_rate": 54.7,
+    "total_units": 20.1,
+    "total_picks": 254,
+    "mean_clv": 0.4,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -19,11 +19,11 @@
       },
       "nba-m1-open-v1": {
         "wins": 32,
-        "losses": 22,
-        "win_rate": 59.3,
-        "total_units": 8.96,
-        "total_picks": 54,
-        "mean_clv": 0.407
+        "losses": 23,
+        "win_rate": 58.2,
+        "total_units": 7.96,
+        "total_picks": 55,
+        "mean_clv": 0.4
       }
     }
   },
@@ -4779,6 +4779,24 @@
       "home_score": 111,
       "away_score": 145,
       "clv": 2.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718092,
+      "date": "2026-11-12",
+      "season": "2026-27",
+      "home_team": "WAS",
+      "away_team": "DET",
+      "pick": "DET",
+      "line": -104.0,
+      "spread": -10.5,
+      "edge": 0.0148,
+      "edge_points": 1.639,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 140,
+      "away_score": 144,
+      "clv": -0.0,
       "model": "nba-m1-open-v1"
     }
   ]
