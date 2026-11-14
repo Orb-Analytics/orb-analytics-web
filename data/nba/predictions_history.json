@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-13T14:07:42+00:00",
+  "generated_at": "2026-11-14T14:06:15+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 108,
-    "losses": 94,
-    "win_rate": 53.5,
-    "total_units": 11.12,
-    "total_picks": 202,
-    "mean_clv": 0.667,
+    "wins": 110,
+    "losses": 96,
+    "win_rate": 53.4,
+    "total_units": 11.14,
+    "total_picks": 206,
+    "mean_clv": 0.286,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 1,
-        "losses": 2,
-        "win_rate": 33.3,
-        "total_units": -1.02,
-        "total_picks": 3,
-        "mean_clv": 0.667
+        "wins": 3,
+        "losses": 4,
+        "win_rate": 42.9,
+        "total_units": -1.0,
+        "total_picks": 7,
+        "mean_clv": 0.286
       }
     }
   },
@@ -3861,6 +3861,78 @@
       "home_score": 140,
       "away_score": 144,
       "clv": -0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718098,
+      "date": "2026-11-13",
+      "season": "2026-27",
+      "home_team": "CHI",
+      "away_team": "ATL",
+      "pick": "ATL",
+      "line": 106.0,
+      "spread": -6.5,
+      "edge": 0.0238,
+      "edge_points": 1.676,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 125,
+      "away_score": 117,
+      "clv": -0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718099,
+      "date": "2026-11-13",
+      "season": "2026-27",
+      "home_team": "NOP",
+      "away_team": "MEM",
+      "pick": "MEM",
+      "line": -104.0,
+      "spread": -2.5,
+      "edge": 0.0138,
+      "edge_points": 1.545,
+      "result": "Win",
+      "units": 0.9615,
+      "home_score": 111,
+      "away_score": 142,
+      "clv": 1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718101,
+      "date": "2026-11-13",
+      "season": "2026-27",
+      "home_team": "SAS",
+      "away_team": "GSW",
+      "pick": "GSW",
+      "line": 104.0,
+      "spread": 11.5,
+      "edge": 0.0183,
+      "edge_points": 1.333,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 123,
+      "away_score": 85,
+      "clv": -1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718103,
+      "date": "2026-11-13",
+      "season": "2026-27",
+      "home_team": "LAC",
+      "away_team": "OKC",
+      "pick": "LAC",
+      "line": 106.0,
+      "spread": 6.5,
+      "edge": 0.0195,
+      "edge_points": 1.292,
+      "result": "Win",
+      "units": 1.06,
+      "home_score": 113,
+      "away_score": 112,
+      "clv": 0.0,
       "model": "nba-m1-open-v1"
     }
   ]
