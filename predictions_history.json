@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-14T14:06:09+00:00",
+  "generated_at": "2026-11-15T14:07:29+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
     "wins": 141,
-    "losses": 117,
-    "win_rate": 54.7,
-    "total_units": 20.12,
-    "total_picks": 258,
-    "mean_clv": 0.373,
+    "losses": 120,
+    "win_rate": 54.0,
+    "total_units": 17.12,
+    "total_picks": 261,
+    "mean_clv": 0.468,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -19,11 +19,11 @@
       },
       "nba-m1-open-v1": {
         "wins": 34,
-        "losses": 25,
-        "win_rate": 57.6,
-        "total_units": 7.98,
-        "total_picks": 59,
-        "mean_clv": 0.373
+        "losses": 28,
+        "win_rate": 54.8,
+        "total_units": 4.98,
+        "total_picks": 62,
+        "mean_clv": 0.468
       }
     }
   },
@@ -4869,6 +4869,60 @@
       "home_score": 113,
       "away_score": 112,
       "clv": 0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718105,
+      "date": "2026-11-14",
+      "season": "2026-27",
+      "home_team": "CLE",
+      "away_team": "DAL",
+      "pick": "DAL",
+      "line": 106.0,
+      "spread": -1.5,
+      "edge": 0.0234,
+      "edge_points": 1.65,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 127,
+      "away_score": 117,
+      "clv": 7.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718106,
+      "date": "2026-11-14",
+      "season": "2026-27",
+      "home_team": "MIA",
+      "away_team": "DET",
+      "pick": "DET",
+      "line": 106.0,
+      "spread": -5.5,
+      "edge": 0.018,
+      "edge_points": 1.163,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 137,
+      "away_score": 117,
+      "clv": -1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718108,
+      "date": "2026-11-14",
+      "season": "2026-27",
+      "home_team": "MIN",
+      "away_team": "CHI",
+      "pick": "MIN",
+      "line": -104.0,
+      "spread": -14.5,
+      "edge": 0.0173,
+      "edge_points": 1.865,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 106,
+      "away_score": 117,
+      "clv": 1.0,
       "model": "nba-m1-open-v1"
     }
   ]
