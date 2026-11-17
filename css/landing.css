@@ -71,7 +71,7 @@
   z-index: 3;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-areas: "brand tabs tools";
+  grid-template-areas: "brand logo tools";
   align-items: center;
   column-gap: 16px;
   padding: 0;
@@ -95,16 +95,13 @@
   text-decoration: none;
   color: inherit;
 }
-.landing-tabs {
-  grid-area: tabs;
-  position: static;
-  display: flex;
-  justify-content: center;
+.landing-logo {
+  grid-area: logo;
   justify-self: center;
-  margin: 0;
-  transform: none;
-  pointer-events: auto;
+  display: block;
+  line-height: 0;
 }
+.landing-logo .nav-logo-mark { width: 66px; height: 66px; }
 .landing-tools {
   grid-area: tools;
   justify-self: end;
@@ -114,7 +111,19 @@
   min-width: 0;
 }
 .landing-top .nav-social { flex: none; }
-.landing-theme-toggle { background: var(--land-bg); }
+.landing-theme-row { pointer-events: auto; margin-top: 22px; }
+.landing-theme-btn {
+  font-family: var(--font-body), Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--land-text);
+  background: transparent;
+  border: 1px solid var(--land-line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.landing-theme-btn:hover { border-color: var(--land-purple); color: var(--land-purple); }
 .landing-split {
   position: relative;
   z-index: 1;
@@ -388,10 +397,10 @@
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       "brand tools"
-      "tabs tabs";
+      "logo logo";
     row-gap: 10px;
   }
-  .landing-tabs { justify-self: center; }
+  .landing-logo { justify-self: center; }
 }
 @media (max-width: 800px) {
   .landing-layer { overflow-x: hidden; overflow-y: auto; }
@@ -460,7 +469,7 @@ body.dark .g-notice code {
 }
 body.dark .landing-legal-wrap { border-top-color: rgba(161, 161, 170, 0.28); }
 body.dark .landing-legal { color: #9B9BA3; }
-body.dark .landing-theme-toggle { background: #1A1720; color: #F4F4F5; }
+body.dark .landing-theme-btn { background: transparent; color: #F4F4F5; border-color: #3F3F46; }
 
 /* Phone intro: no particle stage, no tabs, no landing socials.
    Desktop rules above this query are unchanged. */
@@ -484,17 +493,15 @@ body.dark .landing-theme-toggle { background: #1A1720; color: #F4F4F5; }
   }
   .landing-layer #orbCanvas,
   .landing-layer #solidCanvas,
-  .landing-stage,
-  .landing-tabs { display: none !important; }
+  .landing-stage { display: none !important; }
   .landing-top {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: "brand tools";
-    column-gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas: "brand logo tools";
+    column-gap: 8px;
     row-gap: 0;
   }
-  .landing-top .nav-social { display: none !important; }
-  .landing-tools { gap: 0; }
-  .landing-theme-toggle { width: 44px; height: 44px; }
+  .landing-logo .nav-logo-mark { width: 40px; height: 40px; }
+  .landing-theme-row { order: 4; }
   .landing-split {
     display: flex;
     flex-direction: column;

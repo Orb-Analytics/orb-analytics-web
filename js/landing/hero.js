@@ -223,12 +223,7 @@
 
   /* ---------- state toggle ---------- */
   var solidBtn = null;
-  var btns = [["Sphere", 0], ["Logo", 1], ["Hybrid", 2]].concat(HAS_SOLID ? [["Solid", 3]] : []).map(function (d) {
-    var b = document.createElement("button");
-    b.type = "button"; b.textContent = d[0]; b.setAttribute("aria-pressed", "false");
-    b.addEventListener("click", function () { setPhase(d[1], reduce, CLICK_PAUSE); if (reduce) frame(performance.now()); });
-    pager.appendChild(b); if (d[1] === 3) solidBtn = b; return b;
-  });
+  var btns = [];
   function updatePager() { btns.forEach(function (b, k) { b.setAttribute("aria-pressed", k === phase ? "true" : "false"); }); }
 
   /* ---------- targets ---------- */
@@ -299,7 +294,7 @@
     last = ts;
     if (reduce) dt = 0;
     now += dt;
-    if (!reduce && now - phaseStart > HOLD[phase]) setPhase(phase + 1, false);
+    // The landing plays the coin only. Sphere, Hybrid, and Solid stay in the file but never start.
 
     var sphereMode = phase === 0;
     rot += dt * 0.32;
@@ -472,7 +467,7 @@
 
   layout();
   var qs = /[?&]start=(\d+)/.exec(location.search); // preview helper: ?start=1 opens on the logo
-  setPhase(qs ? +qs[1] : 0, true);
+  setPhase(1, true);
   var qy = /[?&]yaw=([\d.]+)/.exec(location.search); if (qy) hyFixed = +qy[1]; // preview helper: fixed Hybrid yaw, no sway (radians)
   if (/[?&]still=1/.test(location.search)) stillMode = true;
   var qp = /[?&]pitch=(-?[\d.]+)/.exec(location.search); if (qp) hyPitch = +qp[1]; // preview helper: fixed pitch for the Logo and Solid states (radians)
