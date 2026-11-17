@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-16T14:07:11+00:00",
+  "generated_at": "2026-11-17T14:06:06+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 141,
-    "losses": 121,
+    "wins": 143,
+    "losses": 123,
     "win_rate": 53.8,
     "total_units": 16.12,
-    "total_picks": 262,
-    "mean_clv": 0.476,
+    "total_picks": 266,
+    "mean_clv": 0.478,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 34,
-        "losses": 29,
-        "win_rate": 54.0,
+        "wins": 36,
+        "losses": 31,
+        "win_rate": 53.7,
         "total_units": 3.98,
-        "total_picks": 63,
-        "mean_clv": 0.476
+        "total_picks": 67,
+        "mean_clv": 0.478
       }
     }
   },
@@ -4940,6 +4940,78 @@
       "units": -1.0,
       "home_score": 106,
       "away_score": 113,
+      "clv": 1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718119,
+      "date": "2026-11-16",
+      "season": "2026-27",
+      "home_team": "CLE",
+      "away_team": "CHI",
+      "pick": "CHI",
+      "line": -102.0,
+      "spread": 9.5,
+      "edge": 0.017,
+      "edge_points": 1.686,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 126,
+      "away_score": 115,
+      "clv": 1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718120,
+      "date": "2026-11-16",
+      "season": "2026-27",
+      "home_team": "WAS",
+      "away_team": "MEM",
+      "pick": "MEM",
+      "line": -102.0,
+      "spread": -3.5,
+      "edge": 0.0156,
+      "edge_points": 1.553,
+      "result": "Win",
+      "units": 0.9804,
+      "home_score": 120,
+      "away_score": 136,
+      "clv": -0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718121,
+      "date": "2026-11-16",
+      "season": "2026-27",
+      "home_team": "BKN",
+      "away_team": "PHI",
+      "pick": "BKN",
+      "line": -102.0,
+      "spread": 5.5,
+      "edge": 0.0113,
+      "edge_points": 1.166,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 123,
+      "away_score": 135,
+      "clv": 0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718122,
+      "date": "2026-11-16",
+      "season": "2026-27",
+      "home_team": "MIA",
+      "away_team": "HOU",
+      "pick": "MIA",
+      "line": 102.0,
+      "spread": 2.5,
+      "edge": 0.0181,
+      "edge_points": 1.471,
+      "result": "Win",
+      "units": 1.02,
+      "home_score": 128,
+      "away_score": 110,
       "clv": 1.0,
       "model": "nba-m1-open-v1"
     }
