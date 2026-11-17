@@ -92,7 +92,8 @@
         display: none !important;
       }
 
-      .picks-grid {
+      .picks-grid,
+      .picks-flow.is-merged {
         grid-template-columns: 1fr !important;
       }
 
@@ -288,6 +289,15 @@
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: var(--stack-gap);
     }
+    .sport-block.is-hidden { display: none !important; }
+    .picks-flow.is-merged {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--stack-gap);
+    }
+    .picks-flow.is-merged > .sport-block,
+    .picks-flow.is-merged .picks-grid { display: contents; }
+    .page-split.tracker-collapsed .picks-flow.is-merged { grid-template-columns: repeat(3, 1fr); }
 
     .pick-card {
       background: var(--surface);
@@ -470,12 +480,11 @@
         <a class="nav-wordmark landing-lockup" href="index.html" aria-label="Orb Analytics Home">
           <span class="nav-logo-text">Orbanalytics<span class="nav-logo-accent">.limited</span></span>
         </a>
-        <div class="landing-tabs">
-          <div class="pager" id="pager" role="group" aria-label="Hero animation"></div>
-        </div>
+        <a class="landing-logo" href="index.html" aria-label="Orb Analytics Home">
+          <img class="nav-logo-mark" src="assets/logo.png" srcset="assets/logo.png 1x, assets/landing/logo-original.png 2x" width="66" height="66" alt="" decoding="async" />
+        </a>
         <div class="landing-tools">
           <nav class="nav-social" id="landing-social" aria-label="Social"></nav>
-          <button type="button" class="theme-toggle landing-theme-toggle" id="landing-theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle color theme">🌙</button>
         </div>
       </div>
       <div class="landing-split">
@@ -503,6 +512,9 @@
             <h3><button type="button" aria-expanded="false" aria-controls="a4" id="q4">How are results tracked?<span class="chev" aria-hidden="true"></span></button></h3>
             <div class="faq-a" id="a4" role="region" aria-labelledby="q4"><div><p>Every pick, win, loss and unit is tracked publicly. Wins and losses both stay visible.</p></div></div>
           </div>
+        </div>
+        <div class="landing-theme-row">
+          <button type="button" class="landing-theme-btn" id="landing-theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
         </div>
         </div>
         </div>
@@ -569,32 +581,34 @@
               <button class="main-tab" onclick="switchView('history')" id="view-tab-history">Model History</button>
             </div>
             <div class="main-tabs">
-              <button class="main-tab active" onclick="switchSport('all')" id="sport-tab-all">All</button>
               <button class="main-tab" onclick="switchSport('nfl')" id="sport-tab-nfl" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" height="16" style="border-radius:2px"> NFL</button>
-              <button class="main-tab" onclick="switchSport('mlb')" id="sport-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
               <button class="main-tab" onclick="switchSport('nba')" id="sport-tab-nba" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" height="16" style="border-radius:2px"> NBA</button>
+              <button class="main-tab" onclick="switchSport('mlb')" id="sport-tab-mlb" style="display:inline-flex;align-items:center;gap:0.3rem"><img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" height="16" style="border-radius:2px"> MLB</button>
+              <button class="main-tab active" onclick="switchSport('all')" id="sport-tab-all">All</button>
             </div>
           </div>
 
           <!-- TODAY'S PICKS -->
           <div class="tab-panel active" id="panel-today">
-            <div class="playoff-notice" id="notice-mlb" style="display:none"><strong>MLB model paused for the offseason.</strong> Our MLB model is on break through the playoffs and offseason and will return with daily picks at the start of next regular season. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
-            <div id="picks-mlb">
-              <div class="picks-grid" id="picks-container">
-                <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
+            <div class="picks-flow" id="picks-flow">
+              <div class="sport-block is-hidden" id="picks-nfl">
+                <div class="picks-grid" id="picks-container-nfl">
+                  <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
+                </div>
               </div>
-            </div>
-            <div id="picks-nfl" style="display:none">
-              <div class="picks-grid" id="picks-container-nfl">
-                <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
+              <div class="sport-block is-hidden" id="picks-nba">
+                <div class="playoff-notice" id="notice-nba"><strong>No NBA picks today.</strong> There are no NBA games on today's slate. Picks are posted each game-day morning. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
+                <div class="picks-grid" id="picks-container-nba"></div>
+              </div>
+              <div class="playoff-notice" id="notice-mlb" style="display:none"><strong>MLB model paused for the offseason.</strong> Our MLB model is on break through the playoffs and offseason and will return with daily picks at the start of next regular season. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
+              <div class="sport-block" id="picks-mlb">
+                <div class="picks-grid" id="picks-container">
+                  <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div> Loading today's picks...</div>
+                </div>
               </div>
             </div>
             <div class="empty-state" id="all-empty-state" style="display:none;padding:3rem 1rem">
               <p>No Active Predictions</p>
-            </div>
-            <div id="picks-nba" style="display:none">
-              <div class="playoff-notice" id="notice-nba"><strong>No NBA picks today.</strong> There are no NBA games on today's slate. Picks are posted each game-day morning. Browse past results in <a href="javascript:void(0)" onclick="switchView('history')">Model History</a>.</div>
-              <div class="picks-grid" id="picks-container-nba"></div>
             </div>
           </div>
 
@@ -908,7 +922,7 @@
       // now-redundant empty MLB section -- leave picks-mlb's visibility
       // alone on other tabs, switchSport() already set it correctly there.
       if (activeSport === 'all') {
-        document.getElementById('picks-mlb').style.display = !mlbHasPicks && todayModelLoadState.mlb === 'loaded' ? 'none' : '';
+        document.getElementById('picks-mlb').classList.toggle('is-hidden', !mlbHasPicks && todayModelLoadState.mlb === 'loaded');
       }
     }
     // The "coming soon" notice shows until js/nba-picks.js renders cards or the no-picks message.
@@ -919,8 +933,7 @@
       document.getElementById('notice-nba').style.display = nbaHasPicks ? 'none' : '';
       // All shows the NBA section only when it has cards (no notice, no "no picks" message), like MLB/NFL there.
       if (activeSport === 'all') {
-        document.getElementById('picks-nba').style.display =
-          document.querySelector('#picks-container-nba .pick-card') ? 'block' : 'none';
+        document.getElementById('picks-nba').classList.toggle('is-hidden', !document.querySelector('#picks-container-nba .pick-card'));
       }
     }
     function updateLastUpdatedLabel() {
@@ -944,15 +957,17 @@
       activeSport = sport;
       localStorage.setItem('orb-active-sport', sport);
       document.getElementById('sport-tab-all').classList.toggle('active', sport === 'all');
-      ['mlb','nfl','nba'].forEach(s => {
+      document.getElementById('picks-flow').classList.toggle('is-merged', sport === 'all');
+      ['nfl','nba','mlb'].forEach(s => {
         document.getElementById(`sport-tab-${s}`).classList.toggle('active', sport === s);
         const el = document.getElementById(`picks-${s}`);
         if (!el) return;
         // NBA appears on All only when it has pick cards: its notice and its
         // "no picks today" message belong on the NBA tab alone.
-        el.style.display = s === 'nba'
-          ? (sport === 'nba' || (sport === 'all' && document.querySelector('#picks-container-nba .pick-card')) ? 'block' : 'none')
-          : (sport === 'all' || sport === s) ? 'block' : 'none';
+        const show = s === 'nba'
+          ? (sport === 'nba' || (sport === 'all' && document.querySelector('#picks-container-nba .pick-card')))
+          : (sport === 'all' || sport === s);
+        el.classList.toggle('is-hidden', !show);
       });
       document.getElementById('notice-mlb').style.display = sport === 'mlb' ? '' : 'none';
       document.querySelector('.section-title').textContent = sport === 'all' ? 'All Predictions' : sport.toUpperCase() + ' Predictions';
@@ -1215,12 +1230,12 @@
 
       if (!filteredPicks.length) {
         if (activeSport === 'all') {
-          document.getElementById('picks-mlb').style.display = 'none';
+          document.getElementById('picks-mlb').classList.add('is-hidden');
           container.innerHTML = '';
           return;
         }
         if (activeSport === 'mlb') {
-          document.getElementById('picks-mlb').style.display = '';
+          document.getElementById('picks-mlb').classList.remove('is-hidden');
         }
         container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
@@ -1229,7 +1244,7 @@
       }
 
       if (activeSport === 'all' || activeSport === 'mlb') {
-        document.getElementById('picks-mlb').style.display = '';
+        document.getElementById('picks-mlb').classList.remove('is-hidden');
       }
       const order = coverageSortOrder(filteredLive, filteredPicks.length);
       filteredPicks   = order.map(i => filteredPicks[i]);

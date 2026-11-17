@@ -42,7 +42,7 @@ function syncThemeButtons() {
   if (mobile) mobile.textContent = icon;
   var landing = document.getElementById('landing-theme-toggle');
   if (landing) {
-    landing.textContent = icon;
+    landing.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
     landing.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
   }
 }
@@ -58,8 +58,8 @@ if (window.matchMedia) {
 
 const SIDEBAR_LINKS = [
   { href: 'predictions.html', label: 'Predictions', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>` },
-  { href: 'scoreboard.html',  label: 'Scoreboard',  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>` },
   { href: 'snapshot.html',    label: 'Snapshot Analysis', icon: `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="3" y="11" width="4" height="10" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="17" y="8" width="4" height="13" rx="1"/></svg>` },
+  { href: 'scoreboard.html',  label: 'Scoreboard',  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>` },
   { href: 'tracker.html',     label: 'Bet Tracker', hidden: true, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>` },
   { href: 'about.html',       label: 'About Us',    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>` },
   { href: 'feed.html',        label: 'Feed',        hidden: true, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>`, soon: true },
@@ -313,9 +313,6 @@ function buildNav(activePage = '') {
         <div class="nav-social">
           ${socialLinksHTML()}
         </div>
-        <button class="theme-toggle nav-theme-toggle" id="theme-toggle-mobile" onclick="toggleTheme()" title="Toggle theme">
-          ${document.body.classList.contains('dark') ? '☀️' : '🌙'}
-        </button>
       </div>
     `;
   }
