@@ -752,6 +752,7 @@
   <script src="js/odds-source.js?v=20261014"></script>
   <script src="js/nfl-picks.js?v=20261014"></script>
   <script src="js/nba-picks.js?v=20261110b"></script>
+  <script src="js/model-roi.js?v=20261117"></script>
   <script>
     buildNav('predictions.html');
 
@@ -1372,12 +1373,7 @@
     }
 
     function computeSummary(picks) {
-      const wins = picks.filter(p=>p.result==='Win').length;
-      const losses = picks.filter(p=>p.result==='Loss').length;
-      const total_picks = wins + losses;
-      const win_rate = total_picks ? ((wins/total_picks)*100).toFixed(1) : '0.0';
-      const total_units = parseFloat(picks.reduce((a,b)=>a+(b.units||0),0).toFixed(2));
-      return { wins, losses, win_rate, total_units, total_picks };
+      return OrbModelRoi.computeSummary(picks);
     }
 
     function applyHistoryFilters() {
@@ -1389,7 +1385,7 @@
     }
 
     function renderSummaryStats(s) {
-      const roi = s.total_picks ? ((s.total_units / s.total_picks) * 100) : 0;
+      const roi = OrbModelRoi.roiFromSummary(s) ?? 0;
       document.getElementById('summary-grid').innerHTML = `
         <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral">${s.wins}-${s.losses}</div><div class="stat-sub" id="filter-count"></div></div>
         <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral">${s.win_rate}%</div></div>

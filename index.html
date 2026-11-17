@@ -502,7 +502,7 @@
           </div>
           <div class="faq-item">
             <h3><button type="button" aria-expanded="false" aria-controls="a2" id="q2">What is your investment strategy?<span class="chev" aria-hidden="true"></span></button></h3>
-            <div class="faq-a" id="a2" role="region" aria-labelledby="q2"><div><p>Set a fixed wager size at the start of the season and take every pick the models give out. The goal is positive weeks, one after another. Winning a 3-2 week is a good outcome, and so is limiting losses in a 2-3 week. Slightly positive weeks strung together compound over time. The model currently delivers a 6.16% ROI. <span class="note">Historical result, not a guarantee. Past performance does not predict future results.</span></p><p>As the product expands across three pro sports (NFL, MLB, NBA), risk spreads out. When one sport has a drawdown, the other models can offset losses and add winning picks over a long period. The strategy is risk-adjusted, low and slow compounding growth.</p></div></div>
+            <div class="faq-a" id="a2" role="region" aria-labelledby="q2"><div><p>Set a fixed wager size at the start of the season and take every pick the models give out. The goal is positive weeks, one after another. Winning a 3-2 week is a good outcome, and so is limiting losses in a 2-3 week. Slightly positive weeks strung together compound over time. <span id="faq-roi-line">The model currently delivers a positive ROI.</span> <span class="note">Historical result, not a guarantee. Past performance does not predict future results.</span></p><p>As the product expands across three pro sports (NFL, MLB, NBA), risk spreads out. When one sport has a drawdown, the other models can offset losses and add winning picks over a long period. The strategy is risk-adjusted, low and slow compounding growth.</p></div></div>
           </div>
           <div class="faq-item">
             <h3><button type="button" aria-expanded="false" aria-controls="a3" id="q3">What is model edge?<span class="chev" aria-hidden="true"></span></button></h3>
@@ -826,6 +826,7 @@
   <script src="js/odds-source.js?v=20261014"></script>
   <script src="js/nfl-picks.js?v=20261014"></script>
   <script src="js/nba-picks.js?v=20261110b"></script>
+  <script src="js/model-roi.js?v=20261117"></script>
   <script>
     buildNav('predictions.html');
 
@@ -1363,6 +1364,7 @@
             edge: p.edge != null ? parseFloat((Math.abs(p.edge) * 100).toFixed(4)) : null,
           }));
           historyData = [...mlbPicks, ...nflPicks, ...nbaPicks];
+          updateFaqRoi(historyData);
           updateHistoryTimeframeOptions();
           applyHistoryFilters();
         } catch (e) {
@@ -1447,12 +1449,17 @@
     }
 
     function computeSummary(picks) {
-      const wins = picks.filter(p=>p.result==='Win').length;
-      const losses = picks.filter(p=>p.result==='Loss').length;
-      const total_picks = wins + losses;
-      const win_rate = total_picks ? ((wins/total_picks)*100).toFixed(1) : '0.0';
-      const total_units = parseFloat(picks.reduce((a,b)=>a+(b.units||0),0).toFixed(2));
-      return { wins, losses, win_rate, total_units, total_picks };
+      return OrbModelRoi.computeSummary(picks);
+    }
+
+    // Landing FAQ uses the unfiltered all-models history, the same set the
+    // ROI % tile shows before any category filter is applied.
+    function updateFaqRoi(picks) {
+      const line = document.getElementById('faq-roi-line');
+      if (!line) return;
+      const formatted = OrbModelRoi.formatRoi(OrbModelRoi.roiFromSummary(OrbModelRoi.computeSummary(picks)));
+      if (!formatted) return;
+      line.textContent = 'Across all models, the current ROI is ' + formatted + '.';
     }
 
     function applyHistoryFilters() {
@@ -1464,7 +1471,7 @@
     }
 
     function renderSummaryStats(s) {
-      const roi = s.total_picks ? ((s.total_units / s.total_picks) * 100) : 0;
+      const roi = OrbModelRoi.roiFromSummary(s) ?? 0;
       document.getElementById('summary-grid').innerHTML = `
         <div class="stat-card"><div class="stat-label">Record</div><div class="stat-value stat-neutral">${s.wins}-${s.losses}</div><div class="stat-sub" id="filter-count"></div></div>
         <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value stat-neutral">${s.win_rate}%</div></div>
