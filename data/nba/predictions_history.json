@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-17T14:06:13+00:00",
+  "generated_at": "2026-11-18T14:08:45+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 112,
-    "losses": 102,
+    "wins": 113,
+    "losses": 103,
     "win_rate": 52.3,
-    "total_units": 7.14,
-    "total_picks": 214,
-    "mean_clv": 0.8,
+    "total_units": 7.1,
+    "total_picks": 216,
+    "mean_clv": 0.765,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 5,
-        "losses": 10,
-        "win_rate": 33.3,
-        "total_units": -5.0,
-        "total_picks": 15,
-        "mean_clv": 0.8
+        "wins": 6,
+        "losses": 11,
+        "win_rate": 35.3,
+        "total_units": -5.04,
+        "total_picks": 17,
+        "mean_clv": 0.765
       }
     }
   },
@@ -4077,6 +4077,42 @@
       "home_score": 128,
       "away_score": 110,
       "clv": 1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718129,
+      "date": "2026-11-17",
+      "season": "2026-27",
+      "home_team": "LAL",
+      "away_team": "CHA",
+      "pick": "CHA",
+      "line": -104.0,
+      "spread": 7.5,
+      "edge": 0.0092,
+      "edge_points": 1.13,
+      "result": "Win",
+      "units": 0.9615,
+      "home_score": 118,
+      "away_score": 114,
+      "clv": 1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718130,
+      "date": "2026-11-17",
+      "season": "2026-27",
+      "home_team": "LAC",
+      "away_team": "UTA",
+      "pick": "LAC",
+      "line": -100.0,
+      "spread": -6.5,
+      "edge": 0.0122,
+      "edge_points": 1.093,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 107,
+      "away_score": 132,
+      "clv": 0.0,
       "model": "nba-m1-open-v1"
     }
   ]
