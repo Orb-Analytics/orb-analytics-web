@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-18T14:08:35+00:00",
+  "generated_at": "2026-11-19T14:05:59+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 144,
+    "wins": 146,
     "losses": 124,
-    "win_rate": 53.7,
-    "total_units": 16.08,
-    "total_picks": 268,
-    "mean_clv": 0.478,
+    "win_rate": 54.1,
+    "total_units": 18.02,
+    "total_picks": 270,
+    "mean_clv": 0.479,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 37,
+        "wins": 39,
         "losses": 32,
-        "win_rate": 53.6,
-        "total_units": 3.94,
-        "total_picks": 69,
-        "mean_clv": 0.478
+        "win_rate": 54.9,
+        "total_units": 5.88,
+        "total_picks": 71,
+        "mean_clv": 0.479
       }
     }
   },
@@ -5049,6 +5049,42 @@
       "home_score": 107,
       "away_score": 132,
       "clv": 0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718131,
+      "date": "2026-11-18",
+      "season": "2026-27",
+      "home_team": "CLE",
+      "away_team": "MEM",
+      "pick": "MEM",
+      "line": -100.0,
+      "spread": 4.5,
+      "edge": 0.0153,
+      "edge_points": 1.376,
+      "result": "Win",
+      "units": 1.0,
+      "home_score": 121,
+      "away_score": 124,
+      "clv": -0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718142,
+      "date": "2026-11-18",
+      "season": "2026-27",
+      "home_team": "SAC",
+      "away_team": "PHX",
+      "pick": "PHX",
+      "line": -106.0,
+      "spread": -6.5,
+      "edge": 0.0066,
+      "edge_points": 1.053,
+      "result": "Win",
+      "units": 0.9434,
+      "home_score": 107,
+      "away_score": 128,
+      "clv": 1.0,
       "model": "nba-m1-open-v1"
     }
   ]
