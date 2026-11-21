@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-20T14:07:34+00:00",
+  "generated_at": "2026-11-21T14:06:36+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
     "wins": 115,
-    "losses": 104,
-    "win_rate": 52.5,
-    "total_units": 8.05,
-    "total_picks": 219,
-    "mean_clv": 0.65,
+    "losses": 106,
+    "win_rate": 52.0,
+    "total_units": 6.05,
+    "total_picks": 221,
+    "mean_clv": 0.727,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -19,11 +19,11 @@
       },
       "nba-m1-open-v1": {
         "wins": 8,
-        "losses": 12,
-        "win_rate": 40.0,
-        "total_units": -4.09,
-        "total_picks": 20,
-        "mean_clv": 0.65
+        "losses": 14,
+        "win_rate": 36.4,
+        "total_units": -6.09,
+        "total_picks": 22,
+        "mean_clv": 0.727
       }
     }
   },
@@ -4187,6 +4187,44 @@
       "home_score": 114,
       "away_score": 124,
       "clv": -1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718149,
+      "date": "2026-11-20",
+      "season": "2026-27",
+      "home_team": "CLE",
+      "away_team": "IND",
+      "pick": "IND",
+      "line": 104.0,
+      "spread": 6.5,
+      "is_favorite": false,
+      "edge": 0.0179,
+      "edge_points": 1.296,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 128,
+      "away_score": 119,
+      "clv": -0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718154,
+      "date": "2026-11-20",
+      "season": "2026-27",
+      "home_team": "DEN",
+      "away_team": "HOU",
+      "pick": "HOU",
+      "line": 102.0,
+      "spread": 1.5,
+      "is_favorite": false,
+      "edge": 0.0148,
+      "edge_points": 1.169,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 133,
+      "away_score": 124,
+      "clv": 3.0,
       "model": "nba-m1-open-v1"
     }
   ]
