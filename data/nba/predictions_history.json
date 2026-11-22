@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-21T14:06:36+00:00",
+  "generated_at": "2026-11-22T14:06:52+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
     "wins": 115,
-    "losses": 106,
-    "win_rate": 52.0,
-    "total_units": 6.05,
-    "total_picks": 221,
-    "mean_clv": 0.727,
+    "losses": 107,
+    "win_rate": 51.8,
+    "total_units": 5.05,
+    "total_picks": 222,
+    "mean_clv": 0.652,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -19,11 +19,11 @@
       },
       "nba-m1-open-v1": {
         "wins": 8,
-        "losses": 14,
-        "win_rate": 36.4,
-        "total_units": -6.09,
-        "total_picks": 22,
-        "mean_clv": 0.727
+        "losses": 15,
+        "win_rate": 34.8,
+        "total_units": -7.09,
+        "total_picks": 23,
+        "mean_clv": 0.652
       }
     }
   },
@@ -4225,6 +4225,25 @@
       "home_score": 133,
       "away_score": 124,
       "clv": 3.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718161,
+      "date": "2026-11-21",
+      "season": "2026-27",
+      "home_team": "SAC",
+      "away_team": "BOS",
+      "pick": "BOS",
+      "line": -100.0,
+      "spread": -13.5,
+      "is_favorite": true,
+      "edge": 0.0121,
+      "edge_points": 1.082,
+      "result": "Loss",
+      "units": -1.0,
+      "home_score": 97,
+      "away_score": 96,
+      "clv": -1.0,
       "model": "nba-m1-open-v1"
     }
   ]
