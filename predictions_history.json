@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-22T14:06:46+00:00",
+  "generated_at": "2026-11-23T14:07:33+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 146,
+    "wins": 148,
     "losses": 128,
-    "win_rate": 53.3,
-    "total_units": 14.02,
-    "total_picks": 274,
-    "mean_clv": 0.467,
+    "win_rate": 53.6,
+    "total_units": 15.98,
+    "total_picks": 276,
+    "mean_clv": 0.481,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 39,
+        "wins": 41,
         "losses": 36,
-        "win_rate": 52.0,
-        "total_units": 1.88,
-        "total_picks": 75,
-        "mean_clv": 0.467
+        "win_rate": 53.2,
+        "total_units": 3.84,
+        "total_picks": 77,
+        "mean_clv": 0.481
       }
     }
   },
@@ -5232,6 +5232,44 @@
       "home_score": 97,
       "away_score": 96,
       "clv": -1.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718169,
+      "date": "2026-11-22",
+      "season": "2026-27",
+      "home_team": "NYK",
+      "away_team": "IND",
+      "pick": "IND",
+      "line": -102.0,
+      "spread": 8.5,
+      "is_favorite": false,
+      "edge": 0.0144,
+      "edge_points": 1.448,
+      "result": "Win",
+      "units": 0.9804,
+      "home_score": 113,
+      "away_score": 106,
+      "clv": 2.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718170,
+      "date": "2026-11-22",
+      "season": "2026-27",
+      "home_team": "GSW",
+      "away_team": "BOS",
+      "pick": "GSW",
+      "line": -102.0,
+      "spread": 8.5,
+      "is_favorite": false,
+      "edge": 0.0114,
+      "edge_points": 1.183,
+      "result": "Win",
+      "units": 0.9804,
+      "home_score": 88,
+      "away_score": 87,
+      "clv": 0.0,
       "model": "nba-m1-open-v1"
     }
   ]
