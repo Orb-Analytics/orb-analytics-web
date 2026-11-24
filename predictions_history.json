@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-23T14:07:33+00:00",
+  "generated_at": "2026-11-24T14:05:51+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 148,
+    "wins": 151,
     "losses": 128,
-    "win_rate": 53.6,
-    "total_units": 15.98,
-    "total_picks": 276,
-    "mean_clv": 0.481,
+    "win_rate": 54.1,
+    "total_units": 19.04,
+    "total_picks": 279,
+    "mean_clv": 0.487,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 41,
+        "wins": 44,
         "losses": 36,
-        "win_rate": 53.2,
-        "total_units": 3.84,
-        "total_picks": 77,
-        "mean_clv": 0.481
+        "win_rate": 55.0,
+        "total_units": 6.9,
+        "total_picks": 80,
+        "mean_clv": 0.487
       }
     }
   },
@@ -5270,6 +5270,63 @@
       "home_score": 88,
       "away_score": 87,
       "clv": 0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718172,
+      "date": "2026-11-23",
+      "season": "2026-27",
+      "home_team": "PHI",
+      "away_team": "POR",
+      "pick": "POR",
+      "line": -100.0,
+      "spread": 3.5,
+      "is_favorite": false,
+      "edge": 0.0185,
+      "edge_points": 1.66,
+      "result": "Win",
+      "units": 1.0,
+      "home_score": 111,
+      "away_score": 128,
+      "clv": 2.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718173,
+      "date": "2026-11-23",
+      "season": "2026-27",
+      "home_team": "IND",
+      "away_team": "OKC",
+      "pick": "IND",
+      "line": 108.0,
+      "spread": 4.5,
+      "is_favorite": false,
+      "edge": 0.018,
+      "edge_points": 1.012,
+      "result": "Win",
+      "units": 1.08,
+      "home_score": 125,
+      "away_score": 120,
+      "clv": 0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718177,
+      "date": "2026-11-23",
+      "season": "2026-27",
+      "home_team": "NOP",
+      "away_team": "PHX",
+      "pick": "PHX",
+      "line": -102.0,
+      "spread": -3.5,
+      "is_favorite": true,
+      "edge": 0.0108,
+      "edge_points": 1.123,
+      "result": "Win",
+      "units": 0.9804,
+      "home_score": 119,
+      "away_score": 123,
+      "clv": -0.0,
       "model": "nba-m1-open-v1"
     }
   ]
