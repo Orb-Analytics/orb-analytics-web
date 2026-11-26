@@ -1,14 +1,14 @@
 {
   "model": "NBA",
-  "generated_at": "2026-11-25T14:07:19+00:00",
+  "generated_at": "2026-11-26T14:05:00+00:00",
   "version": "nba-m1-open-v1",
   "summary": {
-    "wins": 151,
+    "wins": 152,
     "losses": 128,
-    "win_rate": 54.1,
-    "total_units": 19.04,
-    "total_picks": 279,
-    "mean_clv": 0.487,
+    "win_rate": 54.3,
+    "total_units": 20.06,
+    "total_picks": 280,
+    "mean_clv": 0.469,
     "by_model": {
       "nba-legacy-v1": {
         "wins": 107,
@@ -18,12 +18,12 @@
         "total_picks": 199
       },
       "nba-m1-open-v1": {
-        "wins": 44,
+        "wins": 45,
         "losses": 36,
-        "win_rate": 55.0,
-        "total_units": 6.9,
-        "total_picks": 80,
-        "mean_clv": 0.487
+        "win_rate": 55.6,
+        "total_units": 7.92,
+        "total_picks": 81,
+        "mean_clv": 0.469
       }
     }
   },
@@ -5327,6 +5327,25 @@
       "home_score": 119,
       "away_score": 123,
       "clv": -0.0,
+      "model": "nba-m1-open-v1"
+    },
+    {
+      "game_id": 21718187,
+      "date": "2026-11-25",
+      "season": "2026-27",
+      "home_team": "OKC",
+      "away_team": "MIN",
+      "pick": "MIN",
+      "line": 102.0,
+      "spread": 1.5,
+      "is_favorite": false,
+      "edge": 0.0166,
+      "edge_points": 1.334,
+      "result": "Win",
+      "units": 1.02,
+      "home_score": 106,
+      "away_score": 113,
+      "clv": -1.0,
       "model": "nba-m1-open-v1"
     }
   ]
